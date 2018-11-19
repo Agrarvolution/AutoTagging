@@ -1,4 +1,4 @@
-# Auto-Tagging Plugin in for Adobe Bridge
+# Auto-Tagging Plugin in for Adobe Bridge CC2019
 
 Uses Amazon Rekognition or Google Cloud to process images uploaded from Adobe Bridge, and writes the results into a XMP-File.
 
