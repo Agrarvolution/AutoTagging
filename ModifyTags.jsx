@@ -47,7 +47,7 @@ ModifyTags.prototype.run = function()
 	// Get the selected file
 	var thumb = app.document.selections[0];
     
-    var threshold = 0.95;
+    
 
 	if(thumb.hasMetadata)
 	{
@@ -79,50 +79,12 @@ ModifyTags.prototype.run = function()
         var JSONtags = '{{"Landschaft":[{"Wald":["Laubwald"]},{"Landschaftsobjekte":["Brücke","Bach","Schild"]}],"Personen":["Kind","Lukas"]}';
     
     //string eingabe geht nicht über mehrere Zeilen
-        var rekognitionResponse = '{"LabelModelVersion":"V1","Labels":[{"Confidence":"0.98","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Laubwald","Parents":[{"Name":"Landschaft"}]},{"Confidence":"0.90","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Brücke","Parents":[{"Name":"Bauwerke"}]},{"Confidence":"0.91","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Gesicht","Parents":[{}]}],"OrientationCorrection":"???"}';
+        var rekognitionResponse = '{"LabelModelVersion":"V1","Labels":[{"Confidence":"0.98","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Laubwald","Parents":[{"Name":"Landschaft"}]},{"Confidence":"0.90","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Brücke","Parents":[{"Name":"Bauwerke"}]},{"Confidence":"0.91","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"dog","Parents":[{}]}],"OrientationCorrection":"???"}';
         var visionResponse = '{"responses":[{"labelAnnotations":[{"mid":"/m/0bt9lr","description":"dog","score":0.97346616},{"mid":"/m/09686","description":"vertebrate","score":0.85700572},{"mid":"/m/01pm38","description":"clumber spaniel","score":0.84881884},{"mid":"/m/04rky","description":"mammal","score":0.847575},{"mid":"/m/02wbgd","description":"english cocker spaniel","score":0.75829375}]}]}';
         
         
-        
-        writeTags(processResponses(visionResponse, rekognitionResponse));
-
-        var appendedText;
-        
-        if (tags.Labels) //checks if there are even any labels
-        {
-            for (var labelIndex = 0; labelIndex < tags.Labels.length; labelIndex++) 
-            {
-                if (!searchInArray(subjects,tags.Labels[labelIndex].Name)) //checks to avoid double entries
-                {
-                    xmp.appendArrayItem(XMPConst.NS_DC, "subject", tags.Labels[labelIndex].Name, 0, XMPConst.ARRAY_IS_ORDERED);
-                }
-                $.writeln(tags.Labels[labelIndex].Name);
-                for (var parentIndex = 0; parentIndex < tags.Labels[labelIndex].Parents.length; parentIndex++) 
-                {
-                    if(tags.Labels[labelIndex].Parents[parentIndex].Name) 
-                    {
-                        $.writeln(tags.Labels[labelIndex].Parents[parentIndex].Name );
-                        if (!searchInArray(subjects, tags.Labels[labelIndex].Parents[parentIndex].Name))
-                        {                        
-                            xmp.appendArrayItem(XMPConst.NS_DC, "subject", tags.Labels[labelIndex].Parents[parentIndex].Name, 0, XMPConst.ARRAY_IS_ORDERED);
-                        }
-                        appendedText = tags.Labels[labelIndex].Parents[parentIndex].Name + "|" +  tags.Labels[labelIndex].Name;
-                        if (!searchInArray(hierarchy,appendedText))
-                        {
-                            xmp.appendArrayItem(lrNamespace, "hierarchicalSubject", appendedText, 0, XMPConst.ARRAY_IS_ORDERED);
-                        }
-                    } 
-                    else 
-                    {
-                        if (!searchInArray(hierarchy,tags.Labels[labelIndex].Name))
-                        {
-                            xmp.appendArrayItem(lrNamespace, "hierarchicalSubject", tags.Labels[labelIndex].Name, 0, XMPConst.ARRAY_IS_ORDERED); 
-                        }              
-                    }
-                }    
-            }
-        }
-        $.writeln(tags);
+        var threshold = 0.90;
+        writeTags(xmp, processResponses(visionResponse, rekognitionResponse), threshold);
         
     /*
 		xmp.appendArrayItem(lrNamespace, "hierarchicalSubject", "Orte|Linz", 0, XMPConst.ARRAY_IS_UNORDERED);
@@ -172,7 +134,7 @@ function secureParseJSON (jsonString)
  * @return empty array or array map with the description and confidence of the found tags
  * @param {string} reponseJSON 
  */
-function handleVisionResponse(reponseJSON) 
+function handleVisionResponse(responseJSON) 
 {
     var visionObject = secureParseJSON(responseJSON);
     var tagArray = [];
@@ -204,7 +166,7 @@ function handleVisionResponse(reponseJSON)
  * @return empty array or array map with the description and confidence of the found tags
  * @param {string} reponseJSON 
  */
-function handleRekognitionResponse(reponseJSON) 
+function handleRekognitionResponse(responseJSON) 
 {
     var rekognitionObject = secureParseJSON(responseJSON);
     var tagArray = [];
@@ -348,21 +310,59 @@ function sanitizeArray(array)
  */
 function sanitizeString(text)
 {
-    return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").trim();
+    return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").replace("\(^[\s\n\r\t\x0B]+)|([\s\n\r\t\x0B]+$)/g", "");
 }
+
 
 /**
  * Has to run after XMP was initialized.
+ * @param {object} xmp 
  * @param {array} responseObject 
+ * @param {float} confidence 
  */
-function writeTags(responseObject)
+function writeTags(xmp, responseObject, confidence)
 {
-    var existingTags = readTags();
-    var responseTags = responseTags(responseObject);
+    var existingTags = readTags(xmp);
+    responseObject = deleteByConfidence(responseObject, confidence);
+    var respondTags = responseTags(responseObject);
 
+    respondTags.subjects = stripArray(respondTags.subjects, existingTags.subjects);
+    respondTags.hierarchy = stripArray(respondTags.hierarchy, existingTags.hierarchy);
+
+    for (var i = 0; i < respondTags.subjects.length; i++)
+    {
+        xmp.appendArrayItem(XMPConst.NS_DC, "subject", respondTags.subjects[i], 0, XMPConst.ARRAY_IS_ORDERED);
+    }
+    for (i = 0; i < respondTags.hierarchy.length; i++)
+    {
+        xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", respondTags.hierarchy[i], 0, XMPConst.ARRAY_IS_ORDERED); 
+    }
+    return true;
 }
 
+/**
+ * Compares two array and removes duplicates from the target array.
+ * @return array with strings
+ * @param {array} target 
+ * @param {array} decider 
+ */
+function stripArray(target, decider)
+{
+    for (var i = 0; i < target.length; i++)
+    {
+        if (searchInArray(decider, target[i]))
+        {
+            target.splice(i--,1);
+        }
+    }
+    return target;
+}
 
+/**
+ * Creates the same structure for the tag reponse as is written in XMP
+ * @return Object containing a subject and hierarchy array
+ * @param {array} responseObject 
+ */
 function responseTags(responseObject)
 {
     var subjects = [];
@@ -371,23 +371,48 @@ function responseTags(responseObject)
     for (var i = 0; i < responseObject.length; i++)
     {
         subjects.push(responseObject[i].description);
-        for (var pIndex = 0; pIndex < responseObject[i].parents.length; i++)
+        if (responseObject[i].parents)
         {
-            hierarchy.push(responseObject[i].parents[pIndex] + "|" + responseObject[i].description);
-            if (!searchInArray(subjects, responseObject[i].parents[pIndex]))
+            for (var pIndex = 0; pIndex < responseObject[i].parents.length; i++)
             {
-                subjects.push(responseObject[i].parents[pIndex]);
+                hierarchy.push(responseObject[i].parents[pIndex] + "|" + responseObject[i].description);
+                if (!searchInArray(subjects, responseObject[i].parents[pIndex]))
+                {
+                    subjects.push(responseObject[i].parents[pIndex]);
+                }
             }
+        }
+        else
+        {
+            hierarchy.push(responseObject[i].description);
         }
     }
     return {subjects: subjects, hierarchy: hierarchy};
 }
+/**
+ * Deletes all objects in the array that have a lower ocnfidence then the threshold.
+ * @return object containing the responses
+ * @param {array} responseObject 
+ * @param {float} confidence 
+ */
+function deleteByConfidence(responseObject, confidence)
+{
+    for (var i = 0; i < responseObject.length; i++)
+    {
+        if (responseObject[i].confidence < i)
+        {
+            responseObject.splice[i,1];
+        }
+    }
+    return responseObject;
+}
 
 /**
- * Reads the existing tags in the XMP Metadata
+  * Reads the existing tags in the XMP Metadata
  * @return Object containing a subject and hierarchy array
+ * @param {Object} xmp 
  */
-function readTags()
+function readTags(xmp)
 {
     var subjects = [];
     var hierarchy = [];
