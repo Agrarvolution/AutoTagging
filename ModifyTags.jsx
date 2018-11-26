@@ -1,4 +1,6 @@
-﻿#include "js/libs/json2.js"  
+﻿"use strict"
+
+#include "js/libs/json2.js"  
 
 function ModifyTags() 
 {
@@ -44,7 +46,9 @@ ModifyTags.prototype.run = function()
 	
 	// Get the selected file
 	var thumb = app.document.selections[0];
-	
+    
+    var threshold = 0.95;
+
 	if(thumb.hasMetadata)
 	{
 		// Get the metadata object - wait for  valid values
@@ -68,33 +72,20 @@ ModifyTags.prototype.run = function()
 		xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
             
 		// Create some custom data.  Register a new namespace and prefix
-		var lrNamespace = "http://ns.adobe.com/lightroom/1.0/";
-		var lrPrefix = "lr:";
-		XMPMeta.registerNamespace(lrNamespace, lrPrefix);
+		XMPMeta.registerNamespace("http://ns.adobe.com/lightroom/1.0/", "lr:");
 		
-        var subjectCount = xmp.countArrayItems(XMPConst.NS_DC, "subject");
-        var hierarchyCount = xmp.countArrayItems(lrNamespace, "hierarchicalSubject");
-        var subjects = [];
-        var hierarchy = [];
         
-        for (var i = 1; i <= subjectCount; i++) 
-        {
-            subjects[i] = xmp.getArrayItem(XMPConst.NS_DC, "subject", i);
-        }
-        for (var i = 1; i <= hierarchyCount; i++) 
-        {
-            hierarchy[i] = xmp.getArrayItem(lrNamespace, "hierarchicalSubject", i);
-        }
                     
         var JSONtags = '{{"Landschaft":[{"Wald":["Laubwald"]},{"Landschaftsobjekte":["Brücke","Bach","Schild"]}],"Personen":["Kind","Lukas"]}';
     
     //string eingabe geht nicht über mehrere Zeilen
         var rekognitionResponse = '{"LabelModelVersion":"V1","Labels":[{"Confidence":"0.98","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Laubwald","Parents":[{"Name":"Landschaft"}]},{"Confidence":"0.90","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Brücke","Parents":[{"Name":"Bauwerke"}]},{"Confidence":"0.91","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Gesicht","Parents":[{}]}],"OrientationCorrection":"???"}';
-        try {
-            var tags = JSON.parse(rekognitionResponse);
-        } catch (e) {
-            $.writeln(e);
-        }
+        var visionResponse = '{"responses":[{"labelAnnotations":[{"mid":"/m/0bt9lr","description":"dog","score":0.97346616},{"mid":"/m/09686","description":"vertebrate","score":0.85700572},{"mid":"/m/01pm38","description":"clumber spaniel","score":0.84881884},{"mid":"/m/04rky","description":"mammal","score":0.847575},{"mid":"/m/02wbgd","description":"english cocker spaniel","score":0.75829375}]}]}';
+        
+        
+        
+        writeTags(processResponses(visionResponse, rekognitionResponse));
+
         var appendedText;
         
         if (tags.Labels) //checks if there are even any labels
@@ -163,19 +154,285 @@ ModifyTags.prototype.run = function()
 }
 
 /**
+ * Parses JSON and throws exception if the string is not a valid JSON
+ * @param {string} jsonString 
+ */
+function secureParseJSON (jsonString)
+{
+    try {
+        var tags = JSON.parse(jsonString);
+    } catch (e) {
+        $.writeln(e);
+    }
+    return tags;
+}
+
+/**
+ * reponseJSON gets parsed and the object is checked, whether the result is a valid Google Vision response.
+ * @return empty array or array map with the description and confidence of the found tags
+ * @param {string} reponseJSON 
+ */
+function handleVisionResponse(reponseJSON) 
+{
+    var visionObject = secureParseJSON(responseJSON);
+    var tagArray = [];
+
+    // check validity
+    if (!visionObject.reponses) 
+    {
+        return [];
+    }
+    else if (!visionObject.reponses[0].labelAnnotations) 
+    {
+        return [];
+    }
+
+
+    for (var i = 0; i < visionObject.responses[0].labelAnnotations.length; i++) 
+    {
+        var responsePart = visionObject.responses[0].labelAnnotations[i];
+        if (reponsePart.description && reponsePart.score)
+        {
+            tagArray.push({description: reponsePart.description, confidence: reponsePart.score, parents: []});
+        }
+    }
+    return clampConfidence(sanitizeArray(tagArray));
+}
+
+/**
+ * reponseJSON gets parsed and the object is checked, whether the result is a valid Amazon Rekognition response.
+ * @return empty array or array map with the description and confidence of the found tags
+ * @param {string} reponseJSON 
+ */
+function handleRekognitionResponse(reponseJSON) 
+{
+    var rekognitionObject = secureParseJSON(responseJSON);
+    var tagArray = [];
+
+    // check validity
+    if (!rekognitionObject.Labels) 
+    {
+        return [];
+    }
+
+
+    for (var i = 0; i < rekognitionObject.Labels.length; i++) 
+    {
+        if (rekognitionObject.Labels[i].Name && rekognitionObject.Labels[i].Confidence && rekognitionObject.Labels[i].Parents)
+        {
+            var parents = [];
+            for (var pIndex = 0; pIndex < rekognitionObject.Labels[i].Parents.length; pIndex++)
+            {
+                parents.push = rekognitionObject.Labels[i].Parents[pIndex];
+            }
+            tagArray.push({description: rekognitionObject.Labels[i].Name, confidence: rekognitionObject.Labels[i].Confidence, parents: parents});
+        }
+        else if (rekognitionObject.Labels[i].Name && rekognitionObject.Labels[i].Confidence)
+        {
+            tagArray.push({description: rekognitionObject.Labels[i].Name, confidence: rekognitionObject.Labels[i].Confidence, parents: []});
+        }
+    }
+    return clampConfidence(sanitizeArray(tagArray));
+}
+
+/**
+ * Processes responses from Google Vision and Amazon Rekognition
+ * @return array with combined values and confidences
+ * @param {array} visionResponse 
+ * @param {array} rekognitionResponse 
+ */
+function processResponses(visionResponse, rekognitionResponse)
+{
+    visionObject = handleVisionResponse(visionResponse);
+    rekognitionObject = handleRekognitionResponse(rekognitionResponse);
+    outputObject = [];
+
+    if (typeof visionObject !== 'undefined' && visionObject.length > 0 && typeof rekognitionObject !== 'undefined' && rekognitionObject.length > 0) 
+    {
+        for (var i = 0; i < visionObject.length; i++)
+        {
+            var matchingIndex = searchInDescription(rekognitionObject, visionObject[i].description);
+            if (matchingIndex >= 0)
+            {
+                var tempObject = rekognitionObject[matchingIndex];
+                rekognitionObject.splice[matchingIndex,1]; //doesn't take Vision parents in account
+                tempObject.confidence*= visionObject[i].confidence;
+                outputObject.push(tempObject);
+                visionObject.splice(i--,1);
+            }
+        }
+        outputObject.concat(squareConfidence(visionObject));
+        outputObject.concat(squareConfidence(rekognitionObject));
+    }
+    else if (typeof visionObject !== 'undefined' && visionObject.length > 0)
+    {
+        outputObject = squareConfidence(rekognitionObject);
+    }
+    else if (typeof rekognitionObject !== 'undefined' && rekognitionObject.length > 0)
+    {
+        outputObject = squareConfidence(visionObject);
+    }
+    return outputObject;
+}
+
+/**
+ * Squares all confidence levels in the array
+ * @param {array} array 
+ */
+function squareConfidence(array)
+{
+    for (var i = 0; i < array.length; i++)
+    {
+        array.confidence*=array.confidence;
+    }
+    return array;
+}
+/**
+ * Sanitizes the confidence in the tag array and removes values with not valid description. It clamps the confidence values between [0, 1].
+ * @return array map with the description and confidence
+ * @param {array} array 
+ */
+function clampConfidence(array) 
+{
+    for (var i = 0; i < array.length; i++)
+    {
+        if (isNaN(parseFloat(array[i].value)))
+        {
+            array.splice(i, 1);
+        }
+        else
+        {
+            array[i].confidence = Math.min(Math.max(parseFloat(array[i].value), 0), 1);
+        }
+    }
+    return array;
+}
+
+/**
+ * Sanitizes the description & parents of the array, and removes items from the array that aren't a String.
+ * @param {array} array 
+ */
+function sanitizeArray(array)
+{
+    //iterate for description
+    for (var i = 0; i < array.length; i++)
+    {
+        if (typeof array[i].description === 'string' || array[i].description instanceof String)
+        {
+            array[i].description = sanitizeString(array[i].description);
+            
+            //iterate for parent description
+            for (var pIndex = 0; pIndex < array[i].parents.length; pIndex++)
+            {
+                if (typeof array[i].parents[pIndex] === 'string' || array[i].parents[pIndex] instanceof String)
+                {
+                    array[i].parents[pIndex] = sanitizeString(array[i].parents[pIndex]);
+                }
+                else 
+                {
+                    array.parents.splice(i, 1);
+                }
+            }
+        }
+        else 
+        {
+            array.splice(i, 1);
+        }
+    }
+    return array;
+}
+
+/**
+ * Sanitation method for a single string
+ * @param {string} text 
+ */
+function sanitizeString(text)
+{
+    return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").trim();
+}
+
+/**
+ * Has to run after XMP was initialized.
+ * @param {array} responseObject 
+ */
+function writeTags(responseObject)
+{
+    var existingTags = readTags();
+    var responseTags = responseTags(responseObject);
+
+}
+
+
+function responseTags(responseObject)
+{
+    var subjects = [];
+    var hierarchy = [];
+
+    for (var i = 0; i < responseObject.length; i++)
+    {
+        subjects.push(responseObject[i].description);
+        for (var pIndex = 0; pIndex < responseObject[i].parents.length; i++)
+        {
+            hierarchy.push(responseObject[i].parents[pIndex] + "|" + responseObject[i].description);
+            if (!searchInArray(subjects, responseObject[i].parents[pIndex]))
+            {
+                subjects.push(responseObject[i].parents[pIndex]);
+            }
+        }
+    }
+    return {subjects: subjects, hierarchy: hierarchy};
+}
+
+/**
+ * Reads the existing tags in the XMP Metadata
+ * @return Object containing a subject and hierarchy array
+ */
+function readTags()
+{
+    var subjects = [];
+    var hierarchy = [];
+    
+    for (var i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++) 
+    {
+        subjects.push(xmp.getArrayItem(XMPConst.NS_DC, "subject", i));
+    }
+    for (var i = 1; i <= xmp.countArrayItems("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject"); i++) 
+    {
+        hierarchy.push(xmp.getArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", i));
+    }
+    return {subjects: subjects, hierarchy: hierarchy};
+}
+/**
     check if array contains value
     because indexOf doesn't work
     */
 function searchInArray(array, value) 
 {
-    for (var i = 1; i < array.length; i++) 
+    for (var i = 0; i < array.length; i++) 
     {
-        if (array[i].value == value) 
+        if (array[i].value === value) 
         {
             return true;
         }
     }
     return false;
+}
+/**
+ * Checks if the value is contained in the description in the array
+ * @return int position in the array
+ * @param {array} array 
+ * @param {string} value 
+ */
+function searchInDescription(array, value) 
+{
+    for (var i = 0; i < array.length; i++) 
+    {
+        if (array[i].description === value) 
+        {
+            return i;
+        }
+    }
+    return -1;
 }
 /**
   Determines whether snippet can be run given current context.  The snippet 
