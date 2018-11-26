@@ -4,6 +4,8 @@
 
  */
 
+
+
 var jsonAWS;
 var jsonVision;
 
