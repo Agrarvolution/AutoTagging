@@ -180,12 +180,13 @@ function handleRekognitionResponse(responseJSON)
 
     for (var i = 0; i < rekognitionObject.Labels.length; i++) 
     {
-        if (rekognitionObject.Labels[i].Name && rekognitionObject.Labels[i].Confidence && rekognitionObject.Labels[i].Parents)
+        //parent arrays are parsed with an empty object in the array
+        if (rekognitionObject.Labels[i].Name && rekognitionObject.Labels[i].Confidence && rekognitionObject.Labels[i].Parents[0].Name)
         {
             var parents = [];
             for (var pIndex = 0; pIndex < rekognitionObject.Labels[i].Parents.length; pIndex++)
-            {
-                parents.push = rekognitionObject.Labels[i].Parents[pIndex];
+            {                
+                parents.push({name: rekognitionObject.Labels[i].Parents[pIndex].Name});
             }
             tagArray.push({description: rekognitionObject.Labels[i].Name, confidence: rekognitionObject.Labels[i].Confidence, parents: parents});
         }
@@ -205,9 +206,9 @@ function handleRekognitionResponse(responseJSON)
  */
 function processResponses(visionResponse, rekognitionResponse)
 {
-    visionObject = handleVisionResponse(visionResponse);
-    rekognitionObject = handleRekognitionResponse(rekognitionResponse);
-    outputObject = [];
+    var visionObject = handleVisionResponse(visionResponse);
+    var rekognitionObject = handleRekognitionResponse(rekognitionResponse);
+    var outputObject = [];
 
     if (typeof visionObject !== 'undefined' && visionObject.length > 0 && typeof rekognitionObject !== 'undefined' && rekognitionObject.length > 0) 
     {
@@ -276,6 +277,7 @@ function clampConfidence(array)
  */
 function sanitizeArray(array)
 {
+    var parentIndex = 0;
     //iterate for description
     for (var i = 0; i < array.length; i++)
     {
@@ -284,11 +286,12 @@ function sanitizeArray(array)
             array[i].description = sanitizeString(array[i].description);
             
             //iterate for parent description
-            for (var pIndex = 0; pIndex < array[i].parents.length; pIndex++)
+
+            for (parentIndex = 0; parentIndex < array[i].parents.length; parentIndex++)
             {
-                if (typeof array[i].parents[pIndex] === 'string' || array[i].parents[pIndex] instanceof String)
+                if (typeof array[i].parents[parentIndex].name === 'string' || array[i].parents[parentIndex].name instanceof String)
                 {
-                    array[i].parents[pIndex] = sanitizeString(array[i].parents[pIndex]);
+                    array[i].parents[parentIndex].name = sanitizeString(array[i].parents[parentIndex].name);
                 }
                 else 
                 {
