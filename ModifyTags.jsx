@@ -140,11 +140,11 @@ function handleVisionResponse(responseJSON)
     var tagArray = [];
 
     // check validity
-    if (!visionObject.reponses) 
+    if (!visionObject.responses) 
     {
         return [];
     }
-    else if (!visionObject.reponses[0].labelAnnotations) 
+    else if (!visionObject.responses[0].labelAnnotations) 
     {
         return [];
     }
@@ -152,10 +152,9 @@ function handleVisionResponse(responseJSON)
 
     for (var i = 0; i < visionObject.responses[0].labelAnnotations.length; i++) 
     {
-        var responsePart = visionObject.responses[0].labelAnnotations[i];
-        if (reponsePart.description && reponsePart.score)
+        if (visionObject.responses[0].labelAnnotations[i].description && visionObject.responses[0].labelAnnotations[i].score)
         {
-            tagArray.push({description: reponsePart.description, confidence: reponsePart.score, parents: []});
+            tagArray.push({description: visionObject.responses[0].labelAnnotations[i].description, confidence: visionObject.responses[0].labelAnnotations[i].score, parents: []});
         }
     }
     return clampConfidence(sanitizeArray(tagArray));
@@ -259,9 +258,9 @@ function clampConfidence(array)
 {
     for (var i = 0; i < array.length; i++)
     {
-        if (isNaN(parseFloat(array[i].value)))
+        if (isNaN(parseFloat(array[i].confidence)))
         {
-            array.splice(i, 1);
+            array.splice(i--, 1);
         }
         else
         {
