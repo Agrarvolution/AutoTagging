@@ -3,7 +3,7 @@
  * Stores and processes all the labels for a picture
  * @param {array} labels 
  */
-function LabelList(labels, filePath = "C:/Users/Public/Pictures/Sample Pictures/Wüste.jpg")
+function LabelList(labels, filePath)
 {
     this.labels = labels;
     this.filePath = filePath;

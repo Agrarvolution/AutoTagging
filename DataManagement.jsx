@@ -37,7 +37,7 @@ function findLabels()
 
 function getImagePath()
 {
-    return "C:\\Users\\Public\\Pictures\\Sample Pictures\\Wüste.jpg";
+    return "C:/Users/Public/Pictures/Sample Pictures/Wüste.jpg";
 }
 
 function sendToAWS(imagePath)
