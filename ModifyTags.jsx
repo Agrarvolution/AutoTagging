@@ -223,8 +223,8 @@ function processResponses(visionResponse, rekognitionResponse)
                 visionObject.splice(i--,1);
             }
         }
-        outputObject.concat(squareConfidence(visionObject));
-        outputObject.concat(squareConfidence(rekognitionObject));
+        outputObject = outputObject.concat(squareConfidence(visionObject));
+        outputObject = outputObject.concat(squareConfidence(rekognitionObject));
     }
     else if (typeof visionObject !== 'undefined' && visionObject.length > 0)
     {
@@ -245,7 +245,7 @@ function squareConfidence(array)
 {
     for (var i = 0; i < array.length; i++)
     {
-        array.confidence*=array.confidence;
+        array[i].confidence*=array[i].confidence;
     }
     return array;
 }
@@ -264,7 +264,7 @@ function clampConfidence(array)
         }
         else
         {
-            array[i].confidence = Math.min(Math.max(parseFloat(array[i].value), 0), 1);
+            array[i].confidence = Math.min(Math.max(parseFloat(array[i].confidence), 0), 1);
         }
     }
     return array;
