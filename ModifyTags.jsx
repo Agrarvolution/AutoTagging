@@ -200,7 +200,7 @@ function processResponses(visionResponse, rekognitionResponse)
             if (matchingIndex >= 0)
             {
                 var tempObject = rekognitionObject[matchingIndex];
-                rekognitionObject.splice[matchingIndex,1]; //doesn't take Vision parents in account
+                rekognitionObject.splice(matchingIndex,1); //doesn't take Vision parents in account
                 tempObject.confidence*= visionObject[i].confidence;
                 outputObject.push(tempObject);
                 visionObject.splice(i--,1);
