@@ -83,7 +83,7 @@ ModifyTags.prototype.run = function()
         var visionResponse = '{"responses":[{"labelAnnotations":[{"mid":"/m/0bt9lr","description":"dog","score":0.97346616},{"mid":"/m/09686","description":"vertebrate","score":0.85700572},{"mid":"/m/01pm38","description":"clumber spaniel","score":0.84881884},{"mid":"/m/04rky","description":"mammal","score":0.847575},{"mid":"/m/02wbgd","description":"english cocker spaniel","score":0.75829375}]}]}';
         
         
-        var threshold = 0.90;
+        var threshold = 0.80;
         writeTags(xmp, processResponses(visionResponse, rekognitionResponse), threshold);
         
     /*
@@ -140,11 +140,11 @@ function handleVisionResponse(responseJSON)
     var tagArray = [];
 
     // check validity
-    if (!visionObject.reponses) 
+    if (!visionObject.responses) 
     {
         return [];
     }
-    else if (!visionObject.reponses[0].labelAnnotations) 
+    else if (!visionObject.responses[0].labelAnnotations) 
     {
         return [];
     }
@@ -152,10 +152,9 @@ function handleVisionResponse(responseJSON)
 
     for (var i = 0; i < visionObject.responses[0].labelAnnotations.length; i++) 
     {
-        var responsePart = visionObject.responses[0].labelAnnotations[i];
-        if (reponsePart.description && reponsePart.score)
+        if (visionObject.responses[0].labelAnnotations[i].description && visionObject.responses[0].labelAnnotations[i].score)
         {
-            tagArray.push({description: reponsePart.description, confidence: reponsePart.score, parents: []});
+            tagArray.push({description: visionObject.responses[0].labelAnnotations[i].description, confidence: visionObject.responses[0].labelAnnotations[i].score, parents: []});
         }
     }
     return clampConfidence(sanitizeArray(tagArray));
@@ -224,8 +223,8 @@ function processResponses(visionResponse, rekognitionResponse)
                 visionObject.splice(i--,1);
             }
         }
-        outputObject.concat(squareConfidence(visionObject));
-        outputObject.concat(squareConfidence(rekognitionObject));
+        outputObject = outputObject.concat(squareConfidence(visionObject));
+        outputObject = outputObject.concat(squareConfidence(rekognitionObject));
     }
     else if (typeof visionObject !== 'undefined' && visionObject.length > 0)
     {
@@ -246,7 +245,7 @@ function squareConfidence(array)
 {
     for (var i = 0; i < array.length; i++)
     {
-        array.confidence*=array.confidence;
+        array[i].confidence*=array[i].confidence;
     }
     return array;
 }
@@ -259,13 +258,13 @@ function clampConfidence(array)
 {
     for (var i = 0; i < array.length; i++)
     {
-        if (isNaN(parseFloat(array[i].value)))
+        if (isNaN(parseFloat(array[i].confidence)))
         {
-            array.splice(i, 1);
+            array.splice(i--, 1);
         }
         else
         {
-            array[i].confidence = Math.min(Math.max(parseFloat(array[i].value), 0), 1);
+            array[i].confidence = Math.min(Math.max(parseFloat(array[i].confidence), 0), 1);
         }
     }
     return array;
@@ -376,12 +375,14 @@ function responseTags(responseObject)
         subjects.push(responseObject[i].description);
         if (responseObject[i].parents)
         {
-            for (var pIndex = 0; pIndex < responseObject[i].parents.length; i++)
+            $.writeln("index: " +i);
+            $.writeln(responseObject[i].parents.length);
+            for (var pIndex = 0; pIndex < responseObject[i].parents.length; pIndex++)
             {
-                hierarchy.push(responseObject[i].parents[pIndex] + "|" + responseObject[i].description);
-                if (!searchInArray(subjects, responseObject[i].parents[pIndex]))
+                hierarchy.push(responseObject[i].parents[pIndex].name + "|" + responseObject[i].description);
+                if (!searchInArray(subjects, responseObject[i].parents[pIndex].name))
                 {
-                    subjects.push(responseObject[i].parents[pIndex]);
+                    subjects.push(responseObject[i].parents[pIndex].name);
                 }
             }
         }
@@ -400,14 +401,15 @@ function responseTags(responseObject)
  */
 function deleteByConfidence(responseObject, confidence)
 {
+    var outputArray = [];
     for (var i = 0; i < responseObject.length; i++)
     {
-        if (responseObject[i].confidence < i)
+        if (responseObject[i].confidence >= confidence)
         {
-            responseObject.splice[i,1];
+            outputArray.push(responseObject[i]);
         }
     }
-    return responseObject;
+    return outputArray;
 }
 
 /**
@@ -475,7 +477,9 @@ function searchInDescription(array, value)
 */
 ModifyTags.prototype.canRun = function()
  {
-	// Must be running in Bridge & have a selection
+    // Must be running in Bridge & have a selection
+	$.writeln(BridgeTalk.appName);
+    
 	if( (BridgeTalk.appName == "bridge") && (app.document.selectionLength == 1)) {
 		return true;
 	}
