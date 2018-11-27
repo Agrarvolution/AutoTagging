@@ -116,7 +116,8 @@ function handleRekognitionResponse(responseJSON)
                 parents.push = rekognitionObject.Labels[i].Parents[pIndex];
             }
             
-            if (responsePart.description === 'string' || responsePart.description instanceof String)
+            var responsePart = rekognitionObject.Labels[i];
+            if (responsePart.Name === 'string' || responsePart.Name instanceof String)
             {
                 var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, parents);
                 labelNew.clamp();
@@ -126,7 +127,7 @@ function handleRekognitionResponse(responseJSON)
         }
         else if (rekognitionObject.Labels[i].Name && rekognitionObject.Labels[i].Confidence)
         {
-            if (responsePart.description === 'string' || responsePart.description instanceof String)
+            if (responsePart.Name === 'string' || responsePart.Name instanceof String)
             {
                 var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, []);
                 labelNew.clamp();

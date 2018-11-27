@@ -41,5 +41,3 @@ Label.prototype.sanitize = function()
 {
     
 }
-
-module.exports = this;

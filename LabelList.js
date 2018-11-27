@@ -1,4 +1,5 @@
 
+var labels = [];
 /**
  * Stores and processes all the labels for a picture
  * @param {array} labels 

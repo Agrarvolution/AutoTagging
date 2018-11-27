@@ -335,6 +335,15 @@ function writeTags(xmp, responseObject, confidence)
     respondTags.subjects = stripArray(respondTags.subjects, existingTags.subjects);
     respondTags.hierarchy = stripArray(respondTags.hierarchy, existingTags.hierarchy);
 
+    if (!respondTags.subjects)
+    {
+        respondTags.subjects = [];
+    }
+    if (!respondTags.hierarchy)
+    {
+        respondTags.hierarchy = [];
+    }
+
     for (var i = 0; i < respondTags.subjects.length; i++)
     {
         xmp.appendArrayItem(XMPConst.NS_DC, "subject", respondTags.subjects[i], 0, XMPConst.ARRAY_IS_ORDERED);
@@ -378,6 +387,11 @@ function responseTags(responseObject)
 {
     var subjects = [];
     var hierarchy = [];
+
+    if (!responseObject)
+    {
+        responseObject = [];
+    }
 
     for (var i = 0; i < responseObject.length; i++)
     {
