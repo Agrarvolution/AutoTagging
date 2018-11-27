@@ -4,15 +4,15 @@
 
  */
 
-#include 'EventManager.jsinc'
 #include "js/libs/json2.js"  
 
 var imagePath;
-var recognitionLabelScript = require('RecognitionLabels');
+var recognitionLabelScript = require('AWS/RecognitionLabels');
 var visionLabelScript = require('VisionLabels');
 var combineScript = require('Combinescript');
 var modifyTagsScript = require('ModifyTags');
 var labels = require('Label');
+var labelList = require('LabelList');
 
 function main()
 {
@@ -31,7 +31,7 @@ function findLabels()
         var recognitionObject = handleRekognitionResponse(jsonAWS);
         var visionObject = handleVisionResponse(jsonVision);
 
-        var totalJSON = combineScript.getSingleList(recognitionObject, visionObject);
+        labelList = combineScript.getSingleList(recognitionObject, visionObject);
     }
 }
 
@@ -76,10 +76,13 @@ function handleVisionResponse(responseJSON)
         var responsePart = visionObject.responses[0].labelAnnotations[i];
         if (responsePart.description && responsePart.score)
         {
-            var labelNew = new Label(responsePart.description, responsePart.score, []);
-            labelNew.clamp();
-            labelNew.sanitize();
-            tagArray.push(labelNew);
+            if (responsePart.description === 'string' || responsePart.description instanceof String)
+            {
+                var labelNew = new Label(responsePart.description, responsePart.score, []);
+                labelNew.clamp();
+                labelNew.sanitize();
+                tagArray.push(labelNew);
+            }
         }
     }
 
@@ -112,17 +115,24 @@ function handleRekognitionResponse(responseJSON)
             {
                 parents.push = rekognitionObject.Labels[i].Parents[pIndex];
             }
-            var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, parents);
-            labelNew.clamp();
-            labelNew.sanitize();
-            tagArray.push(labelNew);
+            
+            if (responsePart.description === 'string' || responsePart.description instanceof String)
+            {
+                var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, parents);
+                labelNew.clamp();
+                labelNew.sanitize();
+                tagArray.push(labelNew);
+            }
         }
         else if (rekognitionObject.Labels[i].Name && rekognitionObject.Labels[i].Confidence)
         {
-            var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, []);
-            labelNew.clamp();
-            labelNew.sanitize();
-            tagArray.push(labelNew);
+            if (responsePart.description === 'string' || responsePart.description instanceof String)
+            {
+                var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, []);
+                labelNew.clamp();
+                labelNew.sanitize();
+                tagArray.push(labelNew);
+            }
         }
     }
     return tagArray;

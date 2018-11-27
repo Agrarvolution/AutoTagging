@@ -37,11 +37,12 @@ function stripArray(decider)
  */
 function deleteByConfidence(confidence)
 {
+    var newLabelArray = [];
     for (var i = 0; i < labels.length; i++)
     {
-        if (labels[i].confidence < confidence)
+        if (labels[i].confidence >= confidence)
         {
-            labels.splice(i--, 1);
+            newLabelArray.push(labels[i]);
         }
     }
 }
@@ -50,11 +51,11 @@ function deleteByConfidence(confidence)
     check if array contains value
     because indexOf doesn't work
     */
-   function searchInArray(array, value) 
+   function searchInArray(value) 
    {
-       for (var i = 0; i < array.length; i++) 
+       for (var i = 0; i < labels.length; i++) 
        {
-           if (array[i].value === value) 
+           if (labels[i].value === value) 
            {
                return true;
            }
@@ -81,36 +82,43 @@ function searchInName(value)
 
 /**
  * Sanitizes the description & parents of the array, and removes items from the array that aren't a String.
- * @param {array} array 
  */
-function sanitizeArray(array)
+function sanitizeArray()
 {
     var parentIndex = 0;
     //iterate for description
-    for (var i = 0; i < array.length; i++)
+    for (var i = 0; i < labels.length; i++)
     {
-        if (typeof array[i].description === 'string' || array[i].description instanceof String)
+        if (typeof labels[i].name === 'string' || labels[i].name instanceof String)
         {
-            array[i].description = sanitizeString(array[i].description);
+            labels[i].name = sanitizeString(labels[i].name);
             
             //iterate for parent description
 
-            for (parentIndex = 0; parentIndex < array[i].parents.length; parentIndex++)
+            for (parentIndex = 0; parentIndex < labels[i].parents.length; parentIndex++)
             {
-                if (typeof array[i].parents[parentIndex].name === 'string' || array[i].parents[parentIndex].name instanceof String)
+                if (typeof labels[i].parents[parentIndex].name === 'string' || labels[i].parents[parentIndex].name instanceof String)
                 {
-                    array[i].parents[parentIndex].name = sanitizeString(array[i].parents[parentIndex].name);
+                    labels[i].parents[parentIndex].name = sanitizeString(labels[i].parents[parentIndex].name);
                 }
                 else 
                 {
-                    array.parents.splice(i, 1);
+                    labels.parents.splice(parentIndex--, 1);
                 }
             }
         }
         else 
         {
-            array.splice(i, 1);
+            labels.splice(i--, 1);
         }
     }
-    return array;
+}
+
+/**
+ * Sanitation method for a single string
+ * @param {string} text 
+ */
+function sanitizeString(text)
+{
+    return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").replace("\(^[\s\n\r\t\x0B]+)|([\s\n\r\t\x0B]+$)/g", "");
 }
