@@ -1,14 +1,24 @@
-var labels = function getLabels(path) {
-    return new Promise(resolve => {
+function RecognitionLabels()
+{
+    
+}
+
+RecognitionLabels.prototype.getLabels = function(path)
+{
+    return new Promise(resolve =>
+        {
         // Load the SDK and base64encoder
         const AWS = require('aws-sdk');
         const image2base64 = require('image-to-base64');
         
         image2base64(path) // you can also to use url
-            .then((response) => {
+            .then((response) =>
+            {
                 // console.log(response); //cGF0aC90by9maWxlLmpwZw==
-                var params = {
-                    Image: {
+                var params =
+                {
+                    Image:
+                    {
                         Bytes: Buffer.from(response, 'base64')
                     },
                     MaxLabels: 20,
@@ -16,12 +26,16 @@ var labels = function getLabels(path) {
                 };
                 
                 var rekognition = new AWS.Rekognition({ apiVersion: '2016-06-27', region: 'us-west-2' });
-                rekognition.detectLabels(params, (err, data) => {
-                    if (err) {
+                rekognition.detectLabels(params, (err, data) =>
+                {
+                    if (err)
+                    {
                         console.error(err);
                         // console.error(err.stack);
                         resolve(-1); // ERROR!
-                    } else {
+                    }
+                    else
+                    {
                         // console.log(data);
                         resolve(data); // return the labels
                     }
@@ -33,5 +47,3 @@ var labels = function getLabels(path) {
             });
     });
 };
-
-module.exports = labels;

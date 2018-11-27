@@ -1,4 +1,7 @@
+function CombineScript()
+{
 
+}
 
 /**
  * Processes responses from Google Vision and Amazon Rekognition
@@ -6,7 +9,7 @@
  * @param {array} visionResponse 
  * @param {array} rekognitionResponse 
  */
-function processResponses(visionObject, rekognitionObject)
+CombineScript.prototype.getSingleList = function(visionObject, rekognitionObject)
 {
     var outputObject = [];
 

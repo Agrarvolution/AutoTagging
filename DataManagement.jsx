@@ -4,14 +4,13 @@
 
  */
 
-#include "js/libs/json2.js"  
-
-var recognitionLabelScript = require('AWS/RecognitionLabels');
-var visionLabelScript = require('VisionLabels');
-var combineScript = require('Combinescript');
-var modifyTagsScript = require('ModifyTags');
-var labels = require('Label');
-var labelList = require('LabelList');
+#include "js/libs/json2.js"
+#include "AWS/RekognitionLabels.js"
+//#include "VisionLabels.js"
+#include "CombineScript.jsx"
+#include "ModifyTags.jsx"
+#include "Label.js"
+#include "LabelList.js"
 
 function main()
 {
@@ -32,7 +31,7 @@ function findLabels()
         var recognitionObject = handleRekognitionResponse(jsonAWS);
         var visionObject = handleVisionResponse(jsonVision);
 
-        labelList.labels = combineScript.getSingleList(recognitionObject, visionObject);
+        labelList.labels = CombineScript.getSingleList(recognitionObject, visionObject);
     }
 }
 
@@ -43,7 +42,7 @@ function getImagePath()
 
 function sendToAWS(imagePath)
 {
-    return recognitionLabelScript.getLabels(imagePath);
+    return RecognitionLabels.getLabels(imagePath);
 }
 
 function sendToVision(imagePath)
