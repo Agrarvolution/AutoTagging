@@ -298,7 +298,26 @@ function sanitizeString(text)
     return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").replace("\(^[\s\n\r\t\x0B]+)|([\s\n\r\t\x0B]+$)/g", "");
 }
 
+/**
+ * Stores the label list items into the XMP-File with atdata: property.
+ * @param {object} xmp 
+ * @param {array} responseObject 
+ */
+function storeResponse(xmp, responseObject)
+{
+    var tagNamespace = "http://ns.adobe.autotaggingJSON/";
+    var tagPrefix = "atdata:";
+    XMPMeta.registerNamespace(tagNamespace, tagPrefix);
+    //xmp.deleteProperty(tagNamespace, "labelListJSON"); // not necessary
+    xmp.setProperty(tagNamespace, "labelListJSON", JSON.stringify(responseObject));
 
+    //Test write implementation
+    /** 
+    var test = xmp.getProperty(tagNamespace, "labelListJSON", XMPConst.STRING);
+    $.writeln(test);
+    var testObject = JSON.parse(test);
+    */
+}
 /**
  * Has to run after XMP was initialized.
  * @param {object} xmp 
@@ -307,6 +326,8 @@ function sanitizeString(text)
  */
 function writeTags(xmp, responseObject, confidence)
 {
+    storeResponse(xmp, responseObject);
+    
     var existingTags = readTags(xmp);
     responseObject = deleteByConfidence(responseObject, confidence);
     var respondTags = responseTags(responseObject);
@@ -322,6 +343,11 @@ function writeTags(xmp, responseObject, confidence)
     {
         xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", respondTags.hierarchy[i], 0, XMPConst.ARRAY_IS_ORDERED); 
     }
+
+
+    
+
+
     return true;
 }
 
@@ -358,8 +384,6 @@ function responseTags(responseObject)
         subjects.push(responseObject[i].description);
         if (responseObject[i].parents)
         {
-            $.writeln("index: " +i);
-            $.writeln(responseObject[i].parents.length);
             for (var pIndex = 0; pIndex < responseObject[i].parents.length; pIndex++)
             {
                 hierarchy.push(responseObject[i].parents[pIndex].name + "|" + responseObject[i].description);
