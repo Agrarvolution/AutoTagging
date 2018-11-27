@@ -16,7 +16,7 @@ function main()
 {
     imagePath = getImagePath();
 
-    labelList = new labelList([], imagePath);
+    labelList = new LabelList([], imagePath);
 
     findLabels();
 }
