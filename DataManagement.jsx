@@ -61,11 +61,11 @@ function handleVisionResponse(responseJSON)
     var tagArray = [];
 
     // check validity
-    if (!visionObject.reponses) 
+    if (!visionObject.responses) 
     {
         return [];
     }
-    else if (!visionObject.reponses[0].labelAnnotations) 
+    else if (!visionObject.responses[0].labelAnnotations) 
     {
         return [];
     }
@@ -74,12 +74,12 @@ function handleVisionResponse(responseJSON)
     for (var i = 0; i < visionObject.responses[0].labelAnnotations.length; i++) 
     {
         var responsePart = visionObject.responses[0].labelAnnotations[i];
-        if (reponsePart.description && reponsePart.score)
+        if (responsePart.description && responsePart.score)
         {
-            var labelNew = new Label(reponsePart.description, reponsePart.score, []);
-            tagArray.push(labelNew);
-            labelNew.sanitize();
+            var labelNew = new Label(responsePart.description, responsePart.score, []);
             labelNew.clamp();
+            labelNew.sanitize();
+            tagArray.push(labelNew);
         }
     }
 
@@ -112,14 +112,20 @@ function handleRekognitionResponse(responseJSON)
             {
                 parents.push = rekognitionObject.Labels[i].Parents[pIndex];
             }
-            tagArray.push({name: rekognitionObject.Labels[i].Name, confidence: rekognitionObject.Labels[i].Confidence, parents: parents});
+            var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, parents);
+            labelNew.clamp();
+            labelNew.sanitize();
+            tagArray.push(labelNew);
         }
         else if (rekognitionObject.Labels[i].Name && rekognitionObject.Labels[i].Confidence)
         {
-            tagArray.push({name: rekognitionObject.Labels[i].Name, confidence: rekognitionObject.Labels[i].Confidence, parents: []});
+            var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, []);
+            labelNew.clamp();
+            labelNew.sanitize();
+            tagArray.push(labelNew);
         }
     }
-    return clampConfidence(sanitizeArray(tagArray));
+    return tagArray;
 }
 
 

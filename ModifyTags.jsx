@@ -475,7 +475,9 @@ function searchInDescription(array, value)
 */
 ModifyTags.prototype.canRun = function()
  {
-	// Must be running in Bridge & have a selection
+    // Must be running in Bridge & have a selection
+	$.writeln(BridgeTalk.appName);
+    
 	if( (BridgeTalk.appName == "bridge") && (app.document.selectionLength == 1)) {
 		return true;
 	}
