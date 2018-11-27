@@ -9,6 +9,7 @@ function Label(name, confidence, parents)
 
 Label.prototype.toJSON = function()
 {
+    /*
     var parentsJSON = { parents : [] };
 
     for (var i = 0; i < this.parents.length; i++)
@@ -19,6 +20,9 @@ Label.prototype.toJSON = function()
     }
 
     return JSON.stringify({name : this.name, confidence : this.confidence, parents : parentsJSON});
+    */
+
+    return JSON.stringify(this);
 }
 
 Label.prototype.square = function()
