@@ -6,7 +6,6 @@
 
 #include "js/libs/json2.js"  
 
-var imagePath;
 var recognitionLabelScript = require('AWS/RecognitionLabels');
 var visionLabelScript = require('VisionLabels');
 var combineScript = require('Combinescript');
@@ -18,6 +17,8 @@ function main()
 {
     imagePath = getImagePath();
 
+    labelList = new labelList([], imagePath);
+
     findLabels();
 }
 
@@ -25,13 +26,13 @@ function findLabels()
 {
     if (imagePath !== null && imagePath !== "")
     {
-        var jsonAWS = sendToAWS(imagePath);
-        var jsonVision = sendToVision(imagePath);
+        var jsonAWS = sendToAWS(labelList.imagePath);
+        var jsonVision = sendToVision(labelList.imagePath);
 
         var recognitionObject = handleRekognitionResponse(jsonAWS);
         var visionObject = handleVisionResponse(jsonVision);
 
-        labelList = combineScript.getSingleList(recognitionObject, visionObject);
+        labelList.labels = combineScript.getSingleList(recognitionObject, visionObject);
     }
 }
 
