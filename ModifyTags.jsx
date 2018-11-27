@@ -83,7 +83,7 @@ ModifyTags.prototype.run = function()
         var visionResponse = '{"responses":[{"labelAnnotations":[{"mid":"/m/0bt9lr","description":"dog","score":0.97346616},{"mid":"/m/09686","description":"vertebrate","score":0.85700572},{"mid":"/m/01pm38","description":"clumber spaniel","score":0.84881884},{"mid":"/m/04rky","description":"mammal","score":0.847575},{"mid":"/m/02wbgd","description":"english cocker spaniel","score":0.75829375}]}]}';
         
         
-        var threshold = 0.90;
+        var threshold = 0.80;
         writeTags(xmp, processResponses(visionResponse, rekognitionResponse), threshold);
         
     /*
@@ -375,12 +375,14 @@ function responseTags(responseObject)
         subjects.push(responseObject[i].description);
         if (responseObject[i].parents)
         {
-            for (var pIndex = 0; pIndex < responseObject[i].parents.length; i++)
+            $.writeln("index: " +i);
+            $.writeln(responseObject[i].parents.length);
+            for (var pIndex = 0; pIndex < responseObject[i].parents.length; pIndex++)
             {
-                hierarchy.push(responseObject[i].parents[pIndex] + "|" + responseObject[i].description);
-                if (!searchInArray(subjects, responseObject[i].parents[pIndex]))
+                hierarchy.push(responseObject[i].parents[pIndex].name + "|" + responseObject[i].description);
+                if (!searchInArray(subjects, responseObject[i].parents[pIndex].name))
                 {
-                    subjects.push(responseObject[i].parents[pIndex]);
+                    subjects.push(responseObject[i].parents[pIndex].name);
                 }
             }
         }
@@ -399,14 +401,15 @@ function responseTags(responseObject)
  */
 function deleteByConfidence(responseObject, confidence)
 {
+    var outputArray = [];
     for (var i = 0; i < responseObject.length; i++)
     {
-        if (responseObject[i].confidence < i)
+        if (responseObject[i].confidence >= confidence)
         {
-            responseObject.splice[i,1];
+            outputArray.push(responseObject[i]);
         }
     }
-    return responseObject;
+    return outputArray;
 }
 
 /**
