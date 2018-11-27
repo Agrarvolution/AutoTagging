@@ -57,12 +57,6 @@ ModifyTags.prototype.run = function()
 		// Get the XMP packet as a string and create the XMPMeta object
 		var xmp = new XMPMeta(md.serialize());
 		
-		$.writeln("SnpModifyXML: About to modify XMP data for " + thumb.name);
-
-		$.writeln("XMP packet before modifications:");
-		$.writeln("-------------------------------------------------");
-		$.writeln(xmp.dumpObject());
-		
 		// Change the creator tool
 		xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by ModifyTags");
 		
@@ -78,24 +72,13 @@ ModifyTags.prototype.run = function()
                     
         var JSONtags = '{{"Landschaft":[{"Wald":["Laubwald"]},{"Landschaftsobjekte":["Brücke","Bach","Schild"]}],"Personen":["Kind","Lukas"]}';
     
-    //string eingabe geht nicht über mehrere Zeilen
+        //string eingabe geht nicht über mehrere Zeilen
         var rekognitionResponse = '{"LabelModelVersion":"V1","Labels":[{"Confidence":"0.98","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Laubwald","Parents":[{"Name":"Landschaft"}]},{"Confidence":"0.90","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"Brücke","Parents":[{"Name":"Bauwerke"}]},{"Confidence":"0.91","Instances":[{"BoundingBox":{"Height":"0","Left":"0","Top":"0","Width":"0"},"Confidence":"0.95"}],"Name":"dog","Parents":[{}]}],"OrientationCorrection":"???"}';
         var visionResponse = '{"responses":[{"labelAnnotations":[{"mid":"/m/0bt9lr","description":"dog","score":0.97346616},{"mid":"/m/09686","description":"vertebrate","score":0.85700572},{"mid":"/m/01pm38","description":"clumber spaniel","score":0.84881884},{"mid":"/m/04rky","description":"mammal","score":0.847575},{"mid":"/m/02wbgd","description":"english cocker spaniel","score":0.75829375}]}]}';
         
         
         var threshold = 0.80;
         writeTags(xmp, processResponses(visionResponse, rekognitionResponse), threshold);
-        
-    /*
-		xmp.appendArrayItem(lrNamespace, "hierarchicalSubject", "Orte|Linz", 0, XMPConst.ARRAY_IS_UNORDERED);
-         xmp.appendArrayItem(lrNamespace, "hierarchicalSubject", "Orte|Budapest", 0, XMPConst.ARRAY_IS_UNORDERED);		
-         
-		xmp.appendArrayItem(XMPConst.NS_DC, "subject", "Linz", 0, XMPConst.ARRAY_IS_UNORDERED);
-		xmp.appendArrayItem(XMPConst.NS_DC, "subject", "Budapest", 0, XMPConst.ARRAY_IS_UNORDERED);
-*/
-		$.writeln("XMP packet after modifications:");
-		$.writeln("-------------------------------------------------");
-		$.writeln(xmp.dumpObject());
 	
 		// Write the packet back to the selected file
 		var updatedPacket = xmp.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
