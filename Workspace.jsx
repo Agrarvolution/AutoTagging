@@ -94,11 +94,18 @@ SnpCreateTabbedPaletteScriptUI.prototype.run = function()
 			txt.text = parseInt(txt.text) - 1;
 		}
 	}
-    $.writeln(app.document.browserMode);
-    $.writeln(app.document.workspace.id);
-    var test = app.document;
-    app.document.maximize();
-    app.document.setWorkspace("!!-$$$Keywords");
+
+    try
+    {
+        app.document.setWorkspace("keywords");
+    }
+    catch (e)
+    {
+        $writeln(e);
+    }
+    
+    test = app.document;
+    
 	// Add the palette to all open Bridge browser windows
 	/*for(var i = 0;i < app.documents.length;i++)
 	{
