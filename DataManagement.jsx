@@ -5,6 +5,7 @@
  */
 
 #include "js/libs/json2.js"
+#include "js/libs/promise.js"
 #include "AWS/RekognitionLabels.js"
 //#include "VisionLabels.js"
 #include "CombineScript.jsx"
@@ -42,7 +43,8 @@ function getImagePath()
 
 function sendToAWS(imagePath)
 {
-    return RecognitionLabels.getLabels(imagePath);
+    var recLabels = new RecognitionLabels();
+    return recLabels.getLabels(imagePath);
 }
 
 function sendToVision(imagePath)

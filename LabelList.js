@@ -1,4 +1,4 @@
-
+﻿
 var labels = [];
 /**
  * Stores and processes all the labels for a picture
@@ -23,11 +23,14 @@ LabelList.prototype.toJSON = function()
  */
 function stripArray(decider)
 {
-    for (var i = 0; i < labels.length; i++)
+    if (labels)
     {
-        if (searchInArray(decider, labels[i]))
+        for (var i = 0; i < labels.length; i++)
         {
-            labels.splice(i--,1);
+            if (searchInArray(decider, labels[i]))
+            {
+                labels.splice(i--,1);
+            }
         }
     }
 }
@@ -38,12 +41,15 @@ function stripArray(decider)
  */
 function deleteByConfidence(confidence)
 {
-    var newLabelArray = [];
-    for (var i = 0; i < labels.length; i++)
+    if (labels)
     {
-        if (labels[i].confidence >= confidence)
+        var newLabelArray = [];
+        for (var i = 0; i < labels.length; i++)
         {
-            newLabelArray.push(labels[i]);
+            if (labels[i].confidence >= confidence)
+            {
+                newLabelArray.push(labels[i]);
+            }
         }
     }
 }
@@ -54,6 +60,8 @@ function deleteByConfidence(confidence)
     */
    function searchInArray(value) 
    {
+    if (labels)
+    {
        for (var i = 0; i < labels.length; i++) 
        {
            if (labels[i].value === value) 
@@ -61,6 +69,7 @@ function deleteByConfidence(confidence)
                return true;
            }
        }
+    }
        return false;
    }
 
@@ -71,11 +80,14 @@ function deleteByConfidence(confidence)
  */
 function searchInName(value) 
 {
-    for (var i = 0; i < labels.length; i++) 
+    if (labels)
     {
-        if (labels[i].name === value) 
+        for (var i = 0; i < labels.length; i++) 
         {
-            return i;
+            if (labels[i].name === value) 
+            {
+                return i;
+            }
         }
     }
     return -1;
@@ -86,31 +98,34 @@ function searchInName(value)
  */
 function sanitizeArray()
 {
-    var parentIndex = 0;
-    //iterate for description
-    for (var i = 0; i < labels.length; i++)
+    if (labels)
     {
-        if (typeof labels[i].name === 'string' || labels[i].name instanceof String)
+        var parentIndex = 0;
+        //iterate for description
+        for (var i = 0; i < labels.length; i++)
         {
-            labels[i].name = sanitizeString(labels[i].name);
-            
-            //iterate for parent description
-
-            for (parentIndex = 0; parentIndex < labels[i].parents.length; parentIndex++)
+            if (typeof labels[i].name === 'string' || labels[i].name instanceof String)
             {
-                if (typeof labels[i].parents[parentIndex].name === 'string' || labels[i].parents[parentIndex].name instanceof String)
+                labels[i].name = sanitizeString(labels[i].name);
+                
+                //iterate for parent description
+
+                for (parentIndex = 0; parentIndex < labels[i].parents.length; parentIndex++)
                 {
-                    labels[i].parents[parentIndex].name = sanitizeString(labels[i].parents[parentIndex].name);
-                }
-                else 
-                {
-                    labels.parents.splice(parentIndex--, 1);
+                    if (typeof labels[i].parents[parentIndex].name === 'string' || labels[i].parents[parentIndex].name instanceof String)
+                    {
+                        labels[i].parents[parentIndex].name = sanitizeString(labels[i].parents[parentIndex].name);
+                    }
+                    else 
+                    {
+                        labels.parents.splice(parentIndex--, 1);
+                    }
                 }
             }
-        }
-        else 
-        {
-            labels.splice(i--, 1);
+            else 
+            {
+                labels.splice(i--, 1);
+            }
         }
     }
 }
