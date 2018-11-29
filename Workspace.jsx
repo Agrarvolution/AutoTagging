@@ -103,9 +103,15 @@ SnpCreateTabbedPaletteScriptUI.prototype.run = function()
     {
         $writeln(e);
     }
-    
-    test = app.document;
-    
+	
+	if (app.document.workspace.id === "keywords")
+	{
+
+	}
+    var test = app.document;
+    var palettes = app.document.palettes;
+    var contentPane = app.document.palettes[1];
+    var contentPanecontent = app.document.palettes[1].content;
 	// Add the palette to all open Bridge browser windows
 	/*for(var i = 0;i < app.documents.length;i++)
 	{
