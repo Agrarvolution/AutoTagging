@@ -1,4 +1,5 @@
-﻿////////////////////////////////////////////////////////////////////////////
+﻿#include "js/libs/json2.js"  
+////////////////////////////////////////////////////////////////////////////
 // ADOBE SYSTEMS INCORPORATED
 // Copyright 2008-2017 Adobe Systems Incorporated
 // All Rights Reserved
@@ -57,7 +58,70 @@ function SnpCreateTabbedPaletteScriptUI()
 */
 SnpCreateTabbedPaletteScriptUI.prototype.run = function()
 {
+	if(!this.canRun())
+	{
+		return false;
+	}
+
+	// Load the XMP Script library
+	if( xmpLib == undefined ) 
+	{
+		if( Folder.fs == "Windows" )
+		{
+			var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.dll";
+		} 
+		else 
+		{
+			var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.framework";
+		}
 	
+		var libfile = new File( pathToLib );
+		var xmpLib = new ExternalObject("lib:" + pathToLib );
+	}
+
+	
+
+	updateKeywordHandler = function( event ) {  
+		if ( event.object instanceof Document && event.type == 'selectionsChanged') {  
+			if (app.document.selectionLength > 0)
+            {
+				var thumb = app.document.selections[0];
+				if(thumb.hasMetadata)
+				{
+					// Get the metadata object - wait for  valid values
+					var md = thumb.synchronousMetadata;
+					
+					// Get the XMP packet as a string and create the XMPMeta object
+					var xmp = new XMPMeta(md.serialize());
+					
+					// Change the creator tool
+					xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by TagUI");
+					
+					// Change the date modified
+					var d = new XMPDateTime(new Date());
+					//d.convertToLocalTime();
+					xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
+
+					XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
+					var tagList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
+
+					if (tagList)
+					{
+                            $.writeln(tagList);
+						tagList = JSON.parse(tagList);
+					}
+				}
+			}
+            
+            
+            
+            
+			return { handled:true };
+		} 
+	}  
+	app.eventHandlers.push( {handler: updateKeywordHandler} ); 
+
+
 	var retval = true;
 	if(!this.canRun())
 	{
@@ -70,7 +134,7 @@ SnpCreateTabbedPaletteScriptUI.prototype.run = function()
 	function addScriptPalette(doc)
 	{
 		// Create the TabbedPalette object, of type "script"
-		var scriptPalette = new TabbedPalette( doc, "SnpCreateTabbedPaletteScriptUI", "SnpSUIPalette", "script" );
+		var scriptPalette = new TabbedPalette( doc, "SnpCreateTabbedPaletteScriptUI", "SnpSUIPalette", "script", 2, "middle");
 		wrapper.paletteRefs.push(scriptPalette);	
 		// Create a ScriptUI panel to be displayed as the tab contents.
 		var tbPanel = scriptPalette.content.add('panel', [25,15,255,130], 'The Panel');
@@ -95,31 +159,6 @@ SnpCreateTabbedPaletteScriptUI.prototype.run = function()
 		}
 	}
 
-    try
-    {
-        app.document.setWorkspace("keywords");
-    }
-    catch (e)
-    {
-        $writeln(e);
-    }
-	
-	if (app.document.workspace.id === "keywords")
-	{
-
-	}
-    var appDbg = app;
-    var test = app.document;
-    var palettes = app.document.palettes;
-    var contentPane = app.document.palettes[1];
-	var contentPanecontent = app.document.palettes[1].content;
-	
-	var thumbChildren = app.document.thumbnail.children;
-	var thumbChild = thumbChildren[0];
-	var uri = thumbChildren[0].uri;
-
-    app.buildFolderCache(app.document.presentationPath, true);
-    $.writeln(thumbChild.toString());
 	// Add the palette to all open Bridge browser windows
 	/*for(var i = 0;i < app.documents.length;i++)
 	{
