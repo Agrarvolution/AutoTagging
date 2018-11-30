@@ -1,5 +1,5 @@
 ﻿"use strict"
 #include "js/libs/json2.js"
 
-var currentFile = app.document.selections;
-$.writeln(currentFile);
+var currentPreviewFile = app.document.selections[0].core.preview.preview;
+currentPreviewFile.exportTo ("C:/AutoTagging/tempImage.jpg", 10);

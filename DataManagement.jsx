@@ -5,7 +5,7 @@
  */
 
 #include "js/libs/json2.js"
-#include "js/libs/promise.js"
+//#include "js/libs/promise.js"
 #include "AWS/RekognitionLabels.js"
 //#include "VisionLabels.js"
 #include "CombineScript.jsx"
@@ -15,16 +15,16 @@
 
 function main()
 {
-    imagePath = getImagePath();
+    var imagePath = getImagePath();
 
-    labelList = new LabelList([], imagePath);
+    var labelList = new LabelList([], imagePath);
 
-    findLabels();
+    findLabels(labelList);
 }
 
-function findLabels()
+function findLabels(labelList)
 {
-    if (imagePath !== null && imagePath !== "")
+    if (labelList.imagePath !== null && labelList.imagePath !== "")
     {
         var jsonAWS = sendToAWS(labelList.imagePath);
         var jsonVision = sendToVision(labelList.imagePath);
@@ -36,15 +36,35 @@ function findLabels()
     }
 }
 
+/**
+ * Exports the selected image(s) and returns the absolute path to the copy or creates a list of files to tag if multiple images are selected
+ */
 function getImagePath()
 {
-    return "C:/Users/Public/Pictures/Sample Pictures/Wüste.jpg";
+    var imagePath = "C:/AutoTagging/tempImage.jpg";
+
+    /*
+    Handler for multiple selected images
+
+    var selectedFiles = app.document.selections;
+
+    for (var i = 0; i < selectedFiles.length; i++)
+    {
+
+    }
+    */
+
+    var currentPreviewFile = app.document.selections[0].core.preview.preview;
+    currentPreviewFile.exportTo (imagePath, 10);
+
+    return imagePath;
 }
 
 function sendToAWS(imagePath)
 {
-    var recLabels = new RecognitionLabels();
-    return recLabels.getLabels(imagePath);
+    var recognitionLabelsObject = new RecognitionLabels();
+    var recognitionLabels = recognitionLabelsObject.getLabels(imagePath);
+    return recognitionLabels;
 }
 
 function sendToVision(imagePath)
@@ -150,6 +170,6 @@ function handleRekognitionResponse(responseJSON)
 
 
 
-
+// TODO: Event handler anbinden, der onSelectionChanged das script startet
 
 main();
