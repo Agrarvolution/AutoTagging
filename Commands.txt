@@ -1,0 +1,1 @@
+mklink /d "C:\Program Files\Adobe\Adobe Bridge CC 2019\CEP\extensions\AutoTagging" "C:\gitsource"
