@@ -1,0 +1,24 @@
+/* Center checkboxes with label -> only works with size input beforehand */
+.centerItems {
+    float: left;
+    line-height: 1.6em;
+    height: 1.6em;
+    margin: 0px 2px;
+    padding: 0px;
+    font-size: inherit;
+}
+
+.centerItemCheckbox {
+    clear: left;
+}
+/* Reset default style of <p>*/
+p.item {
+    margin: 0;
+    padding: 0;
+}
+/* ToDo Offset for p / container depending on parenting -> first one without one including hiding
+ */
+
+/* ToDo Container Hiding for Dropdown */
+
+/* ToDo layout - Single or Multicolumn & Scolling if content doesn't fit */
