@@ -5,3 +5,4 @@ Uses Amazon Rekognition or Google Cloud to process images uploaded from Adobe Br
 Additional Sourcecode:
 
 JSON-Parsing [json2.js] -> https://github.com/douglascrockford/JSON-js
+Amazon Rekognition API -> https://docs.aws.amazon.com/rekognition/latest/dg/API_Reference.html
