@@ -1,0 +1,162 @@
+html, body {
+    height: 100%;
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #323232;
+    font-family: Lucida Grande, Tahoma, sans-serif;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    font-size: 12px;
+    color: #adadad;
+}
+
+/*
+-----------------------
+ */
+
+div#offline_message {
+    height: inherit;
+    width: 85%;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+}
+
+/*
+-----------------------
+ */
+
+section {
+    margin: 0 0.82em 0;
+}
+
+.heading {
+    margin-top: 0.55em;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.heading.primary {
+    margin-bottom: 3em;
+}
+
+.heading.secondary {
+    margin-bottom: 0.5em;
+}
+
+.top_level_element {
+    color: #cccccc;
+    margin-bottom: 0.3em;
+}
+
+.top_level_element span, img {
+    display: inline;
+    vertical-align: middle;
+    margin: 0;
+}
+
+img.checkbox {
+    border: none;
+    padding: 0;
+    width: 14px;
+    height: 14px;
+    margin-right: 0.1em;
+}
+
+.checkbox.enabled {
+    cursor: pointer;
+}
+
+.checkbox.checked {
+    cursor: pointer;
+}
+
+.checkbox.disabled {
+    cursor: initial;
+}
+
+.second_level_element {
+    display: table;
+    padding-top: 0.2em;
+    padding-left: 3em;
+}
+
+hr.major {
+    border-top: 1px solid #262626;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+hr.minor {
+    border-top: 1px solid #2f2f2f;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+.form_row {
+    display: table-row;
+}
+
+.form_row label, input {
+    display: table-cell;
+}
+
+input {
+    font-family: Lucida Grande, Tahoma, sans-serif;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    font-size: 12px;
+    color: #adadad;
+    background-color: #323232;
+    padding: 0.2em;
+    border: 2px solid #666666;
+    border-radius: 3px;
+}
+
+.form_row label {
+    width: 9em;
+}
+
+.form_row input {
+    width: 15em;
+}
+
+label.number {
+    width: 9em;
+}
+
+input.number {
+    width: 5em;
+    text-align: right;
+}
+
+@media (max-width: 375px) {
+    .form_row label, input {
+        display: block;
+    }
+    
+    label.number {
+        display: inline-block;
+        width: 7em;
+    }
+    
+    input.number {
+        display: inline-block;
+    }
+}
+
+.inactive {
+    color: #666666;
+}
+
+.hidden {
+    display: none;
+}
