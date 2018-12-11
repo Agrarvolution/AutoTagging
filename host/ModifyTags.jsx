@@ -396,7 +396,7 @@ function responseTags(responseObject)
     for (var i = 0; i < responseObject.length; i++)
     {
         subjects.push(responseObject[i].description);
-        if (responseObject[i].parents)
+        if (responseObject[i].parents.length > 0)
         {
             for (var pIndex = 0; pIndex < responseObject[i].parents.length; pIndex++)
             {
