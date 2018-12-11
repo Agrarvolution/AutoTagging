@@ -2,7 +2,26 @@
 @Todo Load items from JSX [JSON]
 written tags -> flat & parented
 discovered tags -> as json object [must be sorted by confidence] check again?
+
+return JSON string / parsed object
  */
+function loadContent()
+{
+    /*
+    response part, written part (=user defined), version history
+    {
+        response: "",
+        saved: "",
+        history: "",
+    }
+    reverse order compared to data management -> parent: [children] instead of child: [parents]
+     */
+    var answer = ""; // placeholder -> replace by call to jsx & XMP parser
+
+
+    var content = JSON.parse(answer);
+    return content;
+}
 
 /*
 @Todo Display JSON items
