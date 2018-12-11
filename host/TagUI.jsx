@@ -105,78 +105,7 @@ SnpCreateTabbedPaletteScriptUI.prototype.run = function()
 					//XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
 					var tagList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
 
-					if (tagList)
-					{
-						$.writeln(tagList);
-						tagList = JSON.parse(tagList);
-					}
-
-					var subjects = [];
-   					var hierarchy = [];
-					for (var i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++) 
-					{
-						subjects.push(xmp.getArrayItem(XMPConst.NS_DC, "subject", i));
-					}
-					for (var i = 1; i <= xmp.countArrayItems("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject"); i++) 
-					{
-						hierarchy.push(xmp.getArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", i));
-					}
-
-					var nodeHierarchy = [];
-					for (i = 0; i < hierarchy; i++) 
-					{
-						var writtenTags = [];
-						var indeces = [];
-						hierarchy[i] = hierarchy[i].value.trim();
-
-						//find division
-						for (var charPosition = 0; charPosition < hierarchy[i]; charPosition++)
-						{
-							if (hierarchy[i].value.charAt(charPosition) === "|")
-							{
-								indices.push(charPosition);
-							}			
-						}
-						//extract text
-						for (charPosition = 0; index < indeces.length; charPosition++) 
-						{
-							if (charPosition === 0)
-							{
-								writtenTags.push(hierarchy[i].value.substr(0, indeces[charPosition].value-1))
-							}
-							else if (charPosition === indeces.length-1)
-							{
-								writtenTags.push(hierarchy[i].value.substr(indeces[charPosition-1].value, indeces.length-1))
-							}
-							else 
-							{
-								writtenTags.push(hierarchy[i].value.substr(indeces[charPosition-1].value, indeces[charPosition].value))
-							}
-						}
-						//delete empty strings (in case of wrong insertion into XMP -> |value| instead of value|value|value)
-						if (writtenTags[0].value === "")
-						{
-							writtenTags.splice(0,1);
-						}
-						if (writtenTags[writtenTags.length-1].value === "")
-						{
-							writtenTags.splice(writtenTags.length-1,1);
-						}
-						//insert into node tree
-						for (var tagIndex = 0; tagIndex < writtenTags.length; tagIndex++)
-						{
-							var index = findInHierarchy(nodeHierarchy, writtenTags[i].value);
-							if (index < 0)
-							{
-								nodeHierarchy.push({
-									name = writtenTags[i].value,
-									confidence = 1.0,
-									children = []
-								})
-							}
-						}
-					}
-
+					//@Todo copy from SaveMetaData
 				}
 			}
             
@@ -308,15 +237,3 @@ if(typeof(SnpCreateTabbedPaletteScriptUI_unitTest) == "undefined") {
     new SnpCreateTabbedPaletteScriptUI().run();
 }
 
-
-function findInHierarchy (array, targetString)
-{
-	for (var i = 0; i < array.length; i++) 
-	{
-		if (array[i].name === targetString) 
-		{
-			return i;
-		}
-	}
-	return -1;
-}
