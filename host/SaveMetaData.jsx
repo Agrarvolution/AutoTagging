@@ -75,6 +75,8 @@ SaveMetaData.prototype.run = function()
             for (var i = 0; i < tagList.length; i++)
             {
                 var parentIndices = [];
+
+                //insert parents
                 for (var pi = 0; pi < tagList[i].parents.length; pi++)
                 {
                     var index = -1;
@@ -89,7 +91,8 @@ SaveMetaData.prototype.run = function()
                         response.push({
                             name: name,
                             confidence: 1.0,
-                            children: []
+                            children: [],
+                            ticked: false
                         });
                         parentIndices.push(response.length-1);
                     }
@@ -98,15 +101,18 @@ SaveMetaData.prototype.run = function()
                         parentIndices.push(index);
                     }
                 }
+                //setup child
                 var child = {
                     name: tagList[i].description,
                     confidence: tagList[i].confidence,
-                    children: []
+                    children: [],
+                    ticked: false
                 };
                 for (pi = 0; pi < parentIndices.length; pi++)
                 {
                     if (findInHierarchy(response[parentIndices[pi]], tagList[i].description) < 0)
                     {
+                        //set parent reference
                         response[parentIndices[pi]].children.push(child);
                     }
                 }
@@ -117,12 +123,12 @@ SaveMetaData.prototype.run = function()
             }
         }
 
-        //var subjects = [];
+        var subjects = [];
         var hierarchy = [];
-        /*for (var i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++) 
+        for (var i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++) 
         {
             subjects.push(xmp.getArrayItem(XMPConst.NS_DC, "subject", i));
-        }*/
+        }
         for (var i = 1; i <= xmp.countArrayItems("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject"); i++) 
         {
             hierarchy.push(xmp.getArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", i));
@@ -181,7 +187,8 @@ SaveMetaData.prototype.run = function()
                     tempHierarchy.push({
                         name: writtenTags[tagIndex],
                         confidence: 1.0,
-                        children: []
+                        children: [],
+                        ticked: false
                     });
                     tempHierarchy = tempHierarchy[tempHierarchy.length - 1].children;
                 }
@@ -190,12 +197,41 @@ SaveMetaData.prototype.run = function()
                     tempHierarchy = tempHierarchy[index].children;
                 }
             }
-
         }
 
-        sortArrayOutput(response);
+        //check ticks
+        depthSearchTick(nodeHierarchy,subjects);
+
+        //combine written tags and reponse tags -> could be made into a depth/breadth traverse method
+        for (var i = 0; i < response.length; i++)
+        {
+            var index = findInHierarchy(nodeHierarchy, response[i].name)
+            if (index > 0) 
+            {
+                nodeHierarchy[index].confidence = response[i].confidence;
+                for (var ci = 0; ci < response[i].children; ci++)
+                {
+                    var cIndex = findInHierarchy(nodeHierarchy[index].children, response[i].children[ci].name);
+                    if (cIndex > 0)
+                    {
+                        nodeHierarchy[index].children[cIndex] = response[i].children[ci].confidence;
+                    }
+                    else
+                    {
+                        //add if non existent
+                        nodeHierarchy[index].children.push(response[i].children[ci]);
+                    }
+                }
+            }
+            else 
+            {
+                //add if non existent
+                nodeHierarchy.push(response[i]);
+            }
+        }
+
         sortArrayOutput(nodeHierarchy);
-        var finalOutput = {response: response, saved: nodeHierarchy};
+        var finalOutput = {response: tagList, content: nodeHierarchy, version: ""};
 
         var folderPath = encodeURI("/jsonTemp");
         var outputFile = new File(folderPath + encodeURI("/output.json")); 
@@ -208,6 +244,47 @@ SaveMetaData.prototype.run = function()
     }
 }
 
+/**
+ * Traverses item tree to tick all items.
+ * @param {*} inputTree 
+ * @param {array} searchArray 
+ */
+function depthSearchTick(inputTree, searchArray)
+{
+    traverseStack = [];
+    traverseStack.push(inputTree);
+    while (traverseStack.length != 0)
+    {
+        var array = traverseStack.pop();
+        for (var i = 0; i < array.length; i++)
+        {
+            array[i].ticked = isTicked(array[i], searchArray);
+            traverseStack.push(array[i].children);
+        }
+    }
+}
+/**
+ * Searches through searchArray if name exists
+ * @param {Item} item 
+ * @param {array} searchArray 
+ * @return true if item exists (is ticked), false if it doesn't
+ */
+function isTicked(item, searchArray)
+{
+    for (var i = 0; i < searchArray.length; i++)
+    {
+        if (searchArray[i].toString().toLowerCase() === item.name.toLowerCase())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * traverse through object tree to sort all child nodes
+ * @param {array} outPutArray 
+ */
 function sortArrayOutput (outPutArray)
 {
     traverseStack = [];
@@ -223,6 +300,10 @@ function sortArrayOutput (outPutArray)
     }
 }
 
+/**
+ * Sort item array by descending confidence and by ascending name
+ * @param {array} outputObj 
+ */
 function sortOutput (outputObj)
 {
     outputObj.sort(function(a, b) {
@@ -232,13 +313,18 @@ function sortOutput (outputObj)
     });
 }
 
+/**
+ * @param {array} array
+ * @param {string} search target
+ * @return index if string exists, -1 if it doesn't
+ */
 function findInHierarchy (array, targetString)
 {
     if (array[0])
     {
         for (var i = 0; i < array.length; i++) 
         {
-            if (array[i].name === targetString) 
+            if (array[i].name.toLowerCase() === targetString.toLowerCase()) 
             {
                 return i;
             }
