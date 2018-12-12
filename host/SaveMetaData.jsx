@@ -166,10 +166,6 @@ SaveMetaData.prototype.run = function()
                 {
                     currentIndex = hierarchyText.length;
                 }
-                
-                $.writeln(hierarchyText.substr(lastIndex, currentIndex-lastIndex));
-                    
-
                 writtenTags.push(hierarchyText.substr(lastIndex, currentIndex-lastIndex));
                 
                 lastIndex = currentIndex+1;
@@ -180,7 +176,6 @@ SaveMetaData.prototype.run = function()
             for (var tagIndex = 0; tagIndex < writtenTags.length; tagIndex++)
             {
                     //handle parent -> exclude from loop cause always there?
-                $.writeln(writtenTags[tagIndex]);
                 var index = findInHierarchy(tempHierarchy, writtenTags[tagIndex]);
                 if (index < 0)
                 {
@@ -238,7 +233,7 @@ SaveMetaData.prototype.run = function()
 
         writeFile(outputFile, JSON.stringify(finalOutput));
             
-        $.write("Output JSON created! @" + outputFile);
+        $.writeln("Output JSON created! @" + outputFile);
         
         return true;
     }
