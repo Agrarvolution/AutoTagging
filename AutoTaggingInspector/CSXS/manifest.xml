@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<!-- https://github.com/Adobe-CEP/Getting-Started-guides -->
+
+<!-- ExtensionBundleId: A unique bundle ID you assign to your extension like com.my.test -->
+<ExtensionManifest ExtensionBundleId="com.AutoTagging" ExtensionBundleVersion="1.0.0" Version="7.0"> <!-- MAJOR-VERSION-UPDATE-MARKER -->
+    <ExtensionList>
+        <!-- Extension Id: A unique ID you assign to your extension. It usually follows this syntax: ExtensionBundleID + .panel = com.my.test.panel (note that this ID appears twice in the manifest) -->
+        <Extension Id="com.AutoTagging.panel" Version="1.0.0"/>
+    </ExtensionList>
+    <ExecutionEnvironment>
+        <HostList>
+            <!-- Host Name & Version: List of host application IDs and versions that your extension is built to support. To learn more, take a look at the Adobe CEP HTML Extension Cookbook -->
+            <Host Name="KBRG" Version="[8.0,99.9]"/>
+        </HostList>
+        <LocaleList>
+            <Locale Code="All"/>
+        </LocaleList>
+        <RequiredRuntimeList>
+            <RequiredRuntime Name="CSXS" Version="9.0"/> <!-- MAJOR-VERSION-UPDATE-MARKER -->
+        </RequiredRuntimeList>
+    </ExecutionEnvironment>
+    <DispatchInfoList>
+        <!-- Extension Id: A unique ID you assign to your extension. It usually follows this syntax: ExtensionBundleID + .panel = com.my.test.panel (note that this ID appears twice in the manifest) -->
+        <Extension Id="com.AutoTagging.panel">
+            <DispatchInfo>
+                <Resources>
+                    <!-- MainPath: Path to your index.html. Make sure the path to this file is from the top level directory of your code base-->
+                    <MainPath>./client/index.html</MainPath>
+                    <!-- ScriptPath: Path to your index.jsx. Make sure the path to this file is from the top level directory of your code base -->
+                    <ScriptPath>./host/index.jsx</ScriptPath>
+                    <CEFCommandLine>
+                        <Parameter>--enable-nodejs</Parameter>
+                    </CEFCommandLine>
+                </Resources>
+                <Lifecycle>
+                    <AutoVisible>true</AutoVisible>
+                    <StartOn>
+                        <Event>applicationActivate</Event>
+                    </StartOn>
+                </Lifecycle>
+                <UI>
+                    <Type>Embedded</Type>
+                    <!-- Menu: Your extension name that will appear in the dropdown menu of the host app(s) -->
+                    <Menu>Auto-Tagging</Menu>
+                    <Geometry>
+                        <Size>
+                            <!-- Size: Default size of your extension -->
+                            <Height>700</Height>
+                            <Width>350</Width>
+                        </Size>
+                    </Geometry>
+                    <Icons/>
+                </UI>
+            </DispatchInfo>
+        </Extension>
+    </DispatchInfoList>
+</ExtensionManifest>

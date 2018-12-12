@@ -226,7 +226,7 @@ SaveMetaData.prototype.run = function()
         }
 
         sortArrayOutput(nodeHierarchy);
-        var finalOutput = {response: tagList, content: nodeHierarchy, version: ""};
+        var finalOutput = {response: tagList, content: nodeHierarchy, history: ""};
 
         var folderPath = encodeURI("/jsonTemp");
         var outputFile = new File(folderPath + encodeURI("/output.json")); 
@@ -248,7 +248,7 @@ function depthSearchTick(inputTree, searchArray)
 {
     traverseStack = [];
     traverseStack.push(inputTree);
-    while (traverseStack.length != 0)
+    while (traverseStack.length !== 0)
     {
         var array = traverseStack.pop();
         for (var i = 0; i < array.length; i++)
@@ -284,7 +284,7 @@ function sortArrayOutput (outPutArray)
 {
     traverseStack = [];
     traverseStack.push(outPutArray);
-    while (traverseStack.length != 0)
+    while (traverseStack.length !== 0)
     {
         var array = traverseStack.pop();
         sortOutput(array);
@@ -302,8 +302,8 @@ function sortArrayOutput (outPutArray)
 function sortOutput (outputObj)
 {
     outputObj.sort(function(a, b) {
-        return a.confidence == b.confidence ?
-            (a.name.toLowerCase() == b.name.toLowerCase() ? 0 : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
+        return a.confidence === b.confidence ?
+            (a.name.toLowerCase() === b.name.toLowerCase() ? 0 : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
             : (a.confidence < b.confidence ? 1: -1);
     });
 }
