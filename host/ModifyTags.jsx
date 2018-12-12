@@ -78,7 +78,8 @@ ModifyTags.prototype.run = function()
         
         
         var threshold = 0.80;
-        writeTags(xmp, processResponses(visionResponse, rekognitionResponse), threshold);
+        var writeParents = true;
+        writeTags(xmp, processResponses(visionResponse, rekognitionResponse), threshold, writeParents);
 	
 		// Write the packet back to the selected file
 		var updatedPacket = xmp.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
@@ -323,14 +324,15 @@ function storeResponse(xmp, responseObject)
  * @param {object} xmp 
  * @param {array} responseObject 
  * @param {float} confidence 
+ * @param {boolean} writeParents -> decides wether parents are ticked or not
  */
-function writeTags(xmp, responseObject, confidence)
+function writeTags(xmp, responseObject, confidence, writeParents)
 {
     storeResponse(xmp, responseObject);
     
     var existingTags = readTags(xmp);
     responseObject = deleteByConfidence(responseObject, confidence);
-    var respondTags = responseTags(responseObject);
+    var respondTags = responseTags(responseObject, writeParents);
 
     respondTags.subjects = stripArray(respondTags.subjects, existingTags.subjects);
     respondTags.hierarchy = stripArray(respondTags.hierarchy, existingTags.hierarchy);
@@ -370,7 +372,7 @@ function stripArray(target, decider)
 {
     for (var i = 0; i < target.length; i++)
     {
-        if (searchInArray(decider, target[i]))
+        if (searchInXMPArray(decider, target[i]))
         {
             target.splice(i--,1);
         }
@@ -382,8 +384,9 @@ function stripArray(target, decider)
  * Creates the same structure for the tag reponse as is written in XMP
  * @return Object containing a subject and hierarchy array
  * @param {array} responseObject 
+ * @param {boolean} writeParents -> decides wether parents are ticked or not
  */
-function responseTags(responseObject)
+function responseTags(responseObject, writeParents)
 {
     var subjects = [];
     var hierarchy = [];
@@ -401,7 +404,7 @@ function responseTags(responseObject)
             for (var pIndex = 0; pIndex < responseObject[i].parents.length; pIndex++)
             {
                 hierarchy.push(responseObject[i].parents[pIndex].name + "|" + responseObject[i].description);
-                if (!searchInArray(subjects, responseObject[i].parents[pIndex].name))
+                if (!searchInArray(subjects, responseObject[i].parents[pIndex].name) && writeParents)
                 {
                     subjects.push(responseObject[i].parents[pIndex].name);
                 }
@@ -461,13 +464,29 @@ function searchInArray(array, value)
 {
     for (var i = 0; i < array.length; i++) 
     {
-        if (array[i].value === value) 
+        if (array[i].toLowerCase() === value.toLowerCase()) 
         {
             return true;
         }
     }
     return false;
 }
+
+/**
+    check if array contains value
+    because indexOf doesn't work
+    */
+   function searchInXMPArray(array, value) 
+   {
+       for (var i = 0; i < array.length; i++) 
+       {
+           if (array[i].toString().toLowerCase() === value.toLowerCase()) 
+           {
+               return true;
+           }
+       }
+       return false;
+   }
 /**
  * Checks if the value is contained in the description in the array
  * @return int position in the array
@@ -478,7 +497,7 @@ function searchInDescription(array, value)
 {
     for (var i = 0; i < array.length; i++) 
     {
-        if (array[i].description === value) 
+        if (array[i].description.toLowerCase() === value.toLowerCase()) 
         {
             return i;
         }
