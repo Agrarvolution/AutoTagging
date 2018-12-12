@@ -16,7 +16,11 @@ function loadContent()
     }
     reverse order compared to data management -> parent: [children] instead of child: [parents]
      */
-    var answer = ""; // placeholder -> replace by call to jsx & XMP parser
+
+
+    // placeholder -> replace by call to jsx & XMP parser
+    var answer = '{"response":[{"name":"Bauwerke","confidence":1,"children":[{"name":"Brücke","confidence":0.81,"children":[]}]},{"name":"Landschaft","confidence":1,"children":[{"name":"Laubwald","confidence":0.9604,"children":[]}]},{"name":"dog","confidence":0.8858542056,"children":[]},{"name":"vertebrate","confidence":0.73445880411272,"children":[]},{"name":"clumber spaniel","confidence":0.72049342313895,"children":[]},{"name":"mammal","confidence":0.718383380625,"children":[]},{"name":"english cocker spaniel","confidence":0.57500941128906,"children":[]}],' +
+        '"saved":[{"name":"Bauwerke","confidence":1,"children":[{"name":"Brücke","confidence":1,"children":[]},{"name":"Haus","confidence":1,"children":[]},{"name":"Ufermauer","confidence":1,"children":[]},{"name":"Ötzi","confidence":1,"children":[]}]},{"name":"dog","confidence":1,"children":[]},{"name":"Landschaft","confidence":1,"children":[{"name":"Laubwald","confidence":1,"children":[]}]}]}';
 
 
     var content = JSON.parse(answer);
