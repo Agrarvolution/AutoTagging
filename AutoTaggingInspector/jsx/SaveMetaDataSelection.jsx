@@ -1,11 +1,54 @@
-function addSelectionListener()
+﻿"use strict"
+
+#include "js/libs/json2.js"  
+
+function SaveMetaDataSelection()
 {
-    return ("Add eventhandler to loop:" + app + " " + app.displayDialogs + " " + app.eventHandlers + " " + app.language);
-    //writeFile(outputFile, "Add eventhandler to loop:" + app);
-    app.eventHandlers.push( {handler: createSelectionListener(event)} );
 
-
+	/**
+	 The context in which this snippet can run.
+	 @type String
+	*/
+	this.requiredContext = "Needs to run in Bridge, \nwith a selection of a file, \nideally with some metadata";	
 }
+
+/**
+ Functional part of this snippet.  Get the selected Thumbnail and creates an XMPFile object which
+ is used to get access to the XMP data.
+ 
+ @return True if the snippet ran as expected, false otherwise
+ @type boolean
+*/
+SaveMetaDataSelection.prototype.run = function()
+{
+    var test = app;
+    if(!this.canRun())
+	{
+		return false;
+    }
+
+    /// Load the XMP Script library
+	if( xmpLib === undefined )
+	{
+		if( Folder.fs === "Windows" )
+		{
+			var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.dll";
+		} 
+		else 
+		{
+			pathToLib = Folder.startup.fsName + "/AdobeXMPScript.framework";
+		}
+	
+		var libfile = new File( pathToLib );
+		var xmpLib = new ExternalObject("lib:" + pathToLib );
+	}
+
+	$.writeln("About to run SaveMetaDataSelection");
+	
+	// Get the selected file
+    app.eventHandlers.push( {handler: createSelectionListener} );
+    return true;
+};
 
 function createSelectionListener(event)
 {
@@ -191,23 +234,16 @@ function createSelectionListener(event)
                 writeFile(outputFile, JSON.stringify(finalOutput));
 
                 $.writeln("Output JSON created! @" + outputFile);
-
-                //app.document.add();
-                var updateEvent = {};
-                updateEvent.type = "updateAutoTagInspector";
-                updateEvent.data = {response: tagList, content: nodeHierarchy, history: ""};
-                dispatchCSXSEvent(updateEvent);
             }
         }
 
     }
 }
 
-
 /**
  * Traverses item tree to tick all items.
- * @param {*} inputTree
- * @param {array} searchArray
+ * @param {*} inputTree 
+ * @param {array} searchArray 
  */
 function depthSearchTick(inputTree, searchArray)
 {
@@ -225,8 +261,8 @@ function depthSearchTick(inputTree, searchArray)
 }
 /**
  * Searches through searchArray if name exists
- * @param {Item} item
- * @param {array} searchArray
+ * @param {Item} item 
+ * @param {array} searchArray 
  * @return true if item exists (is ticked), false if it doesn't
  */
 function isTicked(item, searchArray)
@@ -243,7 +279,7 @@ function isTicked(item, searchArray)
 
 /**
  * traverse through object tree to sort all child nodes
- * @param {array} outPutArray
+ * @param {array} outPutArray 
  */
 function sortArrayOutput (outPutArray)
 {
@@ -262,7 +298,7 @@ function sortArrayOutput (outPutArray)
 
 /**
  * Sort item array by descending confidence and by ascending name
- * @param {array} outputObj
+ * @param {array} outputObj 
  */
 function sortOutput (outputObj)
 {
@@ -275,39 +311,75 @@ function sortOutput (outputObj)
 
 /**
  * @param {array} array
- * @param {string} targetString target
+ * @param {string} search target
  * @return index if string exists, -1 if it doesn't
  */
 function findInHierarchy (array, targetString)
 {
     if (array[0])
     {
-        for (var i = 0; i < array.length; i++)
+        for (var i = 0; i < array.length; i++) 
         {
-            if (array[i].name.toLowerCase() === targetString.toLowerCase())
+            if (array[i].name.toLowerCase() === targetString.toLowerCase()) 
             {
                 return i;
             }
         }
     }
-    return -1;
+	return -1;
 }
 
-function writeFile(fileObj, fileContent, encoding) {
-    encoding = encoding || "utf-8";
-    fileObj = (fileObj instanceof File) ? fileObj : new File(fileObj);
+function writeFile(fileObj, fileContent, encoding) {  
+    encoding = encoding || "utf-8";  
+    fileObj = (fileObj instanceof File) ? fileObj : new File(fileObj);  
+  
+  
+    var parentFolder = fileObj.parent;  
+    if (!parentFolder.exists && !parentFolder.create())  
+        throw new Error("Cannot create file in path " + fileObj.fsName);  
+  
+  
+    fileObj.encoding = encoding;  
+    fileObj.open("w");  
+    fileObj.write(fileContent);  
+    fileObj.close();  
+  
+  
+    return fileObj;  
+} 
 
+/**
+  Determines whether snippet can be run given current context.  The snippet 
+  fails if these preconditions are not met:
+  <ul>
+  <li> Must be running in Bridge
+  <li> A selection must be made in the Content pane of Bridge 
+  </ul>
 
-    var parentFolder = fileObj.parent;
-    if (!parentFolder.exists && !parentFolder.create())
-        throw new Error("Cannot create file in path " + fileObj.fsName);
+  @return True is this snippet can run, false otherwise
+  @type boolean
+*/
+SaveMetaDataSelection.prototype.canRun = function()
+ {
+    // Must be running in Bridge & have a selection
+	$.writeln(BridgeTalk.appName);
+    
+	if( (BridgeTalk.appName === "bridge")) {
+		return true;
+	}
 
+	// Fail if these preconditions are not met.  
+	// Bridge must be running,
+	// There must be a selection.
+	$.writeln("ERROR:: Cannot run SaveMetaDataSelection");
+	$.writeln(this.requiredContext);
+	return false;
+};
 
-    fileObj.encoding = encoding;
-    fileObj.open("w");
-    fileObj.write(fileContent);
-    fileObj.close();
-
-
-    return fileObj;
+/**
+ "main program": construct an anonymous instance and run it
+  as long as we are not unit-testing this snippet.
+*/
+if(typeof(SaveMetaData_unitTest ) == "undefined") {
+	new SaveMetaDataSelection().run();
 }

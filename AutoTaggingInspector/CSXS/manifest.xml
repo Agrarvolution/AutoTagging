@@ -25,9 +25,9 @@
             <DispatchInfo>
                 <Resources>
                     <!-- MainPath: Path to your index.html. Make sure the path to this file is from the top level directory of your code base-->
-                    <MainPath>./client/index.html</MainPath>
+                    <MainPath>./index.html</MainPath>
                     <!-- ScriptPath: Path to your index.jsx. Make sure the path to this file is from the top level directory of your code base -->
-                    <ScriptPath>./host/index.jsx</ScriptPath>
+                    <ScriptPath>./jsx/index.jsx</ScriptPath>
                     <CEFCommandLine>
                     </CEFCommandLine>
                 </Resources>

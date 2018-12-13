@@ -42,7 +42,7 @@ SaveMetaData.prototype.run = function()
 		var xmpLib = new ExternalObject("lib:" + pathToLib );
 	}
 
-	$.writeln("About to run SaveMetaData");
+	$.writeln("About to run SaveMetaDataSelection");
 	
 	// Get the selected file
     var thumb = app.document.selections[0];
@@ -370,7 +370,7 @@ SaveMetaData.prototype.canRun = function()
 	// Fail if these preconditions are not met.  
 	// Bridge must be running,
 	// There must be a selection.
-	$.writeln("ERROR:: Cannot run SaveMetaData");
+	$.writeln("ERROR:: Cannot run SaveMetaDataSelection");
 	$.writeln(this.requiredContext);
 	return false;
 }
