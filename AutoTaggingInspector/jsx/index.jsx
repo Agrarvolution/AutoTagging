@@ -1,13 +1,33 @@
 function addSelectionListener()
 {
-    return ("Add eventhandler to loop:" + app + " " + app.displayDialogs + " " + app.eventHandlers + " " + app.language);
+    var xLib;
+    try {
+        xLib = new ExternalObject("lib:\PlugPlugExternalObject");
+    } catch(e) { alert("Missing ExternalObject: "+e); }
+
+    //working callback event
+    /*
+    if (xLib) {
+        var eventObj = new CSXSEvent();
+        eventObj.type = "updateAutoTagInspector";
+        eventObj.data = app.toString();
+        eventObj.dispatch();
+    }*/
+
     //writeFile(outputFile, "Add eventhandler to loop:" + app);
-    app.eventHandlers.push( {handler: createSelectionListener(event)} );
+    app.eventHandlers = [];
+    if (xLib) {
+        var eventObj = new CSXSEvent();
+        eventObj.type = "updateAutoTagInspector";
+        eventObj.data = app.toString();
+        eventObj.dispatch();
+    }
+    app.eventHandlers.push( {handler: createSelectionHandler(event)} );
 
 
 }
 
-function createSelectionListener(event)
+function createSelectionHandler(event)
 {
     if ( event.object instanceof Document && event.type === 'selectionsChanged') {
         if (app.document.selectionLength > 0)
@@ -192,11 +212,18 @@ function createSelectionListener(event)
 
                 $.writeln("Output JSON created! @" + outputFile);
 
-                //app.document.add();
-                var updateEvent = {};
-                updateEvent.type = "updateAutoTagInspector";
-                updateEvent.data = {response: tagList, content: nodeHierarchy, history: ""};
-                dispatchCSXSEvent(updateEvent);
+                //adds library
+                var xLib;
+                try {
+                    xLib = new ExternalObject("lib:\PlugPlugExternalObject");
+                } catch(e) { alert("Missing ExternalObject: "+e); }
+                //throw update event
+                if (xLib) {
+                    var eventObj = new CSXSEvent();
+                    eventObj.type = "updateAutoTagInspector";
+                    eventObj.data = {response: tagList, content: nodeHierarchy, history: ""};
+                    eventObj.dispatch();
+                }
             }
         }
 

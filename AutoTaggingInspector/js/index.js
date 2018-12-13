@@ -4,7 +4,7 @@ var csInterface = new CSInterface();
 // Add an event listener to update the background colour of Extension to match the Bridge Theme.
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
 csInterface.addEventListener("updateAutoTagInspector", function(event){
-    alert("event test");
+    alert(event.data);
 });
 
 try {

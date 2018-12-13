@@ -46,11 +46,11 @@ SaveMetaDataSelection.prototype.run = function()
 	$.writeln("About to run SaveMetaDataSelection");
 	
 	// Get the selected file
-    app.eventHandlers.push( {handler: createSelectionListener} );
+    app.eventHandlers.push( {handler: createSelectionHandler} );
     return true;
 };
 
-function createSelectionListener(event)
+function createSelectionHandler(event)
 {
     if ( event.object instanceof Document && event.type === 'selectionsChanged') {
         if (app.document.selectionLength > 0)
