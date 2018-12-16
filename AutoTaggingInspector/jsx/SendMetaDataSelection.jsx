@@ -1,8 +1,8 @@
-﻿"use strict"
+﻿"use strict";
 
 #include "js/libs/json2.js"  
 
-function SaveMetaDataSelection()
+function SendMetaDataSelection()
 {
 
 	/**
@@ -19,7 +19,7 @@ function SaveMetaDataSelection()
  @return True if the snippet ran as expected, false otherwise
  @type boolean
 */
-SaveMetaDataSelection.prototype.run = function()
+SendMetaDataSelection.prototype.run = function()
 {
     var test = app;
     if(!this.canRun())
@@ -58,6 +58,7 @@ function createSelectionHandler(event)
             var thumb = app.document.selections[0];
             if(thumb.hasMetadata)
             {
+                $.writeln("Thumb has meta data");
                 // Get the metadata object - wait for  valid values
                 var md = thumb.synchronousMetadata;
 
@@ -72,11 +73,10 @@ function createSelectionHandler(event)
                 //d.convertToLocalTime();
                 xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
 
-                //XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
+                XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
                 var tagList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
-
-
-                if (tagList)
+                
+                if (tagList != undefined)
                 {
                     //$.writeln(tagList);
                     tagList = JSON.parse(tagList);
@@ -133,19 +133,18 @@ function createSelectionHandler(event)
                         }
                     }
                 }
-
                 var subjects = [];
                 var hierarchy = [];
                 for (i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++)
                 {
                     subjects.push(xmp.getArrayItem(XMPConst.NS_DC, "subject", i));
                 }
+                XMPMeta.registerNamespace("http://ns.adobe.com/lightroom/1.0/", "lr:");
                 for (i = 1; i <= xmp.countArrayItems("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject"); i++)
                 {
                     hierarchy.push(xmp.getArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", i));
                 }
-
-
+                $.writeln("Retrieved tags");
                 //get hierarchical object
                 var nodeHierarchy = [];
                 for (i = 0; i < hierarchy.length; i++) {
@@ -195,45 +194,54 @@ function createSelectionHandler(event)
                 }
                 //check ticks
                 depthSearchTick(nodeHierarchy,subjects);
-
-                //combine written tags and reponse tags -> could be made into a depth/breadth traverse method
-                for (i = 0; i < response.length; i++)
+                
+                if(response != undefined)
                 {
-                    index = findInHierarchy(nodeHierarchy, response[i].name);
-                    if (index > 0)
+                    //combine written tags and reponse tags -> could be made into a depth/breadth traverse method
+                    for (i = 0; i < response.length; i++)
                     {
-                        nodeHierarchy[index].confidence = response[i].confidence;
-                        for (var ci = 0; ci < response[i].children; ci++)
+                        index = findInHierarchy(nodeHierarchy, response[i].name);
+                        if (index > 0)
                         {
-                            var cIndex = findInHierarchy(nodeHierarchy[index].children, response[i].children[ci].name);
-                            if (cIndex > 0)
+                            nodeHierarchy[index].confidence = response[i].confidence;
+                            for (var ci = 0; ci < response[i].children; ci++)
                             {
-                                nodeHierarchy[index].children[cIndex] = response[i].children[ci].confidence;
-                            }
-                            else
-                            {
-                                //add if non existent
-                                nodeHierarchy[index].children.push(response[i].children[ci]);
+                                var cIndex = findInHierarchy(nodeHierarchy[index].children, response[i].children[ci].name);
+                                if (cIndex > 0)
+                                {
+                                    nodeHierarchy[index].children[cIndex] = response[i].children[ci].confidence;
+                                }
+                                else
+                                {
+                                    //add if non existent
+                                    nodeHierarchy[index].children.push(response[i].children[ci]);
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        //add if non existent
-                        nodeHierarchy.push(response[i]);
+                        else
+                        {
+                            //add if non existent
+                            nodeHierarchy.push(response[i]);
+                        }
                     }
                 }
 
+                $.writeln("Combined tags & response");
                 sortArrayOutput(nodeHierarchy);
 
-                var finalOutput = {response: tagList, content: nodeHierarchy, history: ""};
-
-                var folderPath = encodeURI("/jsonTemp");
-                var outputFile = new File(folderPath + encodeURI("/output.json"));
-
-                writeFile(outputFile, JSON.stringify(finalOutput));
-
-                $.writeln("Output JSON created! @" + outputFile);
+                $.writeln("Init xLib");
+                var xLib;
+                try {
+                    xLib = new ExternalObject("lib:\PlugPlugExternalObject");
+                } catch(e) { alert("Missing ExternalObject: "+e); }
+                //throw update event
+                $.writeln("About to throw event");
+                if (xLib) {
+                    var eventObj = new CSXSEvent();
+                    eventObj.type = "updateAutoTagInspector";
+                    eventObj.data = {response: tagList, content: nodeHierarchy, history: ""};
+                    eventObj.dispatch();
+                }
             }
         }
 
@@ -283,7 +291,7 @@ function isTicked(item, searchArray)
  */
 function sortArrayOutput (outPutArray)
 {
-    traverseStack = [];
+    var traverseStack = [];
     traverseStack.push(outPutArray);
     while (traverseStack.length !== 0)
     {
@@ -311,7 +319,7 @@ function sortOutput (outputObj)
 
 /**
  * @param {array} array
- * @param {string} search target
+ * @param {string} targetString search target
  * @return index if string exists, -1 if it doesn't
  */
 function findInHierarchy (array, targetString)
@@ -359,7 +367,7 @@ function writeFile(fileObj, fileContent, encoding) {
   @return True is this snippet can run, false otherwise
   @type boolean
 */
-SaveMetaDataSelection.prototype.canRun = function()
+SendMetaDataSelection.prototype.canRun = function()
  {
     // Must be running in Bridge & have a selection
 	$.writeln(BridgeTalk.appName);
@@ -381,5 +389,5 @@ SaveMetaDataSelection.prototype.canRun = function()
   as long as we are not unit-testing this snippet.
 */
 if(typeof(SaveMetaData_unitTest ) == "undefined") {
-	new SaveMetaDataSelection().run();
+	new SendMetaDataSelection().run();
 }

@@ -4,18 +4,10 @@ var csInterface = new CSInterface();
 // Add an event listener to update the background colour of Extension to match the Bridge Theme.
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
 csInterface.addEventListener("updateAutoTagInspector", function(event){
-    alert(event.data);
+    displayContent(event.data);
 });
 
-try {
-    csInterface.evalScript("addSelectionListener()",function(result){
-        console.log(result);
-    });
-}
-catch (e)
-{
-    alert(e);
-}
+
 //Listener for ThemeColorChanged event.
 function themeChangedEventListener(event)
 {
@@ -106,20 +98,27 @@ function loadContent()
     return content;
 }
 
+function resetContent(tag)
+{
+    alert("Delete view");
+    tag.innnerHTML = "";
+}
 /*
 @Todo Display JSON items
 call parenting and create single item
  */
-function displayContent()
+function displayContent(response)
 {
     /**
      * Should be an event listener
      * @type {any}
      */
-    let fullResponse = loadContent();
-    let content = fullResponse.content;
-
+    //let fullResponse = loadContent();
+    //let content = fullResponse.content;
+    let content = response.content;
+    alert(JSON.stringify(content));
     let contentDOMTarget = document.getElementById('tags');
+    resetContent(contentDOMTarget);
     if (content)
     {
         for(let i = 0; i < content.length; i++)

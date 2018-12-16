@@ -105,7 +105,7 @@ SnpCreateTabbedPaletteScriptUI.prototype.run = function()
 					//XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
 					var tagList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
 
-					//@Todo copy from SaveMetaDataSelection
+					//@Todo copy from AddSelectionListener
 				}
 			}
             
