@@ -18,6 +18,9 @@ p.item {
 }
 /* ToDo Offset for p / container depending on parenting -> first one without one including hiding
  */
+div.items {
+    margin-left: 10px;
+}
 
 /* ToDo Container Hiding for Dropdown */
 
