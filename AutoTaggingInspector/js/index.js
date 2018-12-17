@@ -3,9 +3,15 @@ var csInterface = new CSInterface();
 
 // Add an event listener to update the background colour of Extension to match the Bridge Theme.
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
-csInterface.addEventListener("updateAutoTagInspector", function(event){
-    displayContent(event.data);
-});
+csInterface.addEventListener("updateAutoTagInspector", loadContentListener);
+
+/*
+try {
+    csInterface.evalScript(testLet("CEP"));
+} catch (e)
+{
+    alert(e);
+}*/
 
 
 //Listener for ThemeColorChanged event.
@@ -45,7 +51,7 @@ content: complete JSON array with items that contain children, ticked flag and c
 Eventlistener   to JSX?
 return parsed object
  */
-function loadContent()
+function loadContentListener(event)
 {
     /*
     response part, written part (=user defined), version history
@@ -94,8 +100,9 @@ function loadContent()
         '],"ticked":false}],"history":""}';
 
 
-    let content = JSON.parse(answer);
-    return content;
+    //let content = JSON.parse(answer);
+    displayContent(event.data.content);
+    return 0;
 }
 
 function resetContent(tag)
@@ -112,22 +119,36 @@ function displayContent(response)
      * Should be an event listener
      * @type {any}
      */
-    //let fullResponse = loadContent();
+    //let fullResponse = loadContentListener();
     //let content = fullResponse.content;
-    let content = response.content;
-    alert(content);
+
+    toggleHelpText((!response));
+
     let contentDOMTarget = document.getElementById('tags');
+
     resetContent(contentDOMTarget);
-    if (content)
+    if (response)
     {
-        for(let i = 0; i < content.length; i++)
+        for(let i = 0; i < response.length; i++)
         {
-            contentDOMTarget.appendChild(createParentItem(content[i]));
+            contentDOMTarget.appendChild(createParentItem(response[i]));
         }
     }
 
 }
 
+function toggleHelpText(show)
+{
+    let text = document.getElementById('help');
+    if (show)
+    {
+        text.classList.remove('hidden');
+    }
+    else
+    {
+        text.classList.add('hidden');
+    }
+}
 
 /*
 @ToDo Make parenting for items -> put parented items in container

@@ -21,6 +21,9 @@ p.item {
 div.items {
     margin-left: 10px;
 }
+.hidden {
+    display: none;
+}
 
 /* ToDo Container Hiding for Dropdown */
 
