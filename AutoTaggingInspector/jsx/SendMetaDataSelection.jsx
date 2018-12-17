@@ -239,7 +239,22 @@ function createSelectionHandler(event)
                 if (xLib) {
                     var eventObj = new CSXSEvent();
                     eventObj.type = "updateAutoTagInspector";
-                    eventObj.data = JSON.stringify({response: tagList, content: nodeHierarchy, history: ""});
+                    eventObj.data = JSON.stringify({response: tagList, content: nodeHierarchy, history: "", thumb: true});
+                    eventObj.dispatch();
+                }
+            }
+            else
+            {
+                var xLib;
+                try {
+                    xLib = new ExternalObject("lib:\PlugPlugExternalObject");
+                } catch(e) { alert("Missing ExternalObject: "+e); }
+                //throw update event
+                $.writeln("About to throw event");
+                if (xLib) {
+                    var eventObj = new CSXSEvent();
+                    eventObj.type = "updateAutoTagInspector";
+                    eventObj.data = JSON.stringify({response: "", content: "", history: "", thumb: false});
                     eventObj.dispatch();
                 }
             }
@@ -336,25 +351,6 @@ function findInHierarchy (array, targetString)
     }
 	return -1;
 }
-
-function writeFile(fileObj, fileContent, encoding) {  
-    encoding = encoding || "utf-8";  
-    fileObj = (fileObj instanceof File) ? fileObj : new File(fileObj);  
-  
-  
-    var parentFolder = fileObj.parent;  
-    if (!parentFolder.exists && !parentFolder.create())  
-        throw new Error("Cannot create file in path " + fileObj.fsName);  
-  
-  
-    fileObj.encoding = encoding;  
-    fileObj.open("w");  
-    fileObj.write(fileContent);  
-    fileObj.close();  
-  
-  
-    return fileObj;  
-} 
 
 /**
   Determines whether snippet can be run given current context.  The snippet 
