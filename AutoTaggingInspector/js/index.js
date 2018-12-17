@@ -100,8 +100,7 @@ function loadContent()
 
 function resetContent(tag)
 {
-    alert("Delete view");
-    tag.innnerHTML = "";
+    tag.innerHTML = "";
 }
 /*
 @Todo Display JSON items
@@ -116,7 +115,7 @@ function displayContent(response)
     //let fullResponse = loadContent();
     //let content = fullResponse.content;
     let content = response.content;
-    alert(JSON.stringify(content));
+    alert(content);
     let contentDOMTarget = document.getElementById('tags');
     resetContent(contentDOMTarget);
     if (content)

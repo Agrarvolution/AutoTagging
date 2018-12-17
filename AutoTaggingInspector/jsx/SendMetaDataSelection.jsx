@@ -239,7 +239,7 @@ function createSelectionHandler(event)
                 if (xLib) {
                     var eventObj = new CSXSEvent();
                     eventObj.type = "updateAutoTagInspector";
-                    eventObj.data = {response: tagList, content: nodeHierarchy, history: ""};
+                    eventObj.data = JSON.stringify({response: tagList, content: nodeHierarchy, history: ""});
                     eventObj.dispatch();
                 }
             }
