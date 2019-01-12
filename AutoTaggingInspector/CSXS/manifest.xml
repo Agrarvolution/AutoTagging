@@ -2,7 +2,7 @@
 <!-- https://github.com/Adobe-CEP/Getting-Started-guides -->
 
 <!-- ExtensionBundleId: A unique bundle ID you assign to your extension like com.my.test -->
-<ExtensionManifest ExtensionBundleId="com.AutoTagging" ExtensionBundleVersion="1.0.0" Version="7.0"> <!-- MAJOR-VERSION-UPDATE-MARKER -->
+<ExtensionManifest ExtensionBundleId="com.AutoTaggingInspector" ExtensionBundleVersion="1.0.0" Version="7.0"> <!-- MAJOR-VERSION-UPDATE-MARKER -->
     <ExtensionList>
         <!-- Extension Id: A unique ID you assign to your extension. It usually follows this syntax: ExtensionBundleID + .panel = com.my.test.panel (note that this ID appears twice in the manifest) -->
         <Extension Id="com.AutoTaggingInspector.panel" Version="1.0.0"/>
