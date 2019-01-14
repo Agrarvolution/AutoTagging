@@ -4,7 +4,7 @@
 
  */
 
-#include "js/libs/json2.js"
+//#include "js/libs/json2.js"
 //#include "js/libs/promise.js"
 #include "AWS/RekognitionLabels.js"
 //#include "VisionLabels.js"
@@ -33,6 +33,8 @@ function findLabels(labelList)
         var visionObject = handleVisionResponse(jsonVision);
 
         labelList.labels = CombineScript.getSingleList(recognitionObject, visionObject);
+        
+	    alert(labelList.labels);
     }
 }
 
@@ -69,7 +71,8 @@ function sendToAWS(imagePath)
 
 function sendToVision(imagePath)
 {
-    return visionLabelScript.getLabels(imagePath);
+    //return visionLabelScript.getLabels(imagePath);
+    return [];
 }
 
 /**

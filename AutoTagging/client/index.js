@@ -16,6 +16,8 @@ var Vision_selected; // global variable on whether Google Vision is selected (ch
 
 // ----------------------------------------------------------
 
+alert("Test alert");
+
 // internet connection is required to access the AWS and Google Vision services
 if (navigator.onLine === true) {
     // setup global variables and update the UI
@@ -46,6 +48,8 @@ function removeOfflineOverlay() {
 function init() {
     AWS_selected = false;
     Vision_selected = false;
+
+    alert("Test alert");
     
     CEP_checkIfAWSLoggedIn();
     //TODO: check if Vision logged in
