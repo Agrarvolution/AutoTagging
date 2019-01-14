@@ -5,15 +5,6 @@ var csInterface = new CSInterface();
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
 csInterface.addEventListener("updateAutoTagInspector", loadContentListener);
 
-/*
-try {
-    csInterface.evalScript(testLet("CEP"));
-} catch (e)
-{
-    alert(e);
-}*/
-
-
 //Listener for ThemeColorChanged event.
 function themeChangedEventListener(event)
 {
@@ -65,7 +56,7 @@ function loadContentListener(event)
 
 
     // placeholder -> replace by call to jsx & XMP parser
-    let answer = '{"response":[{"description":"dog","confidence":0.8858542056,"parents":[\n' +
+    /*let answer = '{"response":[{"description":"dog","confidence":0.8858542056,"parents":[\n' +
         '\n' +
         ']},{"description":"vertebrate","confidence":0.73445880411272,"parents":[\n' +
         '\n' +
@@ -98,7 +89,7 @@ function loadContentListener(event)
         '],"ticked":false},{"name":"english cocker spaniel","confidence":0.57500941128906,"children":[\n' +
         '\n' +
         '],"ticked":false}],"history":""}';
-
+    */
 
     //let content = JSON.parse(answer);
     displayContent(event.data.content);
@@ -214,7 +205,7 @@ function createItem(item)
     let checkbox = document.createElement('input');
     checkbox.classList.add('centerItems', 'centerItemCheckbox');
     checkbox.type = 'checkbox';
-    checkbox.value = item.name;
+    checkbox.value = JSON.stringify({name: item.name, confidence: item.confidence});
     checkbox.checked = item.ticked;
     let label = document.createElement('label');
     label.classList.add('centerItems');
@@ -224,6 +215,31 @@ function createItem(item)
 
     return tag;
 }
+
+/*
+@Todo check if checkbox
+@Todo check Checkbox state
+@Todo get all parent names
+@Todo process into item name array and parent group
+@Todo Add single and double click action
+    -> single click handles one item
+    -> double click handles clicked item + children
+@Todo send to jsx processing (index.jsx)
+    -> receives state, all node names, parent name
+    -> loads nodes + parents (like in initial read) -> load into external code? not possible cause of different save locations
+    -> checks identical strings
+        -> on remove identical strings
+        -> on add non indentical strings
+    -> write or delete changes
+
+@Todo Future: scheduler -> only check per second and image (and on closing) -> less ressource intensive
+ */
+function checkboxClickHandler(checkbox) {
+
+}
+
+
+
 /*
 @ToDo Process Template / Load Template
  */
