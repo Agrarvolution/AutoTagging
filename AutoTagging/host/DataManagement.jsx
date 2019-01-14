@@ -6,13 +6,15 @@
 
 //#include "js/libs/json2.js"
 //#include "js/libs/promise.js"
-#include "AWS/RekognitionLabels.js"
 //#include "VisionLabels.js"
-#include "CombineScript.jsx"
-#include "ModifyTags.jsx"
-#include "Label.js"
-#include "LabelList.js"
 
+//#include "AWS/RekognitionLabels.js"
+//#include "CombineScript.jsx"
+//#include "ModifyTags.jsx"
+//#include "Label.js"
+//#include "LabelList.js"
+
+/*
 function main()
 {
     var imagePath = getImagePath();
@@ -20,6 +22,14 @@ function main()
     var labelList = new LabelList([], imagePath);
 
     findLabels(labelList);
+}
+*/
+
+function main()
+{
+    alert("Opening DataManagement");
+    
+    var imagePath = getImagePath();
 }
 
 function findLabels(labelList)

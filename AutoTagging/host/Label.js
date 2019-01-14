@@ -1,3 +1,5 @@
+
+alert("Opening Label");
 #include "js/libs/json2.js"  
 
 function Label(name, confidence, parents)
