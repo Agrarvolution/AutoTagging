@@ -65,16 +65,15 @@ function createSelectionHandler(event)
                 // Get the XMP packet as a string and create the XMPMeta object
                 var xmp = new XMPMeta(md.serialize());
 
-                // Change the creator tool
-                xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by TagUI");
-
                 // Change the date modified
                 var d = new XMPDateTime(new Date());
-                //d.convertToLocalTime();
+                d.convertToLocalTime();
                 xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
 
                 XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
                 var tagList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
+
+                var historyList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
                 
                 if (tagList != undefined)
                 {
@@ -154,7 +153,7 @@ function createSelectionHandler(event)
                     var hierarchyText = hierarchy[i].toString();
 
                     //delete empty strings (in case of wrong insertion into XMP -> |value| instead of value|value|value)
-                    hierarchyText = hierarchyText.replace(" ", "").replace("/^\||\|$/", "");
+                    hierarchyText = hierarchyText.replace("/^\\s+|\\s+$/g", "").replace("[ ]{2,}", " ").replace("/^\||\|$/", "");
                     //find division
                     for (var charPosition = 0; charPosition < hierarchyText.length; charPosition++) {
                         if (hierarchyText.charAt(charPosition) === "|") {
@@ -195,7 +194,7 @@ function createSelectionHandler(event)
                 //check ticks
                 depthSearchTick(nodeHierarchy,subjects);
                 
-                if(response != undefined)
+                if(response !== undefined)
                 {
                     //combine written tags and reponse tags -> could be made into a depth/breadth traverse method
                     for (i = 0; i < response.length; i++)
@@ -326,9 +325,9 @@ function sortArrayOutput (outPutArray)
 function sortOutput (outputObj)
 {
     outputObj.sort(function(a, b) {
-        return a.confidence === b.confidence ?
-            (a.name.toLowerCase() === b.name.toLowerCase() ? 0 : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
-            : (a.confidence < b.confidence ? 1: -1);
+        return a.name.toLowerCase() === b.name.toLowerCase() ?
+            (a.confidence === b.confidence ? 0 : (a.confidence < b.confidence ? 1 : -1))
+            : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
     });
 }
 
