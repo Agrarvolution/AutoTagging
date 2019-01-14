@@ -207,6 +207,7 @@ function createItem(item)
     checkbox.type = 'checkbox';
     checkbox.value = JSON.stringify({name: item.name, confidence: item.confidence});
     checkbox.checked = item.ticked;
+    checkbox.addEventListener("click", checkboxClickProcessing);
     let label = document.createElement('label');
     label.classList.add('centerItems');
     label.appendChild(document.createTextNode(item.name + " | " + Math.round(item.confidence*100)));
@@ -229,16 +230,96 @@ function createItem(item)
     -> loads nodes + parents (like in initial read) -> load into external code? not possible cause of different save locations
     -> checks identical strings
         -> on remove identical strings
-        -> on add non indentical strings
+        -> on add non identical strings
     -> write or delete changes
 
 @Todo Future: scheduler -> only check per second and image (and on closing) -> less ressource intensive
  */
-function checkboxClickHandler(checkbox) {
-
+function checkboxClickProcessing(event) {
+    if (event.target.value) {
+        var value = JSON.parse(event.target.value);
+        if (value.name) {
+            // HISTORY!!!
+            csInterface.evalScript("writeSelectionChange(" + JSON.stringify([value.name]) + "," + JSON.stringify(event.target.checked) + ")", function(e){
+                alert(e);
+            });
+        }
+    }
+    return true;
 }
 
 
+function discoverParents(target) {
+    let chain = [];
+    while (target)
+    {
+        if (target.value)
+        {
+            let valueTemp = JSON.parse(target.value);
+            valueTemp.checked = target.checked;
+            chain.push(valueTemp);
+            if (target.parentNode.parentNode.parentNode.firstChild.firstChild)
+            {
+                target = target.parentNode.parentNode.parentNode.firstChild.firstChild;
+            }
+            else
+            {
+                target = undefined;
+            }
+        }
+        else
+        {
+            target = undefined;
+        }
+    }
+    if (chain[0])
+    {
+        let parents = chain[chain.length-1];
+        let parentTraverse = parents;
+
+        for (let i = chain.length-1; i > 0; i--)
+        {
+            parents.children = chain[i];
+            parentTraverse = parents.children;
+            parentTraverse.children = {};
+
+            if (i === 0)
+            {
+                parentTraverse.checked = true;
+            }
+        }
+        return parents;
+    }
+    return false;
+}
+
+function generateHierarchy(parent) {
+    let subjects = [], hierarchy = [], parentStack = [], parentPrefixStack = [];
+
+    parentStack.push(parent);
+    parentPrefixStack.push("");
+    while (parentStack.length !== 0 || parentPrefixStack.length !== 0)
+    {
+
+        let parentName = parentPrefixStack.pop();
+        let parentPrefix = parentName === "" ? parentStack.name : parentName + "|" + parentStack.name;
+        if (parentStack.checked && !subjects.indexOf(parentStack.name))
+        {
+            subjects.push(parentStack.name);
+        }
+
+        if (!hierarchy.indexOf(parentPrefix))
+        {
+            hierarchy.push(parentPrefix);
+        }
+        for (let i = 0; i < parent.children.length; i++)
+        {
+            parentStack.push(parent.children[i]);
+            parentPrefixStack.push(parentPrefix);
+        }
+    }
+    return {subjects: subjects, hierarchy: hierarchy};
+}
 
 /*
 @ToDo Process Template / Load Template

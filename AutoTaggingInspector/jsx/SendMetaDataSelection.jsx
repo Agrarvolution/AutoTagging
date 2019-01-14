@@ -195,7 +195,7 @@ function createSelectionHandler(event)
                 //check ticks
                 depthSearchTick(nodeHierarchy,subjects);
                 
-                if(response != undefined)
+                if(response !== undefined)
                 {
                     //combine written tags and reponse tags -> could be made into a depth/breadth traverse method
                     for (i = 0; i < response.length; i++)
