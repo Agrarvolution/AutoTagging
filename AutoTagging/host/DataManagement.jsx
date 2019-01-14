@@ -25,11 +25,16 @@ function main()
 }
 */
 
+
+
 function main()
 {
     alert("Opening DataManagement");
     
     var imagePath = getImagePath();
+
+
+    let test = labelListFile.testOutput();
 }
 
 function findLabels(labelList)

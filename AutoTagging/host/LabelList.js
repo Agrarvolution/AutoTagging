@@ -1,140 +1,147 @@
 ﻿
-var labels = [];
-/**
- * Stores and processes all the labels for a picture
- * @param {array} labels 
- */
-function LabelList(labels, filePath)
 {
-    this.labels = labels;
-    this.filePath = filePath;
-}
-
-LabelList.prototype.toJSON = function()
-{
-    return JSON.stringify(this);
-}
-
-
-
-/**
- * Compares to another array and removes duplicates from the current array.
- * @param {array} decider 
- */
-function stripArray(decider)
-{
-    if (labels)
+    /**
+     * Stores and processes all the labels for a picture
+     * @param {array} labels 
+     */
+    constructor(labels, filePath)
     {
-        for (var i = 0; i < labels.length; i++)
-        {
-            if (searchInArray(decider, labels[i]))
-            {
-                labels.splice(i--,1);
-            }
-        }
+        this.labels = labels;
+        this.filePath = filePath;
     }
-}
 
-/**
- * Deletes all objects in the array that have a lower ocnfidence than a given threshold.
- * @param {float} confidence Threshold to decide if a entry is deleted or not
- */
-function deleteByConfidence(confidence)
-{
-    if (labels)
+    toJSON()
     {
-        var newLabelArray = [];
-        for (var i = 0; i < labels.length; i++)
-        {
-            if (labels[i].confidence >= confidence)
-            {
-                newLabelArray.push(labels[i]);
-            }
-        }
+        return JSON.stringify(this);
     }
-}
 
-/**
-    check if array contains value
-    because indexOf doesn't work
-    */
-   function searchInArray(value) 
-   {
-    if (labels)
+    testOutput()
     {
-       for (var i = 0; i < labels.length; i++) 
-       {
-           if (labels[i].value === value) 
-           {
-               return true;
-           }
-       }
+        alert("Loading LabelList correctly! Yay!");
     }
-       return false;
-   }
-
-/**
- * Checks if the value is contained in the name in the array
- * @return int position in the array
- * @param {string} value 
- */
-function searchInName(value) 
-{
-    if (labels)
+    
+    /**
+     * Compares to another array and removes duplicates from the current array.
+     * @param {array} decider 
+     */
+    stripArray(decider)
     {
-        for (var i = 0; i < labels.length; i++) 
+        if (this.labels)
         {
-            if (labels[i].name === value) 
+            for (var i = 0; i < this.labels.length; i++)
             {
-                return i;
-            }
-        }
-    }
-    return -1;
-}
-
-/**
- * Sanitizes the description & parents of the array, and removes items from the array that aren't a String.
- */
-function sanitizeArray()
-{
-    if (labels)
-    {
-        var parentIndex = 0;
-        //iterate for description
-        for (var i = 0; i < labels.length; i++)
-        {
-            if (typeof labels[i].name === 'string' || labels[i].name instanceof String)
-            {
-                labels[i].name = sanitizeString(labels[i].name);
-                
-                //iterate for parent description
-
-                for (parentIndex = 0; parentIndex < labels[i].parents.length; parentIndex++)
+                if (searchInArray(decider, this.labels[i]))
                 {
-                    if (typeof labels[i].parents[parentIndex].name === 'string' || labels[i].parents[parentIndex].name instanceof String)
-                    {
-                        labels[i].parents[parentIndex].name = sanitizeString(labels[i].parents[parentIndex].name);
-                    }
-                    else 
-                    {
-                        labels.parents.splice(parentIndex--, 1);
-                    }
+                    this.labels.splice(i--,1);
                 }
             }
-            else 
+        }
+    }
+    
+    /**
+     * Deletes all objects in the array that have a lower ocnfidence than a given threshold.
+     * @param {float} confidence Threshold to decide if a entry is deleted or not
+     */
+    deleteByConfidence(confidence)
+    {
+        if (this.labels)
+        {
+            var newLabelArray = [];
+            for (var i = 0; i < this.labels.length; i++)
             {
-                labels.splice(i--, 1);
+                if (this.labels[i].confidence >= confidence)
+                {
+                    newLabelArray.push(this.labels[i]);
+                }
             }
         }
     }
+
+    /**
+        check if array contains value
+        because indexOf doesn't work
+        */
+    searchInArray(value) 
+    {
+        if (this.labels)
+        {
+        for (var i = 0; i < this.labels.length; i++) 
+        {
+            if (this.labels[i].value === value) 
+            {
+                return true;
+            }
+        }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the value is contained in the name in the array
+     * @return int position in the array
+     * @param {string} value 
+     */
+    searchInName(value) 
+    {
+        if (this.labels)
+        {
+            for (var i = 0; i < this.labels.length; i++) 
+            {
+                if (this.labels[i].name === value) 
+                {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Sanitizes the description & parents of the array, and removes items from the array that aren't a String.
+     */
+    sanitizeArray()
+    {
+        if (this.labels)
+        {
+            var parentIndex = 0;
+            //iterate for description
+            for (var i = 0; i < this.labels.length; i++)
+            {
+                if (typeof this.labels[i].name === 'string' || this.labels[i].name instanceof String)
+                {
+                    this.labels[i].name = sanitizeString(this.labels[i].name);
+                    
+                    //iterate for parent description
+
+                    for (parentIndex = 0; parentIndex < this.labels[i].parents.length; parentIndex++)
+                    {
+                        if (typeof this.labels[i].parents[parentIndex].name === 'string' || this.labels[i].parents[parentIndex].name instanceof String)
+                        {
+                            this.labels[i].parents[parentIndex].name = sanitizeString(this.labels[i].parents[parentIndex].name);
+                        }
+                        else 
+                        {
+                            this.labels.parents.splice(parentIndex--, 1);
+                        }
+                    }
+                }
+                else 
+                {
+                    this.labels.splice(i--, 1);
+                }
+            }
+        }
+    }
+
+    /**
+     * Sanitation method for a single string
+     * @param {string} text 
+     */
+    sanitizeString(text)
+    {
+        return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").replace("\(^[\s\n\r\t\x0B]+)|([\s\n\r\t\x0B]+$)/g", "");
+    }
 }
 
-/**
- * Sanitation method for a single string
- * @param {string} text 
- */
-function sanitizeString(text)
-{
-    return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").replace("\(^[\s\n\r\t\x0B]+)|([\s\n\r\t\x0B]+$)/g", "");
-}
+
+
