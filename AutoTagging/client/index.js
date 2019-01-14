@@ -1,6 +1,10 @@
 /* 1) Create an instance of CSInterface. */
 var csInterface = new CSInterface();
 
+alert("alert before import");
+
+//import startScript from '../host/DataManagement.jsx';
+
 // ==========================================================
 // ----------------------------------------------------------
 
@@ -15,9 +19,6 @@ var Vision_loggedIn; // global variable on whether Google Vision is logged in or
 var Vision_selected; // global variable on whether Google Vision is selected (checked) or not
 
 // ----------------------------------------------------------
-
-alert("Test alert 1");
-
 // internet connection is required to access the AWS and Google Vision services
 if (navigator.onLine === true) {
     // setup global variables and update the UI
@@ -42,6 +43,19 @@ function removeOfflineOverlay() {
     content.classList.remove('hidden');
 }
 
+function catchSelectionEvent(event)
+{
+    var offlineMessage = document.getElementById('offline_message');
+    let eventData = event.data;
+    offlineMessage.textContent = eventData.description;
+
+    var imagePath = "C:/AutoTagging/tempImage.jpg";
+    var currentPreviewFile = eventData.thumbnail;
+    //currentPreviewFile.exportTo (imagePath, 10);
+    //alert(event.data);
+    //startScript();
+}
+
 /**
  * @description Sets up the environment. Checks whether AWS and Google are logged in or not, and updates the UI accordingly
  */
@@ -49,12 +63,17 @@ function init() {
     AWS_selected = false;
     Vision_selected = false;
 
-    alert("Test alert 2");
-    
+    registerEventHandler();
+
     CEP_checkIfAWSLoggedIn();
     //TODO: check if Vision logged in
     
     updateUI();
+}
+
+function registerEventHandler()
+{
+    csInterface.addEventListener("updateAutoTagInspector", catchSelectionEvent);
 }
 
 function updateUI() {

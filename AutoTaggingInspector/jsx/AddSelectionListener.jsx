@@ -26,7 +26,6 @@ AddSelectionListener.prototype.run = function()
 	$.writeln("About to run AddSelectionListener");
 	
 	// Get the selected file
-    // @ToDo check if already exists
     app.eventHandlers.push( {handler: createSelectionHandler} );
     return true;
 };
@@ -47,7 +46,7 @@ function createSelectionHandler(event)
             if (xLib) {
                 var eventObj = new CSXSEvent();
                 eventObj.type = "updateAutoTagInspector";
-                eventObj.data = "Test";
+                eventObj.data = JSON.stringify({ "thumbnail": app.document.selections[0].core.preview.preview, "description": "Is it working?" });
                 eventObj.dispatch();
             }
         }

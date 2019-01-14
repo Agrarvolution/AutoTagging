@@ -26,13 +26,13 @@ function main()
 */
 
 
-const labelListFile = require("./LabelList.js");
-
 function main()
 {
     alert("Opening DataManagement");
     
     var imagePath = getImagePath();
+
+    const labelListFile = require("./LabelList.js");
 
 
     let test = labelListFile.testOutput();
@@ -184,7 +184,11 @@ function handleRekognitionResponse(responseJSON)
 
 
 
+export default function startByClick()
+{
+    alert("Started DataManagement Script through index.js");
 
+}
 
 
 
