@@ -26,6 +26,7 @@ function main()
 */
 
 
+const labelListFile = require("./LabelList.js");
 
 function main()
 {

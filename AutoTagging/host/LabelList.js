@@ -1,4 +1,5 @@
 ﻿
+exports.LabelList = class
 {
     /**
      * Stores and processes all the labels for a picture
