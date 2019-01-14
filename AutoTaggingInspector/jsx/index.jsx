@@ -1,10 +1,10 @@
-function writeSelectionChange(nodes, add)
+function writeSelectionChange(nodes, parents, add)
 {
 
     // Get the selected file
     var thumb = app.document.selections[0];
 
-    if(thumb.hasMetadata && nodes.length) {
+    if(thumb.hasMetadata && nodes.length && parents.length) {
         // Get the metadata object - wait for  valid values
         var md = thumb.synchronousMetadata;
 
@@ -20,6 +20,7 @@ function writeSelectionChange(nodes, add)
         xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
 
         var subjects = loadSubjects(xmp);
+
         if (add)
         {
             nodes = stripArray(nodes, subjects);
@@ -28,7 +29,7 @@ function writeSelectionChange(nodes, add)
         {
             nodes = intersectArray(nodes, subjects);
         }
-
+        //return [nodes[0].value,nodes[0].index, add];
         for (var i = 0; i < nodes.length; i++)
         {
             if (add)
@@ -39,6 +40,13 @@ function writeSelectionChange(nodes, add)
             {
                 xmp.deleteArrayItem(XMPConst.NS_DC, "subject", nodes[i].index);
             }
+        }
+
+        var hierarchy = loadHierarchy(xmp);
+        parents = stripArray(parents, hierarchy);
+        for (i = 0; i < parents.length; i++)
+        {
+            xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", parents[i], 0, XMPConst.ARRAY_IS_ORDERED);
         }
         // Write the packet back to the selected file
         var updatedPacket = xmp.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
@@ -74,32 +82,14 @@ function intersectArray(target, decider)
     for (var i = 0; i < target.length; i++)
     {
         var index = searchInXMPArray(decider, target[i]);
-        if (index)
+        if (index >= 0)
         {
-            intersection.push({value: target[i], index: index});
+            intersection.push({value: target[i], index: index+1});
         }
     }
     return intersection;
 }
 
-/**
- * traverse through object tree to sort all child nodes
- * @param {array} outPutArray
- */
-function sortArrayOutput (outPutArray)
-{
-    var traverseStack = [];
-    traverseStack.push(outPutArray);
-    while (traverseStack.length !== 0)
-    {
-        var array = traverseStack.pop();
-        sortOutput(array);
-        for (var i = 0; i < array.length; i++)
-        {
-            traverseStack.push(array[i].children);
-        }
-    }
-}
 
 function loadSubjects(xmp) {
     var subjects = [];
@@ -109,18 +99,16 @@ function loadSubjects(xmp) {
     }
     return subjects;
 }
-/**
- * Sort item array by descending confidence and by ascending name
- * @param {array} outputObj
- */
-function sortOutput (outputObj)
-{
-    outputObj.sort(function(a, b) {
-        return a.confidence === b.confidence ?
-            (a.name.toLowerCase() === b.name.toLowerCase() ? 0 : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
-            : (a.confidence < b.confidence ? 1: -1);
-    });
+function loadHierarchy(xmp) {
+    XMPMeta.registerNamespace("http://ns.adobe.com/lightroom/1.0/", "lr:");
+    var hierarchy = [];
+    for (i = 1; i <= xmp.countArrayItems("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject"); i++)
+    {
+        hierarchy.push(xmp.getArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", i));
+    }
+    return hierarchy;
 }
+
 
 /**
  * @param {array} array

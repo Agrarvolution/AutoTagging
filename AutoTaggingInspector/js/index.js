@@ -240,24 +240,25 @@ function checkboxClickProcessing(event) {
         var value = JSON.parse(event.target.value);
         if (value.name) {
             // HISTORY!!!
-            csInterface.evalScript("writeSelectionChange(" + JSON.stringify([value.name]) + "," + JSON.stringify(event.target.checked) + ")", function(e){
-                alert(e);
-            });
+            csInterface.evalScript("writeSelectionChange(" + JSON.stringify([value.name]) + "," +
+                JSON.stringify([discoverParentString(event.target)]) + "," + JSON.stringify(event.target.checked) + ")");
         }
     }
     return true;
 }
 
 
-function discoverParents(target) {
+function discoverParentString(target) {
     let chain = [];
     while (target)
     {
         if (target.value)
         {
             let valueTemp = JSON.parse(target.value);
-            valueTemp.checked = target.checked;
-            chain.push(valueTemp);
+            if (valueTemp.name) {
+                chain.push(valueTemp.name);
+            }
+
             if (target.parentNode.parentNode.parentNode.firstChild.firstChild)
             {
                 target = target.parentNode.parentNode.parentNode.firstChild.firstChild;
@@ -274,23 +275,14 @@ function discoverParents(target) {
     }
     if (chain[0])
     {
-        let parents = chain[chain.length-1];
-        let parentTraverse = parents;
-
-        for (let i = chain.length-1; i > 0; i--)
+        let outputString = "";
+        for (let i = chain.length-1; i >= 0; i--)
         {
-            parents.children = chain[i];
-            parentTraverse = parents.children;
-            parentTraverse.children = {};
-
-            if (i === 0)
-            {
-                parentTraverse.checked = true;
-            }
+            outputString += chain[i] + ((i !== 0) ? "|":"");
         }
-        return parents;
+        return outputString;
     }
-    return false;
+    return "";
 }
 
 function generateHierarchy(parent) {
