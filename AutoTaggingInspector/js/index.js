@@ -1,3 +1,5 @@
+"use strict";
+
 // Get a reference to a CSInterface object
 var csInterface = new CSInterface();
 
@@ -125,19 +127,19 @@ function displayContent(response)
             contentDOMTarget.appendChild(createParentItem(response[i]));
         }
     }
-
+    setupEventlistener();
 }
 
 function toggleHelpText(show)
 {
-    let text = document.getElementById('help');
+    let text = $('#help');
     if (show)
     {
-        text.classList.remove('hidden');
+        text.removeClass('hidden');
     }
     else
     {
-        text.classList.add('hidden');
+        text.addClass('hidden');
     }
 }
 
@@ -203,7 +205,7 @@ function createItem(item)
     let tag = document.createElement('div');
     tag.classList.add('itemSingle');
     let checkbox = document.createElement('input');
-    checkbox.classList.add('centerItems', 'centerItemCheckbox');
+    checkbox.classList.add('centerItems', 'centerItemCheckbox', 'itemCheckbox');
     checkbox.type = 'checkbox';
     checkbox.value = JSON.stringify({name: item.name, confidence: item.confidence});
     checkbox.checked = item.ticked;
@@ -211,12 +213,9 @@ function createItem(item)
     checkbox.addEventListener("click", checkboxClickProcessing);
 
     let label = document.createElement('label');
-    label.classList.add('centerItems');
+    label.classList.add('centerItems', 'itemLabel');
     label.appendChild(document.createTextNode(item.name)); // + " | " + Math.round(item.confidence*100)));
 
-    label.addEventListener("click", function(e) {
-        //e.target.previousSibling.click();
-    });
     label.addEventListener("dblclick", function (e) {
         e.target.nextSibling.classList.remove('hidden');
         e.target.classList.add('hidden');
@@ -224,7 +223,7 @@ function createItem(item)
     });
 
     let labelChange = document.createElement('input');
-    labelChange.classList.add('hidden', 'change');
+    labelChange.classList.add('hidden', 'change', 'itemChange');
     labelChange.type = "text";
     labelChange.value = item.name;
 
@@ -240,6 +239,12 @@ function createItem(item)
     tag.appendChild(labelChange);
 
     return tag;
+}
+
+function setupEventlistener() {
+    $('.itemCheckbox').click(checkboxClickProcessing).dblclick(function (){
+        alert('Doubleclick');
+    });
 }
 
 /*
@@ -275,22 +280,29 @@ function checkboxClickProcessing(event) {
 //@ToDo replace parenting strings of children -> wrong order
 function changeLabel(event) {
     event.target.previousSibling.classList.remove('hidden');
-    let tempValue = {};
-    tempValue = JSON.parse(event.target.previousSibling.previousSibling.value);
-
-    let prevNode = {name: tempValue.name, parent: discoverParentString(event.target.previousSibling.previousSibling)};
-
-    tempValue.name = event.target.value;
-    event.target.previousSibling.previousSibling.value = JSON.stringify(tempValue);
-    event.target.previousSibling.textContent = event.target.value;
-
-    let newNode = {name: event.target.previousSibling.textContent, parent: discoverParentString(event.target.previousSibling.previousSibling)};
-
-    csInterface.evalScript("renameLable(" + JSON.stringify(prevNode) + "," + JSON.stringify(newNode) + ")", function(e) {
-        alert(e);
-    });
-
     event.target.classList.add('hidden');
+
+    let tempValue = JSON.parse(event.target.previousSibling.previousSibling.value);
+    if (tempValue.name !== event.target.value) {
+        let prevNode = {
+            name: tempValue.name,
+            parent: discoverParentString(event.target.previousSibling.previousSibling)
+        };
+
+        tempValue.name = event.target.value;
+        event.target.previousSibling.previousSibling.value = JSON.stringify(tempValue);
+        event.target.previousSibling.textContent = event.target.value;
+
+        let newNode = {
+            name: event.target.previousSibling.textContent,
+            parent: discoverParentString(event.target.previousSibling.previousSibling)
+        };
+        let hierarchy = generateHierarchy(event.target.previousSibling.previousSibling);
+        csInterface.evalScript("renameLable(" + JSON.stringify(prevNode) + "," + JSON.stringify(newNode) + ")", function (e) {
+            alert(e);
+        });
+    }
+
 }
 
 function discoverParentString(target) {
@@ -331,31 +343,41 @@ function discoverParentString(target) {
 }
 
 function generateHierarchy(parent) {
-    let subjects = [], hierarchy = [], parentStack = [], parentPrefixStack = [];
+    let hierarchy = [], parentStack = [], parentPrefixStack = [];
 
     parentStack.push(parent);
-    parentPrefixStack.push("");
-    while (parentStack.length !== 0 || parentPrefixStack.length !== 0)
+
+    while (parentStack.length !== 0)
     {
+        let currentParent = parentStack.pop();
 
-        let parentName = parentPrefixStack.pop();
-        let parentPrefix = parentName === "" ? parentStack.name : parentName + "|" + parentStack.name;
-        if (parentStack.checked && !subjects.indexOf(parentStack.name))
+        let hierarchyString = "";
+        if (parent === currentParent)
         {
-            subjects.push(parentStack.name);
+            hierarchyString = discoverParentString(currentParent);
+        }
+        else
+        {
+            let parentName = parentPrefixStack.pop();
+            let tempValue = JSON.parse(currentParent.value);
+            hierarchyString = (parentName === "" ? parentName : parentName + "|") + tempValue.name;
         }
 
-        if (!hierarchy.indexOf(parentPrefix))
+        if (hierarchy.indexOf(hierarchyString) < 0)
         {
-            hierarchy.push(parentPrefix);
+            hierarchy.push(hierarchyString);
         }
-        for (let i = 0; i < parent.children.length; i++)
+
+        if (currentParent.parentNode.nextSibling && currentParent.parentNode.nextSibling.childNodes)
         {
-            parentStack.push(parent.children[i]);
-            parentPrefixStack.push(parentPrefix);
+            for (let i = 0; i < currentParent.parentNode.nextSibling.childNodes.length; i++)
+            {
+                parentStack.push(currentParent.parentNode.nextSibling.childNodes[i].firstChild);
+                parentPrefixStack.push(hierarchyString);
+            }
         }
     }
-    return {subjects: subjects, hierarchy: hierarchy};
+    return hierarchy;
 }
 
 /*
