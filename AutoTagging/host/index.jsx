@@ -109,6 +109,6 @@ function getLabels(path) {
                 resolve(-1); // ERROR!
             });
     });
-};
+}
 
 

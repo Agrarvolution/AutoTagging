@@ -8,7 +8,7 @@
 //#include "js/libs/promise.js"
 //#include "VisionLabels.js"
 
-//#include "AWS/RekognitionLabels.js"
+//#include "AWS/RekognitionLabels.jsx"
 //#include "CombineScript.jsx"
 //#include "ModifyTags.jsx"
 //#include "Label.js"
@@ -44,6 +44,7 @@ class DataManagement
         let jsonAWS = this.sendToAWS(labelList.imagePath);
         let recognitionObject = this.handleRecognitionResponse(jsonAWS);
 
+        statusMessageHandler.add(recognitionObject);
         /*
 
         old
@@ -73,7 +74,7 @@ class DataManagement
      */
     handleRecognitionResponse(responseJSON)
     {
-        let recognitionObject = secureParseJSON(responseJSON);
+        let recognitionObject = JSON.parse(responseJSON);
         let tagArray = [];
 
         // check validity
