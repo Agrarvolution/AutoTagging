@@ -1,13 +1,13 @@
-let AWS; // global variable for accessing AWS services
-let image2base64; // global variable for encoding .png and .jpeg to a base64 string
+//var AWS; // global variable for accessing AWS services
+//var image2base64; // global variable for encoding .png and .jpeg to a base64 string
 
 // ----------------------------------------------------------
 // ==========================================================
 // ----------------------------------------------------------
-
 function startLabelDetection() {
     // setup global variables for AWS and image2base64
-    init();
+    //AWS = require('aws-sdk');
+    //image2base64 = require('image-to-base64');
     
     //TODO: open file browser and let user select pics
     //TODO: get pic URLs/paths
@@ -20,12 +20,6 @@ function startLabelDetection() {
 // ----------------------------------------------------------
 // ==========================================================
 // ----------------------------------------------------------
-
-function init() {
-    // Load the SDK and base64encoder
-    AWS = require('aws-sdk');
-    image2base64 = require('image-to-base64');
-}
 
 /**
  * @description Checks if the credentials file exists at all. If it does, it is checked on whether the credentials are valid or not via the

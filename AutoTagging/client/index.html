@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Auto-Tagging</title>
     <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="../../../Carolin/AutoTagging/host/index.jsx"></script>
 </head>
 
 <body>
@@ -96,8 +97,11 @@
 </div>
 
 <!-- 3) Add your script dependencies here, including CEP's CSInterface.js library -->
-<script type="text/javascript" src="CSInterface.js"></script>
-<script type="text/javascript" src="index.js"></script>
+<script type="text/javascript" src="CSInterface.js" id="first-script"></script>
+<script type="text/javascript" src="../host/AWS/RekognitionLabels.js"></script>
+<script type="text/javascript" src="../host/LabelList.js"></script>
 <script type="text/javascript" src="../host/DataManagement.jsx"></script>
+<script type="text/javascript" src="../host/index.jsx"></script>
+<script type="text/javascript" src="index.js"></script>
 </body>
 </html>
