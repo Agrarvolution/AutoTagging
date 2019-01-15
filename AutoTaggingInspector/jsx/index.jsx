@@ -1,3 +1,46 @@
+function renameLable(previousNode, newNode)
+{
+    var thumb = app.document.selections[0];
+
+    if(thumb.hasMetadata) {
+        // Get the metadata object - wait for  valid values
+        var md = thumb.synchronousMetadata;
+
+        // Get the XMP packet as a string and create the XMPMeta object
+        var xmp = new XMPMeta(md.serialize());
+
+        // Change the creator tool
+        xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by AutoTaggingGUI");
+
+        // Change the date modified
+        var d = new XMPDateTime(new Date());
+        d.convertToLocalTime();
+        xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
+
+        var subjects = loadSubjects(xmp);
+        var indexInSubjects = searchInXMPArray(subjects, previousNode.name)+1;
+        if (indexInSubjects)
+        {
+            xmp.deleteArrayItem(XMPConst.NS_DC, "subject", indexInSubjects);
+            xmp.appendArrayItem(XMPConst.NS_DC, "subject", newNode.name, 0, XMPConst.ARRAY_IS_ORDERED);
+        }
+
+
+        var hierarchy = loadHierarchy(xmp);
+        xmp.deleteArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", searchInXMPArray(hierarchy, previousNode.parent)+1);
+        xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", newNode.parent, 0, XMPConst.ARRAY_IS_ORDERED);
+
+        // Write the packet back to the selected file
+        var updatedPacket = xmp.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
+
+        // Uncomment to see the XMP packet in XML form
+        // $.writeln(updatedPacket);
+        thumb.metadata = new Metadata(updatedPacket);
+
+        return "success";
+    }
+}
+
 function writeSelectionChange(nodes, parents, add)
 {
 

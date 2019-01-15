@@ -200,19 +200,44 @@ launch event listeners
  */
 function createItem(item)
 {
-    let tag = document.createElement('p');
+    let tag = document.createElement('div');
     tag.classList.add('itemSingle');
     let checkbox = document.createElement('input');
     checkbox.classList.add('centerItems', 'centerItemCheckbox');
     checkbox.type = 'checkbox';
     checkbox.value = JSON.stringify({name: item.name, confidence: item.confidence});
     checkbox.checked = item.ticked;
+
     checkbox.addEventListener("click", checkboxClickProcessing);
+
     let label = document.createElement('label');
     label.classList.add('centerItems');
-    label.appendChild(document.createTextNode(item.name + " | " + Math.round(item.confidence*100)));
+    label.appendChild(document.createTextNode(item.name)); // + " | " + Math.round(item.confidence*100)));
+
+    label.addEventListener("click", function(e) {
+        //e.target.previousSibling.click();
+    });
+    label.addEventListener("dblclick", function (e) {
+        e.target.nextSibling.classList.remove('hidden');
+        e.target.classList.add('hidden');
+        e.target.nextSibling.focus();
+    });
+
+    let labelChange = document.createElement('input');
+    labelChange.classList.add('hidden', 'change');
+    labelChange.type = "text";
+    labelChange.value = item.name;
+
+    labelChange.addEventListener('blur', changeLabel);
+    labelChange.addEventListener('keydown', function (e) {
+        if (e.which === 13)
+        {
+            this.blur();
+        }
+    });
     tag.appendChild(checkbox);
     tag.appendChild(label);
+    tag.appendChild(labelChange);
 
     return tag;
 }
@@ -247,6 +272,26 @@ function checkboxClickProcessing(event) {
     return true;
 }
 
+//@ToDo replace parenting strings of children -> wrong order
+function changeLabel(event) {
+    event.target.previousSibling.classList.remove('hidden');
+    let tempValue = {};
+    tempValue = JSON.parse(event.target.previousSibling.previousSibling.value);
+
+    let prevNode = {name: tempValue.name, parent: discoverParentString(event.target.previousSibling.previousSibling)};
+
+    tempValue.name = event.target.value;
+    event.target.previousSibling.previousSibling.value = JSON.stringify(tempValue);
+    event.target.previousSibling.textContent = event.target.value;
+
+    let newNode = {name: event.target.previousSibling.textContent, parent: discoverParentString(event.target.previousSibling.previousSibling)};
+
+    csInterface.evalScript("renameLable(" + JSON.stringify(prevNode) + "," + JSON.stringify(newNode) + ")", function(e) {
+        alert(e);
+    });
+
+    event.target.classList.add('hidden');
+}
 
 function discoverParentString(target) {
     let chain = [];

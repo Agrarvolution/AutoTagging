@@ -21,10 +21,20 @@ p.item {
 div.items {
     margin-left: 10px;
 }
+div.itemSingle {
+    white-space: nowrap;
+    overflow: hidden;
+    min-height: 1.6em;
+}
 .hidden {
     display: none;
 }
 
+input.change {
+    margin-bottom: 0;
+    margin-top: 0;
+    position: relative;
+}
 /* ToDo Container Hiding for Dropdown */
 
 /* ToDo layout - Single or Multicolumn & Scolling if content doesn't fit */
