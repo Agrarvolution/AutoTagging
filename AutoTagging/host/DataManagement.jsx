@@ -25,34 +25,103 @@ function main()
 }
 */
 
-
-function main()
+class DataManagement
 {
-    alert("Opening DataManagement");
-    
-    var imagePath = getImagePath();
-
-    const labelListFile = require("./LabelList.js");
-
-
-    let test = labelListFile.testOutput();
-}
-
-function findLabels(labelList)
-{
-    if (labelList.imagePath !== null && labelList.imagePath !== "")
+    constructor()
     {
-        var jsonAWS = sendToAWS(labelList.imagePath);
-        var jsonVision = sendToVision(labelList.imagePath);
+        statusMessageHandler.add("Opening DataManagement");
+    }
 
-        var recognitionObject = handleRekognitionResponse(jsonAWS);
-        var visionObject = handleVisionResponse(jsonVision);
+    static startByClick()
+    {
+        statusMessageHandler.add("Started DataManagement Script through index.js");
 
-        labelList.labels = CombineScript.getSingleList(recognitionObject, visionObject);
-        
-	    alert(labelList.labels);
+        new DataManagement().findLabels(new LabelList());
+    }
+
+    findLabels(labelList)
+    {
+        let jsonAWS = this.sendToAWS(labelList.imagePath);
+        let recognitionObject = this.handleRecognitionResponse(jsonAWS);
+
+        /*
+
+        old
+
+        if (labelList.imagePath !== null && labelList.imagePath !== "")
+        {
+
+            var visionObject = handleVisionResponse(jsonVision);
+
+            labelList.labels = CombineScript.getSingleList(recognitionObject, visionObject);
+
+            alert(labelList.labels);
+        }
+        */
+    }
+
+    sendToAWS(imagePath)
+    {
+        let recognitionLabelsObject = new RecognitionLabels();
+        return recognitionLabelsObject.getLabels(imagePath);
+    }
+
+    /**
+     * responseJSON gets parsed and the object is checked, whether the result is a valid Amazon Rekognition response.
+     * @return empty array or array map with the description and confidence of the found tags
+     * @param responseJSON
+     */
+    handleRecognitionResponse(responseJSON)
+    {
+        let recognitionObject = secureParseJSON(responseJSON);
+        let tagArray = [];
+
+        // check validity
+        if (!recognitionObject.Labels)
+        {
+            return [];
+        }
+
+
+        for (let i = 0; i < recognitionObject.Labels.length; i++)
+        {
+            let responsePart = recognitionObject.Labels[i];
+            if (recognitionObject.Labels[i].Name && recognitionObject.Labels[i].Confidence && recognitionObject.Labels[i].Parents)
+            {
+                let parents = [];
+                for (var pIndex = 0; pIndex < recognitionObject.Labels[i].Parents.length; pIndex++)
+                {
+                    parents.push = recognitionObject.Labels[i].Parents[pIndex];
+                }
+
+                if (responsePart.Name === 'string' || responsePart.Name instanceof String)
+                {
+                    let labelNew = new Label(recognitionObject.Labels[i].Name, recognitionObject.Labels[i].Confidence, parents);
+                    labelNew.clamp();
+                    labelNew.sanitize();
+                    tagArray.push(labelNew);
+                }
+            }
+            else if (recognitionObject.Labels[i].Name && recognitionObject.Labels[i].Confidence)
+            {
+                if (responsePart.Name === 'string' || responsePart.Name instanceof String)
+                {
+                    let labelNew = new Label(recognitionObject.Labels[i].Name, recognitionObject.Labels[i].Confidence, []);
+                    labelNew.clamp();
+                    labelNew.sanitize();
+                    tagArray.push(labelNew);
+                }
+            }
+        }
+        return tagArray;
     }
 }
+
+
+
+
+
+
 
 /**
  * Exports the selected image(s) and returns the absolute path to the copy or creates a list of files to tag if multiple images are selected
@@ -72,17 +141,10 @@ function getImagePath()
     }
     */
 
-    var currentPreviewFile = app.document.selections[0].core.preview.preview;
-    currentPreviewFile.exportTo (imagePath, 10);
+    //var currentPreviewFile = app.document.selections[0].core.preview.preview;
+    //currentPreviewFile.exportTo (imagePath, 10);
 
     return imagePath;
-}
-
-function sendToAWS(imagePath)
-{
-    var recognitionLabelsObject = new RecognitionLabels();
-    var recognitionLabels = recognitionLabelsObject.getLabels(imagePath);
-    return recognitionLabels;
 }
 
 function sendToVision(imagePath)
@@ -130,69 +192,17 @@ function handleVisionResponse(responseJSON)
     return tagArray;
 }
 
-/**
- * reponseJSON gets parsed and the object is checked, whether the result is a valid Amazon Rekognition response.
- * @return empty array or array map with the description and confidence of the found tags
- * @param {string} reponseJSON 
- */
-function handleRekognitionResponse(responseJSON) 
-{
-    var rekognitionObject = secureParseJSON(responseJSON);
-    var tagArray = [];
-
-    // check validity
-    if (!rekognitionObject.Labels) 
-    {
-        return [];
-    }
-
-
-    for (var i = 0; i < rekognitionObject.Labels.length; i++) 
-    {
-        if (rekognitionObject.Labels[i].Name && rekognitionObject.Labels[i].Confidence && rekognitionObject.Labels[i].Parents)
-        {
-            var parents = [];
-            for (var pIndex = 0; pIndex < rekognitionObject.Labels[i].Parents.length; pIndex++)
-            {
-                parents.push = rekognitionObject.Labels[i].Parents[pIndex];
-            }
-            
-            var responsePart = rekognitionObject.Labels[i];
-            if (responsePart.Name === 'string' || responsePart.Name instanceof String)
-            {
-                var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, parents);
-                labelNew.clamp();
-                labelNew.sanitize();
-                tagArray.push(labelNew);
-            }
-        }
-        else if (rekognitionObject.Labels[i].Name && rekognitionObject.Labels[i].Confidence)
-        {
-            if (responsePart.Name === 'string' || responsePart.Name instanceof String)
-            {
-                var labelNew = new Label(rekognitionObject.Labels[i].Name, rekognitionObject.Labels[i].Confidence, []);
-                labelNew.clamp();
-                labelNew.sanitize();
-                tagArray.push(labelNew);
-            }
-        }
-    }
-    return tagArray;
-}
 
 
 
 
-
-export default function startByClick()
-{
-    alert("Started DataManagement Script through index.js");
-
-}
 
 
 
 
 // TODO: Event handler anbinden, der onSelectionChanged das script startet
 
-main();
+//main();
+
+
+//module.exports = DataManagement;

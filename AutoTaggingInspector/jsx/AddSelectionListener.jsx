@@ -1,17 +1,21 @@
-﻿function AddSelectionListener()
+﻿"use strict";
+
+#include "js/libs/json2.js"
+
+function AddSelectionListener()
 {
 
 	/**
 	 The context in which this snippet can run.
 	 @type String
 	*/
-	this.requiredContext = "Needs to run in Bridge, \nwith a selection of a file, \nideally with some metadata";	
+	this.requiredContext = "Needs to run in Bridge, \nwith a selection of a file, \nideally with some metadata";
 }
 
 /**
  Functional part of this snippet.  Get the selected Thumbnail and creates an XMPFile object which
  is used to get access to the XMP data.
- 
+
  @return True if the snippet ran as expected, false otherwise
  @type boolean
 */
@@ -24,13 +28,13 @@ AddSelectionListener.prototype.run = function()
     }
 
 	$.writeln("About to run AddSelectionListener");
-	
+
 	// Get the selected file
     app.eventHandlers.push( {handler: createSelectionHandler} );
     return true;
 };
 
-function createSelectionHandler(event)
+createSelectionHandler = function(event)
 {
     if ( event.object instanceof Document && event.type === 'selectionsChanged') {
         if (app.document.selectionLength > 0)
@@ -43,23 +47,37 @@ function createSelectionHandler(event)
             } catch(e) { alert("Missing ExternalObject: "+e); }
             //throw update event
             $.writeln("About to throw event");
-            if (xLib) {
-                var eventObj = new CSXSEvent();
-                eventObj.type = "updateAutoTagInspector";
-                eventObj.data = JSON.stringify({ "thumbnail": app.document.selections[0].core.preview.preview, "description": "Is it working?" });
-                eventObj.dispatch();
+            if (xLib)
+            {
+                $.writeln (this);
+                throwEvent();
             }
         }
 
     }
-}
+};
+
+throwEvent = function()
+{
+    var imagePath = "C:/AutoTagging/tempImage.jpg";
+
+    var currentPreviewFile = app.document.selections[0].core.preview.preview;
+    currentPreviewFile.exportTo (imagePath, 10);
+
+    var eventObj = new CSXSEvent();
+    eventObj.type = "updateAutoTagInspector";
+    eventObj.data = JSON.stringify({ "description": "Is it working?" });
+    eventObj.dispatch();
+
+    return true;
+};
 
 /**
-  Determines whether snippet can be run given current context.  The snippet 
+  Determines whether snippet can be run given current context.  The snippet
   fails if these preconditions are not met:
   <ul>
   <li> Must be running in Bridge
-  <li> A selection must be made in the Content pane of Bridge 
+  <li> A selection must be made in the Content pane of Bridge
   </ul>
 
   @return True is this snippet can run, false otherwise
@@ -68,13 +86,12 @@ function createSelectionHandler(event)
 AddSelectionListener.prototype.canRun = function()
  {
     // Must be running in Bridge & have a selection
-	$.writeln(BridgeTalk.appName);
-    
+
 	if( (BridgeTalk.appName === "bridge")) {
 		return true;
 	}
 
-	// Fail if these preconditions are not met.  
+	// Fail if these preconditions are not met.
 	// Bridge must be running,
 	// There must be a selection.
 	$.writeln("ERROR:: Cannot run AddSelectionListener");

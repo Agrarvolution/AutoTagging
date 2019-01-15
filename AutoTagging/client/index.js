@@ -1,9 +1,6 @@
 /* 1) Create an instance of CSInterface. */
 var csInterface = new CSInterface();
-
-alert("alert before import");
-
-//import startScript from '../host/DataManagement.jsx';
+var statusMessageHandler = new StatusMessage();
 
 // ==========================================================
 // ----------------------------------------------------------
@@ -45,15 +42,11 @@ function removeOfflineOverlay() {
 
 function catchSelectionEvent(event)
 {
-    var offlineMessage = document.getElementById('offline_message');
-    let eventData = event.data;
-    offlineMessage.textContent = eventData.description;
+    DataManagement.startByClick();
+    statusMessageHandler.add("registering a click event");
+    statusMessageHandler.add(JSON.stringify(event.data));
 
     var imagePath = "C:/AutoTagging/tempImage.jpg";
-    var currentPreviewFile = eventData.thumbnail;
-    //currentPreviewFile.exportTo (imagePath, 10);
-    //alert(event.data);
-    //startScript();
 }
 
 /**
@@ -64,6 +57,8 @@ function init() {
     Vision_selected = false;
 
     registerEventHandler();
+
+    startLabelDetection();
 
     CEP_checkIfAWSLoggedIn();
     //TODO: check if Vision logged in
@@ -134,3 +129,47 @@ function CEP_checkIfAWSLoggedIn() {
 function CEP_startLabeling() {
     csInterface.evalScript("startLabelDetection()");
 }
+
+/**
+ * Sanitation method for a single string
+ * @param {string} text
+ */
+function sanitizeString(text)
+{
+    return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").replace("\(^[\s\n\r\t\x0B]+)|([\s\n\r\t\x0B]+$)/g", "");
+}
+
+
+
+
+
+
+function StatusMessage()
+{
+    messages = [];
+}
+
+StatusMessage.prototype.add = function(message)
+{
+    var nrOfMessagesDisplayed = 5;
+
+    if (!this.messages)
+    {
+        this.messages = [nrOfMessagesDisplayed];
+    }
+
+    if (this.messages.length >= nrOfMessagesDisplayed)
+    {
+        this.messages.shift();
+    }
+
+    this.messages.push(message);
+
+    this.write();
+};
+
+StatusMessage.prototype.write = function()
+{
+    var offlineMessage = document.getElementById('offline_message');
+    offlineMessage.innerHTML = this.messages.join("<br>");
+};
