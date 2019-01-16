@@ -49,7 +49,6 @@ createSelectionHandler = function(event)
             $.writeln("About to throw event");
             if (xLib)
             {
-                $.writeln (this);
                 throwEvent();
             }
         }
@@ -60,13 +59,18 @@ createSelectionHandler = function(event)
 throwEvent = function()
 {
     var imagePath = "C:/AutoTagging/tempImage.jpg";
+    var imagePath2 = "C:/AutoTagging/tempImage2.jpg";
 
     var currentPreviewFile = app.document.selections[0].core.preview.preview;
     currentPreviewFile.exportTo (imagePath, 10);
 
     var eventObj = new CSXSEvent();
     eventObj.type = "updateAutoTagInspector";
-    eventObj.data = JSON.stringify({ "description": "Is it working?" });
+    
+    var jpegStream = currentPreviewFile.loadFromJpegStream(imagePath2, 10);
+    var metaData = app.document.selections[0].synchronousMetadata.read();
+    
+    eventObj.data = JSON.stringify({ "description": "Is it working?", "JPEGStream": jpegStream , "MetaDataRead": metaData });
     eventObj.dispatch();
 
     return true;
