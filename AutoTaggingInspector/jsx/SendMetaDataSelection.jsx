@@ -73,7 +73,16 @@ function createSelectionHandler(event)
                 XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
                 var tagList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
                 var historyList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
-                
+
+                if (historyList !== undefined && historyList != null)
+                {
+                    historyList = JSON.parse(historyList);
+                }
+                else
+                {
+                    historyList = [];
+                }
+
                 if (tagList !== undefined && tagList != null)
                 {
                     //$.writeln(tagList);
@@ -81,56 +90,60 @@ function createSelectionHandler(event)
 
                     var response = [];
                     //reverse child to parents relationship to parent to children
-                    for (var i = 0; i < tagList.length; i++)
-                    {
+                    for (var i = 0; i < tagList.length; i++) {
                         var parentIndices = [];
 
                         //insert parents
-                        for (var pi = 0; pi < tagList[i].parents.length; pi++)
-                        {
+                        for (var pi = 0; pi < tagList[i].parents.length; pi++) {
                             var index = -1;
                             var name = tagList[i].parents[pi].description;
-                            if (name === undefined)
-                            {
+                            if (name === undefined) {
                                 name = tagList[i].parents[pi].name;
                             }
+
                             index = findInHierarchy(response, name);
-                            if (index < 0)
-                            {
+                            $.writeln(name);
+                            var histIndex = findInHistory(historyList, name);
+                            $.writeln(name + " " + histIndex);
+                            //check if parent terminated
+                            if ((index < 0 && histIndex < 0) || (histIndex >= 0 && historyList[histIndex].property !== "terminate")) {
                                 response.push({
                                     name: name,
                                     confidence: 1.0,
                                     children: [],
                                     ticked: false
                                 });
-                                parentIndices.push(response.length-1);
-                            }
-                            else
-                            {
+                                parentIndices.push(response.length - 1);
+                            } else {
                                 parentIndices.push(index);
                             }
                         }
-                        //setup child
-                        var child = {
-                            name: tagList[i].description,
-                            confidence: tagList[i].confidence,
-                            children: [],
-                            ticked: false
-                        };
-                        for (pi = 0; pi < parentIndices.length; pi++)
+
+                        histIndex = findInHistory(historyList, tagList[i].description);
+                        //terminate child
+                        $.writeln(tagList[i].description + "  " + histIndex);
+                        if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
                         {
-                            if (findInHierarchy(response[parentIndices[pi]], tagList[i].description) < 0)
-                            {
-                                //set parent reference
-                                response[parentIndices[pi]].children.push(child);
+                            //setup child
+                            var child = {
+                                name: tagList[i].description,
+                                confidence: tagList[i].confidence,
+                                children: [],
+                                ticked: false
+                            };
+                            for (pi = 0; pi < parentIndices.length; pi++) {
+                                if (findInHierarchy(response[parentIndices[pi]], tagList[i].description) < 0) {
+                                    //set parent reference
+                                    response[parentIndices[pi]].children.push(child);
+                                }
                             }
-                        }
-                        if (parentIndices.length === 0)
-                        {
-                            response.push(child);
+                            if (parentIndices.length === 0) {
+                                response.push(child);
+                            }
                         }
                     }
                 }
+                $.writeln("Done response");
                 var subjects = [];
                 var hierarchy = [];
                 for (i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++)
@@ -193,9 +206,8 @@ function createSelectionHandler(event)
                 //check ticks
                 depthSearchTick(nodeHierarchy,subjects);
 
-                if(response !== undefined && historyList !== undefined && historyList != null)
+                if(response !== undefined)
                 {
-                    historyList = JSON.parse(historyList);
                     //combine written tags and reponse tags -> could be made into a depth/breadth traverse method
                     for (i = 0; i < response.length; i++)
                     {
@@ -213,24 +225,16 @@ function createSelectionHandler(event)
                                 else
                                 {
                                     //add if non existent
-                                    var histIndex = findInHistory(historyList, response[i].children[ci]);
-                                    if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
-                                    {
-                                        nodeHierarchy[index].children.push(response[i].children[ci]);
-                                    }
+                                    nodeHierarchy[index].children.push(response[i].children[ci]);
                                 }
                             }
                         }
                         else
                         {
                             //add if non existent
-                            //check if terminated
-                            var histIndex = findInHistory(historyList, response[i]);
-                            if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
-                            {
-                                nodeHierarchy.push(response[i]);
-                            }
-                            //@Todo handle children
+
+                            nodeHierarchy.push(response[i]);
+
                         }
                     }
                 }
@@ -361,11 +365,11 @@ function findInHierarchy (array, targetString)
 	return -1;
 }
 
-function findInHistory (history, nodeObject)
+function findInHistory (history, nodeString)
 {
     for (var i = 0; i < history.length; i++)
     {
-        if (history[i].name.toLowerCase() === nodeObject.name.toLowerCase())
+        if (history[i].name.toLowerCase() === nodeString.toLowerCase())
         {
             return i;
         }
