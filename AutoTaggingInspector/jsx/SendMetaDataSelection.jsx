@@ -192,9 +192,10 @@ function createSelectionHandler(event)
                 }
                 //check ticks
                 depthSearchTick(nodeHierarchy,subjects);
-                
-                if(response !== undefined)
+
+                if(response !== undefined && historyList !== undefined && historyList != null)
                 {
+                    historyList = JSON.parse(historyList);
                     //combine written tags and reponse tags -> could be made into a depth/breadth traverse method
                     for (i = 0; i < response.length; i++)
                     {
@@ -207,12 +208,21 @@ function createSelectionHandler(event)
                                 var cIndex = findInHierarchy(nodeHierarchy[index].children, response[i].children[ci].name);
                                 if (cIndex > 0)
                                 {
-                                    nodeHierarchy[index].children[cIndex] = response[i].children[ci].confidence;
+                                    nodeHierarchy[index].children[cIndex].confidence = response[i].children[ci].confidence;
                                 }
                                 else
                                 {
                                     //add if non existent
-                                    nodeHierarchy[index].children.push(response[i].children[ci]);
+                                    var histIndex = findInHistory(historyList, response[i].children[ci]);
+                                    $.writeln(histIndex);
+                                    if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
+                                    {
+                                        nodeHierarchy[index].children.push(response[i].children[ci]);
+                                    }
+                                    else
+                                    {
+                                            
+                                    }
                                 }
                             }
                         }
@@ -220,23 +230,16 @@ function createSelectionHandler(event)
                         {
                             //add if non existent
                             //check if terminated
-                            /*if (historyList !== undefined && historyList != null)
+                            var histIndex = findInHistory(historyList, response[i]);
+                            if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
                             {
-                                historyList = JSON.parse(historyList);
-                                if (historyList[findInHistory(historyList, response[i])].property !== "terminate")
-                                {
-                                    nodeHierarchy.push(response[i]);
-                                }
-                            }
-                            else
-                            {*/
                                 nodeHierarchy.push(response[i]);
-
+                            }
                         }
                     }
                 }
 
-                $.writeln("Combined tags & response");
+                //$.writeln("Combined tags & response");
                 sortArrayOutput(nodeHierarchy);
 
                 $.writeln("Init xLib");
