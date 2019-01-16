@@ -131,7 +131,7 @@ function displayContent(response)
             contentDOMTarget.appendChild(createParentItem(response[i]));
         }
     }
-    setupEventlistener();
+    setupEventListeners();
 }
 
 function toggleHelpText(show)
@@ -208,36 +208,22 @@ function createItem(item)
 {
     let tag = document.createElement('div');
     tag.classList.add('itemSingle');
+
     let checkbox = document.createElement('input');
     checkbox.classList.add('centerItems', 'centerItemCheckbox', 'itemCheckbox');
     checkbox.type = 'checkbox';
     checkbox.value = JSON.stringify({name: item.name, confidence: item.confidence});
     checkbox.checked = item.ticked;
 
-    checkbox.addEventListener("click", checkboxClickProcessing);
-
     let label = document.createElement('label');
     label.classList.add('centerItems', 'itemLabel');
     label.appendChild(document.createTextNode(item.name)); // + " | " + Math.round(item.confidence*100)));
-
-    label.addEventListener("dblclick", function (e) {
-        e.target.nextSibling.classList.remove('hidden');
-        e.target.classList.add('hidden');
-        e.target.nextSibling.focus();
-    });
 
     let labelChange = document.createElement('input');
     labelChange.classList.add('hidden', 'change', 'itemChange');
     labelChange.type = "text";
     labelChange.value = item.name;
 
-    labelChange.addEventListener('blur', changeLabel);
-    labelChange.addEventListener('keydown', function (e) {
-        if (e.which === 13)
-        {
-            this.blur();
-        }
-    });
     tag.appendChild(checkbox);
     tag.appendChild(label);
     tag.appendChild(labelChange);
@@ -245,9 +231,38 @@ function createItem(item)
     return tag;
 }
 
-function setupEventlistener() {
+/*
+@ToDo Setup Event Listeners for Items
+Checkbox:
+    checked - schedule write function - add item to list
+    unchecked - schedule write function - remove item from list
+ Text:
+    double click - open input dialog - default value is item text
+    blur - save changes, schedule write function - add item to list, remove old item, add changes to user defined tags
+    single click - check or uncheck
+Group:
+    single click - drag event
+    blur - drop element where it hovered over last (highlight to which object it will be attached)
+        - enable attaching either to item (parenting - make new subgroup & dropdown) or in between items
+        - schedule write event - change tags & parenting
+
+ */
+
+function setupEventListeners() {
     $('.itemCheckbox').click(checkboxClickProcessing).dblclick(function (){
         alert('Doubleclick');
+    });
+    $('.itemLabel').click( function() {
+        $(this).parent().children('.itemCheckbox').trigger('click');
+    }).dblclick(function (e) {
+        e.target.nextSibling.classList.remove('hidden');
+        e.target.classList.add('hidden');
+        e.target.nextSibling.focus();
+    });
+    $('.itemChange').blur(changeLabel).keydown(function (e) {
+        if (e.which === 13) {
+            $(this).blur();
+        }
     });
 }
 
@@ -440,22 +455,7 @@ function searchInResponse(name, property) {
 }
 
 
-/*
-@ToDo Setup Event Listeners for Items
-Checkbox:
-    checked - schedule write function - add item to list
-    unchecked - schedule write function - remove item from list
- Text:
-    double click - open input dialog - default value is item text
-    blur - save changes, schedule write function - add item to list, remove old item, add changes to user defined tags
-    single click - check or uncheck
-Group:
-    single click - drag event
-    blur - drop element where it hovered over last (highlight to which object it will be attached)
-        - enable attaching either to item (parenting - make new subgroup & dropdown) or in between items
-        - schedule write event - change tags & parenting
 
- */
 
 /*
 @ToDo Update if data was changed external
