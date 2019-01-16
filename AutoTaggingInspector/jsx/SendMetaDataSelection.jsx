@@ -214,14 +214,9 @@ function createSelectionHandler(event)
                                 {
                                     //add if non existent
                                     var histIndex = findInHistory(historyList, response[i].children[ci]);
-                                    $.writeln(histIndex);
                                     if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
                                     {
                                         nodeHierarchy[index].children.push(response[i].children[ci]);
-                                    }
-                                    else
-                                    {
-                                            
                                     }
                                 }
                             }
@@ -235,6 +230,7 @@ function createSelectionHandler(event)
                             {
                                 nodeHierarchy.push(response[i]);
                             }
+                            //@Todo handle children
                         }
                     }
                 }
