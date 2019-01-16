@@ -66,6 +66,7 @@ function renameLabel(previousNode, newNode, historyChange)
 
         return "success";
     }
+    return "failure";
 }
 
 function writeSelectionChange(nodes, parents, add)
@@ -127,6 +128,7 @@ function writeSelectionChange(nodes, parents, add)
 
         return "success";
     }
+    return "failure";
 }
 
 /**

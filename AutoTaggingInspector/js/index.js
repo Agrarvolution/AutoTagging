@@ -247,11 +247,12 @@ Group:
         - schedule write event - change tags & parenting
 
  */
-
+/**
+ * Helper method to setup all the event listeners inside the dom tree.
+ */
 function setupEventListeners() {
-    $('.itemCheckbox').click(checkboxClickProcessing).dblclick(function (){
-        alert('Doubleclick');
-    });
+    $('.itemCheckbox').click(checkboxClickProcessing).dblclick(checkboxDblClickProcessing);
+
     $('.itemLabel').click( function() {
         $(this).parent().children('.itemCheckbox').trigger('click');
     }).dblclick(function (e) {
@@ -259,6 +260,7 @@ function setupEventListeners() {
         e.target.classList.add('hidden');
         e.target.nextSibling.focus();
     });
+
     $('.itemChange').blur(changeLabel).keydown(function (e) {
         if (e.which === 13) {
             $(this).blur();
@@ -284,19 +286,58 @@ function setupEventListeners() {
 
 @Todo Future: scheduler -> only check per second and image (and on closing) -> less ressource intensive
  */
+/**
+ * Saves one checked checkbox into the XMP file of the image.
+ * @param event
+ * @returns {boolean} true on success
+ */
 function checkboxClickProcessing(event) {
     if (event.target.value) {
         var value = JSON.parse(event.target.value);
         if (value.name) {
             // HISTORY!!!
             csInterface.evalScript("writeSelectionChange(" + JSON.stringify([value.name]) + "," +
-                JSON.stringify([discoverParentString(event.target)]) + "," + JSON.stringify(event.target.checked) + ")");
+                JSON.stringify([discoverParentString(event.target)]) + "," + JSON.stringify(event.target.checked) + ")", function (e) {
+                if (e === 'failure')
+                {
+                    event.target.checked = !event.target.checked;
+                }
+            });
         }
     }
     return true;
 }
 
+/**
+ * Checks all children checkboxes on double click event.
+ * @param event
+ * @returns {boolean} true on success
+ */
+function checkboxDblClickProcessing(event) {
+    if (event.target.value) {
+        csInterface.evalScript("writeSelectionChange(" + JSON.stringify(findChildren(event.target)) + "," +
+            JSON.stringify(generateHierarchy(event.target)) + "," + JSON.stringify(!event.target.checked) + ")", function (e) {
+            if (e === 'success')
+            {
+                checkChildCheckboxes(event.target, !event.target.checked);
+                return true;
+            }
+        });
+    }
+    return false;
+}
+
 //@ToDo replace parenting strings of children -> wrong order
+/**
+ * Label name change event function
+ * Gets value from input field
+ * Generates the hierarchy strings for previous and new name
+ * Generates a history object that terminates a possible response object
+ * Sends previous and new name including their hierarchy & the history object to a save method
+ * Changes values on success & orders the parent again
+ * @param event
+ * @returns {boolean} true on success
+ */
 function changeLabel(event) {
     event.target.previousSibling.classList.remove('hidden');
     event.target.classList.add('hidden');
@@ -311,25 +352,30 @@ function changeLabel(event) {
 
         let history = searchInResponse(tempValue.name, 0);
         hierarchy = replaceStringInArray(hierarchy, tempValue.name, event.target.value);
-        tempValue.name = event.target.value;
-        event.target.previousSibling.previousSibling.value = JSON.stringify(tempValue);
-        event.target.previousSibling.textContent = event.target.value;
-
 
         let newNode = {
-            name: event.target.previousSibling.textContent,
+            name: event.target.value,
             parent: hierarchy
         };
 
-
-
         csInterface.evalScript("renameLabel(" + JSON.stringify(prevNode) + "," + JSON.stringify(newNode) + "," + JSON.stringify(history) + ")", function (e) {
-            alert(e);
+            if (e === 'success') {
+                tempValue.name = event.target.value;
+                event.target.previousSibling.previousSibling.value = JSON.stringify(tempValue);
+                event.target.previousSibling.textContent = event.target.value;
+
+                return true;
+            }
         });
     }
-
+    return false;
 }
 
+/**
+ * Creates hierarchy string of a given DOM Checkbox element
+ * @param target - DOM Checkbox
+ * @returns {string} << parent|child|child|target >>
+ */
 function discoverParentString(target) {
     let chain = [];
     while (target)
@@ -367,6 +413,11 @@ function discoverParentString(target) {
     return "";
 }
 
+/**
+ * Generates an array of all hierarchy strings for parent and its children
+ * @param parent - DOM Checkbox
+ * @returns {Array} containing hierarchy strings -> [parent, parent|children]
+ */
 function generateHierarchy(parent) {
     let hierarchy = [], parentStack = [], parentPrefixStack = [];
 
@@ -405,6 +456,78 @@ function generateHierarchy(parent) {
     return hierarchy;
 }
 
+/**
+ * Find all children names for a parent
+ * @param parent - DOM Checkbox
+ * @returns {Array} containing subject strings -> [parent, children]
+ */
+function findChildren(parent) {
+    let subjects = [], parentStack = [];
+
+    parentStack.push(parent);
+
+    while (parentStack.length !== 0)
+    {
+        let currentParent = parentStack.pop();
+
+        let subject = "";
+
+        if (currentParent.value) {
+            subject = (JSON.parse(currentParent.value)).name;
+        }
+
+        if (subjects.indexOf(subject) < 0)
+        {
+            subjects.push(subject);
+        }
+
+        if (currentParent.parentNode.nextSibling && currentParent.parentNode.nextSibling.childNodes)
+        {
+            for (let i = 0; i < currentParent.parentNode.nextSibling.childNodes.length; i++)
+            {
+                parentStack.push(currentParent.parentNode.nextSibling.childNodes[i].firstChild);
+            }
+        }
+    }
+    return subjects;
+}
+
+/**
+ * Check parent checkbox and all its children checkboxes with the same value.
+ * @param parent - DOM Checkbox
+ * @param checked - value that is replaced within the checkboxes
+ */
+function checkChildCheckboxes(parent, checked) {
+    let parentStack = [];
+
+    parentStack.push(parent);
+
+    while (parentStack.length !== 0)
+    {
+        let currentParent = parentStack.pop();
+
+        if ('checked' in currentParent)
+        {
+            currentParent.checked = checked;
+        }
+
+        if (currentParent.parentNode.nextSibling && currentParent.parentNode.nextSibling.childNodes)
+        {
+            for (let i = 0; i < currentParent.parentNode.nextSibling.childNodes.length; i++)
+            {
+                parentStack.push(currentParent.parentNode.nextSibling.childNodes[i].firstChild);
+            }
+        }
+    }
+}
+
+/**
+ * Replaces strings insides of string array
+ * @param arrayOfStrings - array containing only strings
+ * @param previousStr - previous string
+ * @param newStr - new string
+ * @returns {Array} - new array of changed strings
+ */
 function replaceStringInArray(arrayOfStrings, previousStr, newStr) {
     let output = [];
     if (arrayOfStrings.length)
