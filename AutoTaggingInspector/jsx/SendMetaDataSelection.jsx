@@ -74,7 +74,7 @@ function createSelectionHandler(event)
                 var tagList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
                 var historyList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
 
-                if (historyList !== undefined && historyList != null)
+                if (historyList !== undefined && historyList != null && historyList != "")
                 {
                     historyList = JSON.parse(historyList);
                 }
@@ -83,7 +83,7 @@ function createSelectionHandler(event)
                     historyList = [];
                 }
 
-                if (tagList !== undefined && tagList != null)
+                if (tagList !== undefined && tagList != null && tagList != "")
                 {
                     //$.writeln(tagList);
                     tagList = JSON.parse(tagList);
@@ -102,9 +102,7 @@ function createSelectionHandler(event)
                             }
 
                             index = findInHierarchy(response, name);
-                            $.writeln(name);
                             var histIndex = findInHistory(historyList, name);
-                            $.writeln(name + " " + histIndex);
                             //check if parent terminated
                             if ((index < 0 && histIndex < 0) || (histIndex >= 0 && historyList[histIndex].property !== "terminate")) {
                                 response.push({
@@ -121,7 +119,6 @@ function createSelectionHandler(event)
 
                         histIndex = findInHistory(historyList, tagList[i].description);
                         //terminate child
-                        $.writeln(tagList[i].description + "  " + histIndex);
                         if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
                         {
                             //setup child
@@ -143,7 +140,8 @@ function createSelectionHandler(event)
                         }
                     }
                 }
-                $.writeln("Done response");
+                //$.writeln("Done response");
+
                 var subjects = [];
                 var hierarchy = [];
                 for (i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++)
@@ -155,7 +153,8 @@ function createSelectionHandler(event)
                 {
                     hierarchy.push(xmp.getArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", i));
                 }
-                $.writeln("Retrieved tags");
+
+                //$.writeln("Retrieved tags");
                 //get hierarchical object
                 var nodeHierarchy = [];
                 for (i = 0; i < hierarchy.length; i++) {
@@ -212,7 +211,8 @@ function createSelectionHandler(event)
                     for (i = 0; i < response.length; i++)
                     {
                         index = findInHierarchy(nodeHierarchy, response[i].name);
-                        if (index > 0)
+                        //$.writeln(index + " " + response[i].name);
+                        if (index >= 0)
                         {
                             nodeHierarchy[index].confidence = response[i].confidence;
                             for (var ci = 0; ci < response[i].children; ci++)

@@ -42,7 +42,7 @@ function renameLabel(previousNode, newNode, historyChange)
             XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
             var history = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
 
-            if (history !== undefined && history != null)
+            if (history !== undefined && history != null && history != '')
             {
                 history = JSON.parse(history);
                 if (searchInArray(history, historyChange.name) < 0)
