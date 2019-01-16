@@ -1,4 +1,4 @@
-function renameLable(previousNode, newNode)
+function renameLabel(previousNode, newNode, historyChange)
 {
     var thumb = app.document.selections[0];
 
@@ -10,7 +10,7 @@ function renameLable(previousNode, newNode)
         var xmp = new XMPMeta(md.serialize());
 
         // Change the creator tool
-        xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by AutoTaggingGUI");
+        xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by AutoTaggingGUI - UpdateElement");
 
         // Change the date modified
         var d = new XMPDateTime(new Date());
@@ -19,6 +19,7 @@ function renameLable(previousNode, newNode)
 
         var subjects = loadSubjects(xmp);
         var indexInSubjects = searchInXMPArray(subjects, previousNode.name)+1;
+
         if (indexInSubjects)
         {
             xmp.deleteArrayItem(XMPConst.NS_DC, "subject", indexInSubjects);
@@ -27,9 +28,36 @@ function renameLable(previousNode, newNode)
 
 
         var hierarchy = loadHierarchy(xmp);
-        xmp.deleteArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", searchInXMPArray(hierarchy, previousNode.parent)+1);
-        xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", newNode.parent, 0, XMPConst.ARRAY_IS_ORDERED);
+        for (var i = 0; i < previousNode.parent.length; i++)
+        {
+            var hierarchyIndex = searchInXMPArray(hierarchy, previousNode.parent[i])+1;
+            if (hierarchyIndex)
+            {
+                xmp.deleteArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", hierarchyIndex);
+            }
+            xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", newNode.parent[i], 0, XMPConst.ARRAY_IS_ORDERED);
+        }
+        if (historyChange.name)
+        {
+            XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
+            var history = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
 
+            if (history == null)
+            {
+                history = JSON.parse(history);
+            }
+
+            if (history.length) {
+                if (searchInArray(historyChange.name) > -1)
+                {
+                    history.push(historyChange);
+                }
+            } else {
+                history = [];
+                history.push(historyChange);
+            }
+            xmp.setProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", JSON.stringify(history));
+        }
         // Write the packet back to the selected file
         var updatedPacket = xmp.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
 
@@ -181,6 +209,18 @@ function searchInXMPArray(array, value)
     for (var i = 0; i < array.length; i++)
     {
         if (array[i].toString().toLowerCase() === value.toLowerCase())
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function searchInArray(array, value)
+{
+    for (var i = 0; i < array.length; i++)
+    {
+        if (array[i].name.toLowerCase() === value.toLowerCase())
         {
             return i;
         }

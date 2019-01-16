@@ -72,10 +72,9 @@ function createSelectionHandler(event)
 
                 XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
                 var tagList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
-
                 var historyList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
                 
-                if (tagList != undefined)
+                if (tagList !== undefined && tagList != null)
                 {
                     //$.writeln(tagList);
                     tagList = JSON.parse(tagList);
@@ -220,7 +219,19 @@ function createSelectionHandler(event)
                         else
                         {
                             //add if non existent
-                            nodeHierarchy.push(response[i]);
+                            //check if terminated
+                            /*if (historyList !== undefined && historyList != null)
+                            {
+                                historyList = JSON.parse(historyList);
+                                if (historyList[findInHistory(historyList, response[i])].property !== "terminate")
+                                {
+                                    nodeHierarchy.push(response[i]);
+                                }
+                            }
+                            else
+                            {*/
+                                nodeHierarchy.push(response[i]);
+
                         }
                     }
                 }
@@ -351,6 +362,17 @@ function findInHierarchy (array, targetString)
 	return -1;
 }
 
+function findInHistory (history, nodeObject)
+{
+    for (var i = 0; i < history.length; i++)
+    {
+        if (history[i].name.toLowerCase() === nodeObject.name.toLowerCase())
+        {
+            return i;
+        }
+    }
+    return -1;
+}
 /**
   Determines whether snippet can be run given current context.  The snippet 
   fails if these preconditions are not met:

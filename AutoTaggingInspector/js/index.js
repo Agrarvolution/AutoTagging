@@ -1,7 +1,10 @@
 "use strict";
 
 // Get a reference to a CSInterface object
-var csInterface = new CSInterface();
+let csInterface = new CSInterface();
+loadJSX("js/libs/json2.js");
+
+let callResponse = {};
 
 // Add an event listener to update the background colour of Extension to match the Bridge Theme.
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
@@ -94,6 +97,7 @@ function loadContentListener(event)
     */
 
     //let content = JSON.parse(answer);
+    callResponse = event.data;
     displayContent(event.data.content);
     return 0;
 }
@@ -284,21 +288,27 @@ function changeLabel(event) {
 
     let tempValue = JSON.parse(event.target.previousSibling.previousSibling.value);
     if (tempValue.name !== event.target.value) {
+        let hierarchy = generateHierarchy(event.target.previousSibling.previousSibling);
         let prevNode = {
             name: tempValue.name,
-            parent: discoverParentString(event.target.previousSibling.previousSibling)
+            parent: hierarchy
         };
 
+        let history = searchInResponse(tempValue.name, 0);
+        hierarchy = replaceStringInArray(hierarchy, tempValue.name, event.target.value);
         tempValue.name = event.target.value;
         event.target.previousSibling.previousSibling.value = JSON.stringify(tempValue);
         event.target.previousSibling.textContent = event.target.value;
 
+
         let newNode = {
             name: event.target.previousSibling.textContent,
-            parent: discoverParentString(event.target.previousSibling.previousSibling)
+            parent: hierarchy
         };
-        let hierarchy = generateHierarchy(event.target.previousSibling.previousSibling);
-        csInterface.evalScript("renameLable(" + JSON.stringify(prevNode) + "," + JSON.stringify(newNode) + ")", function (e) {
+
+
+
+        csInterface.evalScript("renameLabel(" + JSON.stringify(prevNode) + "," + JSON.stringify(newNode) + "," + JSON.stringify(history) + ")", function (e) {
             alert(e);
         });
     }
@@ -380,10 +390,54 @@ function generateHierarchy(parent) {
     return hierarchy;
 }
 
-/*
-@ToDo Process Template / Load Template
- */
+function replaceStringInArray(arrayOfStrings, previousStr, newStr) {
+    let output = [];
+    if (arrayOfStrings.length)
+    {
+        for (let i = 0; i < arrayOfStrings.length; i++)
+        {
+            output.push(arrayOfStrings[i].replace(previousStr, newStr));
+        }
+    }
+    return output;
+}
 
+/**
+ * Searches in response part of initialization object. Returns history object.
+ * @param name (string)
+ * @param property (int between 0,1)
+ * @returns {*} history object {name: string, parent: boolean, property: string}
+ */
+function searchInResponse(name, property) {
+    switch (property)
+    {
+        case 0: property = "terminate"; break;
+        case 1: property = "suppress"; break;
+        default: return {};
+    }
+
+    if (callResponse.response.length)
+    {
+        for (let i = 0; i < callResponse.response.length; i++)
+        {
+            if (callResponse.response[i].description === name)
+            {
+                return {name: name, parent: false, property: property};
+            }
+            if (callResponse.response[i].parents.length)
+            {
+                for (let j = 0; j < callResponse.response[i].parents.length; j++)
+                {
+                    if (callResponse.response[i].parents[j].name === name)
+                    {
+                        return {name: name, property: property};
+                    }
+                }
+            }
+        }
+    }
+    return {};
+}
 
 
 /*
@@ -408,8 +462,15 @@ Group:
  */
 
 
+// fileName is a String (with the .jsx extension included)
+function loadJSX(fileName) {
+    var extensionRoot = csInterface.getSystemPath(SystemPath.EXTENSION) + "/jsx/";
+    csInterface.evalScript('$.evalFile("' + extensionRoot + fileName + '")');
+}
+
 
 
 window.onload = function(event) {
+
     displayContent();
 };
