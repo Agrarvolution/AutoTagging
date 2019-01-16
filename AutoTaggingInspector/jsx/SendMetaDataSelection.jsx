@@ -87,7 +87,7 @@ function createSelectionHandler(event)
                 {
                     //$.writeln(tagList);
                     tagList = JSON.parse(tagList);
-
+                    //$.writeln('Taglist parsed');
                     var response = [];
                     //reverse child to parents relationship to parent to children
                     for (var i = 0; i < tagList.length; i++) {
@@ -116,7 +116,7 @@ function createSelectionHandler(event)
                                 parentIndices.push(index);
                             }
                         }
-
+                        
                         histIndex = findInHistory(historyList, tagList[i].description);
                         //terminate child
                         if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
@@ -129,7 +129,7 @@ function createSelectionHandler(event)
                                 ticked: false
                             };
                             for (pi = 0; pi < parentIndices.length; pi++) {
-                                if (findInHierarchy(response[parentIndices[pi]], tagList[i].description) < 0) {
+                                if (parentIndices >= 0 && findInHierarchy(response[parentIndices[pi]], tagList[i].description) < 0) {
                                     //set parent reference
                                     response[parentIndices[pi]].children.push(child);
                                 }
@@ -140,7 +140,7 @@ function createSelectionHandler(event)
                         }
                     }
                 }
-                //$.writeln("Done response");
+                $.writeln("Done response");
 
                 var subjects = [];
                 var hierarchy = [];
