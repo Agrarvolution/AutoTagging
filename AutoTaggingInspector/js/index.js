@@ -28,7 +28,7 @@ function changeThemeColor()
     var alpha = Math.round(UIColorObj.color.alpha);
     var colorRGB = "#" + red.toString(16) + green.toString(16) + blue.toString(16);
 
-    if ("#535353" != colorRGB) /* "#535353" is the original color */
+    if ("#535353" !== colorRGB) /* "#535353" is the original color */
     {
         document.body.style.backgroundImage = "none";
     }
@@ -364,6 +364,7 @@ function changeLabel(event) {
                 event.target.previousSibling.previousSibling.value = JSON.stringify(tempValue);
                 event.target.previousSibling.textContent = event.target.value;
 
+                sortDomItem(event.target.previousSibling);
                 return true;
             }
         });
@@ -371,6 +372,42 @@ function changeLabel(event) {
     return false;
 }
 
+function sortDomItem (label){
+    let parent = label.parentNode.parentNode;
+    let nameStack = [];
+
+    if (parent.classList.contains('itemParent'))
+    {
+        parent = parent.parentNode;
+        for (let i = 0; i < parent.childNodes.length; i++)
+        {
+            nameStack.push(parent.childNodes[i].childNodes[0].childNodes[1].textContent);
+        }
+    }
+    else
+    {
+        for (let i = 0; i < parent.childNodes.length; i++)
+        {
+            nameStack.push(parent.childNodes[i].childNodes[1].textContent);
+        }
+    }
+
+    let sortIndex = 0;
+    while (label.textContent >= nameStack[sortIndex] && sortIndex < nameStack.length)
+    {
+        sortIndex++;
+    }
+    sortIndex = sortIndex <= 0 ? 0: sortIndex--;
+
+    if (parent.classList.contains('itemParent'))
+    {
+        parent.insertBefore(label.parentNode, parent.childNodes[sortIndex]);
+    }
+    else
+    {
+        parent.insertBefore(label.parentNode.parentNode, parent.childNodes[sortIndex]);
+    }
+}
 /**
  * Creates hierarchy string of a given DOM Checkbox element
  * @param target - DOM Checkbox
