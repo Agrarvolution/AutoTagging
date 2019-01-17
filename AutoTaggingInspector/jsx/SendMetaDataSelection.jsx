@@ -116,7 +116,7 @@ function createSelectionHandler(event)
                                 parentIndices.push(index);
                             }
                         }
-                        
+
                         histIndex = findInHistory(historyList, tagList[i].description);
                         //terminate child
                         if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
