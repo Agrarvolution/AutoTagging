@@ -71,6 +71,7 @@ function catchSelectionEvent(event)
 {
     statusMessageHandler.add("registering a click event");
     serverCommunication.startLabeling();
+    //serverCommunication.testServerConnection();
 }
 
 function catchResponseEvent(event)
@@ -201,17 +202,17 @@ StatusMessage.prototype.write = function()
 function ServerCommunication()
 {
     /* Make sure to include the full URL */
-    ServerUrl = "http://localhost:3200/tagImage";
 }
 
 ServerCommunication.prototype.startLabeling = function()
 {
+    var ServerUrl = "http://localhost:3200/tagImage";
     //var responseEvent = new Event('AWSResponse');
     statusMessageHandler.add("Sending a request to the server");
     /* Use ajax to communicate with your server */
     $.ajax({
         type: "GET",
-        url: this.ServerUrl,
+        url: ServerUrl,
         success: function (ServerResponse)
         {
             //responseEvent.data = ServerResponse;
@@ -223,6 +224,30 @@ ServerCommunication.prototype.startLabeling = function()
         {
             //responseEvent.data = { Response: "Something went wrong on the server side\r\n" + jqXHR + "\r\n" + errorThrown };
             //responseEvent.dispatch();
+        }
+    })
+};
+
+ServerCommunication.prototype.testServerConnection = function()
+{
+    var ServerUrl = "http://localhost:3200/test";
+    var responseEvent = new Event('AWSResponse');
+    statusMessageHandler.add("Sending a request to the server");
+    /* Use ajax to communicate with your server */
+    $.ajax({
+        type: "GET",
+        url: ServerUrl,
+        success: function (ServerResponse)
+        {
+            responseEvent.data = ServerResponse;
+            responseEvent.dispatch();
+
+            //statusMessageHandler.add(ServerResponse);
+        },
+        error: function(jqXHR, textStatus, errorThrown)
+        {
+            responseEvent.data = { Response: "Something went wrong on the server side\r\n" + jqXHR + "\r\n" + errorThrown };
+            responseEvent.dispatch();
         }
     })
 };

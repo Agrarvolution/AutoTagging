@@ -43,7 +43,7 @@ function run()
     app.get("/tagImage", function (req, res, next)
     {
         console.log("Incoming Labeling Request");
-        res.send(202, "Starting image labeling");
+        //res.send(202, "Starting image labeling");
 
         detectLabels()
             .then(function (data) {
