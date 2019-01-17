@@ -1,4 +1,4 @@
-//var AWS; // global variable for accessing AWS services
+var AWS; // global variable for accessing AWS services
 //var image2base64; // global variable for encoding .png and .jpeg to a base64 string
 
 // ----------------------------------------------------------
@@ -22,7 +22,7 @@ RecognitionLabels = function () {
 
 RecognitionLabels.prototype.init = function () {
     // Load the SDK and base64encoder
-    //AWS = require('aws-sdk');
+    AWS = require('aws-sdk');
     //image2base64 = require('image-to-base64');
 };
 
@@ -83,27 +83,16 @@ RecognitionLabels.prototype.writeCredentials = function (aws_access_key_id, aws_
 /**
  * @description Uses the AWS Image Rekognition service to detect the labels of a given image supplied via an absolute path or URL
  *
- * @param path - the absolute path of the image to be analyzed. Can also be a URL
  * @returns {Promise} - returns a Promise that itself returns either the JSON containing the labels upon success; or returns -1 if anything went
  * wrong.
+ * @param base64String
  */
-RecognitionLabels.prototype.getLabels = function (path)
+RecognitionLabels.prototype.getLabels = function(base64String)
 {
     return new Promise(function (resolve)
     {
-        let base64String = imageToBase64Own(path); // you can also to use url
-        // console.log(response); //cGF0aC90by9maWxlLmpwZw==
-
-        if (!base64String)
-        {
-            statusMessageHandler.add("Could not load image!");
-            return -1;
-        }
-
-        let buffer = new Buffer();
-
         let params = {
-            Image: {Bytes: buffer.from(base64String, 'base64')}
+            Image: { Bytes: base64String }
         };
         let recognition = new AWS.Rekognition({apiVersion: '2016-06-27', region: 'us-west-2'});
         recognition.detectLabels(params, function (err, data)
@@ -123,34 +112,51 @@ RecognitionLabels.prototype.getLabels = function (path)
     });
 };
 
-function imageToBase64Own(path)
+RecognitionLabels.prototype.getBase64String = function(path)
 {
+    statusMessageHandler.add("loading image");
     let emptyString = "data:,", base64 = emptyString;
     let img = new Image();
     img.src = path;
 
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d");
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.drawImage(img, 0, 0);
 
-    let maxNrAttempts = 5, i = 0;
-
-    while (base64 == emptyString && i < maxNrAttempts)
+    img.addEventListener('load', function()
     {
-        window.setTimeout(base64 = readImage(img, canvas), 5000);
-        i++;
-    }
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
 
-    if (base64 == emptyString)
-        return false;
 
-    return base64;
+        statusMessageHandler.add("Contacting AWS");
+        let maxNrAttempts = 5, i = 0;
+
+        while (base64 == emptyString && i < maxNrAttempts)
+        {
+            base64 = readImage(canvas);
+            i++;
+        }
+
+        if (base64 == emptyString)
+        {
+            statusMessageHandler.add("Could not load image!");
+            return false;
+        }
+
+        var response = this.getLabels(base64);
+        statusMessageHandler.add(response);
+    }, false);
+};
+
+function readImage(canvas)
+{
+    let dataURL = canvas.toDataURL();
+    return dataURL.replace(/^data:image\/png;base64,/, "");
 }
 
-function readImage(img, canvas)
-{
-    let dataURL = canvas.toDataURL("image/png");
-    return dataURL.replace(/^data:image\/png;base64,/, "");
+
+
+function base64ToBrowser (buffer) {
+    return window.btoa([].slice.call(new Uint8Array(buffer)).map(function(bin) { return String.fromCharCode(bin) }).join(""));
 }

@@ -62,15 +62,14 @@ throwEvent = function()
     var imagePath2 = "C:/AutoTagging/tempImage2.jpg";
 
     var currentPreviewFile = app.document.selections[0].core.preview.preview;
-    currentPreviewFile.exportTo (imagePath, 10);
+    currentPreviewFile.exportTo (imagePath, 100);
 
     var eventObj = new CSXSEvent();
     eventObj.type = "updateAutoTagInspector";
     
-    var jpegStream = currentPreviewFile.loadFromJpegStream(imagePath2, 10);
-    var metaData = app.document.selections[0].synchronousMetadata.read();
+    //var jpegStream = currentPreviewFile.loadFromJpegStream(imagePath2, 10);
     
-    eventObj.data = JSON.stringify({ "description": "Is it working?", "JPEGStream": jpegStream , "MetaDataRead": metaData });
+    eventObj.data = JSON.stringify({ "description": "Is it working?" });
     eventObj.dispatch();
 
     return true;

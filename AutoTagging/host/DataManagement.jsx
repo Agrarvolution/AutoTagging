@@ -64,7 +64,7 @@ class DataManagement
     sendToAWS(imagePath)
     {
         let recognitionLabelsObject = new RecognitionLabels();
-        return recognitionLabelsObject.getLabels(imagePath);
+        recognitionLabelsObject.getBase64String(imagePath);
     }
 
     /**

@@ -1,6 +1,9 @@
 /* 1) Create an instance of CSInterface. */
 var csInterface = new CSInterface();
 var statusMessageHandler = new StatusMessage();
+var serverCommunication = new ServerCommunication();
+
+csInterface.requestOpenExtension("com.AutoTagging.localServer");
 
 // ==========================================================
 // ----------------------------------------------------------
@@ -14,6 +17,8 @@ var AWS_selected; // global variable on whether AWS is selected (checked) or not
 
 var Vision_loggedIn; // global variable on whether Google Vision is logged in or not
 var Vision_selected; // global variable on whether Google Vision is selected (checked) or not
+
+var imagePath = "C:/AutoTagging/tempImage.jpg";
 
 // ----------------------------------------------------------
 // internet connection is required to access the AWS and Google Vision services
@@ -40,27 +45,17 @@ function removeOfflineOverlay() {
     content.classList.remove('hidden');
 }
 
-function catchSelectionEvent(event)
-{
-    DataManagement.startByClick();
-    statusMessageHandler.add("registering a click event");
-    statusMessageHandler.add(JSON.stringify(event.data));
-
-    var imagePath = "C:/AutoTagging/tempImage.jpg";
-}
-
 /**
  * @description Sets up the environment. Checks whether AWS and Google are logged in or not, and updates the UI accordingly
  */
-function init() {
+function init()
+{
     AWS_selected = false;
     Vision_selected = false;
 
     registerEventHandler();
 
-    startLabelDetection();
-
-    CEP_checkIfAWSLoggedIn();
+    //CEP_checkIfAWSLoggedIn();
     //TODO: check if Vision logged in
     
     updateUI();
@@ -69,6 +64,18 @@ function init() {
 function registerEventHandler()
 {
     csInterface.addEventListener("updateAutoTagInspector", catchSelectionEvent);
+    csInterface.addEventListener("AWSResponse", catchResponseEvent);
+}
+
+function catchSelectionEvent(event)
+{
+    statusMessageHandler.add("registering a click event");
+    serverCommunication.startLabeling();
+}
+
+function catchResponseEvent(event)
+{
+    statusMessageHandler.add(event.data);
 }
 
 function updateUI() {
@@ -94,14 +101,14 @@ function setAWSCheckboxListener() {
             if (AWS_checkbox.classList.contains('enabled')) {
                 AWS_checkbox.classList.remove('enabled');
                 AWS_checkbox.classList.add('checked');
-                AWS_checkbox.setAttribute('src', 'img/checkbox_checked.png')
-                
+                AWS_checkbox.setAttribute('src', 'img/checkbox_checked.png');
+
                 AWS_selected = true;
             }
             if (AWS_checkbox.classList.contains('checked')) {
                 AWS_checkbox.classList.remove('checked');
                 AWS_checkbox.classList.add('enabled');
-                AWS_checkbox.setAttribute('src', 'img/checkbox.png')
+                AWS_checkbox.setAttribute('src', 'img/checkbox.png');
                 
                 AWS_selected = false;
             }
@@ -118,7 +125,8 @@ function setAWSCheckboxListener() {
 /**
  * @description Updates the boolean value for AWS_loggedIn depending on whether the user is logged in with valid credentials, or not
  */
-function CEP_checkIfAWSLoggedIn() {
+function CEP_checkIfAWSLoggedIn()
+{
     var aws_access_key_id;
     var aws_secret_access_key;
     csInterface.evalScript("checkAWSCredentials(" + aws_access_key_id + ", " + aws_secret_access_key + ")", function (result) {
@@ -141,8 +149,13 @@ function sanitizeString(text)
 
 
 
-
-
+/**
+ *
+ *
+ *      Status message
+ *
+ *  This class can set and manage a various amount of status messages to display information to the user.
+ */
 
 function StatusMessage()
 {
@@ -172,4 +185,44 @@ StatusMessage.prototype.write = function()
 {
     var offlineMessage = document.getElementById('offline_message');
     offlineMessage.innerHTML = this.messages.join("<br>");
+};
+
+
+/**
+ *
+ *
+ *
+ *      Server communication
+ *
+ *  This class grants the interface to the in the background running Node.js server and catches its response.
+ *
+ */
+
+function ServerCommunication()
+{
+    /* Make sure to include the full URL */
+    ServerUrl = "http://localhost:3200/tagImage";
+}
+
+ServerCommunication.prototype.startLabeling = function()
+{
+    //var responseEvent = new Event('AWSResponse');
+    statusMessageHandler.add("Sending a request to the server");
+    /* Use ajax to communicate with your server */
+    $.ajax({
+        type: "GET",
+        url: this.ServerUrl,
+        success: function (ServerResponse)
+        {
+            //responseEvent.data = ServerResponse;
+            //responseEvent.dispatch();
+
+            statusMessageHandler.add(JSON.stringify(ServerResponse));
+        },
+        error: function(jqXHR, textStatus, errorThrown)
+        {
+            //responseEvent.data = { Response: "Something went wrong on the server side\r\n" + jqXHR + "\r\n" + errorThrown };
+            //responseEvent.dispatch();
+        }
+    })
 };
