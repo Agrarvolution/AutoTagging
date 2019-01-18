@@ -17,6 +17,13 @@ function setupContextMenu() {
     let contextMenu = {};
     contextMenu.menu = [];
 
+    let addItem = {};
+    addItem.id = 'add';
+    addItem.label = 'Add';
+    addItem.enabled = true;
+
+    contextMenu.menu.push(addItem);
+
     let clickAllItem = {};
     clickAllItem.id = 'clickAll';
     clickAllItem.label = 'Click all';
