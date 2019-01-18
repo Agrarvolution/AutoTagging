@@ -99,11 +99,11 @@ function detectLabels()
  *
  * @returns {boolean} - returns true if the credentials are valid, and false if not.
  */
-function checkAWSCredentials ()
+function checkAWSCredentials()
 {
     // check if the credentials file exists
-    //var path = "~/.aws/credentials";
-    var path = "%HOMEPATH%\\.aws\\credentials";
+    const homedir = require('os').homedir();
+    var path = homedir + "\\.aws\\credentials";
     var credentials = fs.readFile(path);
 
     if (credentials.err === 0) {
