@@ -59,6 +59,16 @@ function init()
     //TODO: check if Vision logged in
     
     updateUI();
+
+    startNodeServer();
+}
+
+function startNodeServer()
+{
+    //cep_node.require('../server/main.js')();
+    //var wshShell = new ActiveXObject("WScript.Shell");
+    //wshShell.Run("../server/startNodeServer.bat");
+    //statusMessageHandler.add("Attempting to start the node server");
 }
 
 function registerEventHandler()
@@ -76,6 +86,7 @@ function catchSelectionEvent(event)
 
 function catchResponseEvent(event)
 {
+    statusMessageHandler.add("Received the server finished event");
     statusMessageHandler.add(event.data);
 }
 
@@ -207,7 +218,7 @@ function ServerCommunication()
 ServerCommunication.prototype.startLabeling = function()
 {
     var ServerUrl = "http://localhost:3200/tagImage";
-    //var responseEvent = new Event('AWSResponse');
+    var responseEvent = new CSEvent('AWSResponse');
     statusMessageHandler.add("Sending a request to the server");
     /* Use ajax to communicate with your server */
     $.ajax({
@@ -215,10 +226,12 @@ ServerCommunication.prototype.startLabeling = function()
         url: ServerUrl,
         success: function (ServerResponse)
         {
-            //responseEvent.data = ServerResponse;
-            //responseEvent.dispatch();
+            responseEvent.data = ServerResponse;
+            csInterface.dispatchEvent(responseEvent);
 
-            statusMessageHandler.add(JSON.stringify(ServerResponse));
+            //statusMessageHandler.add(JSON.stringify(ServerResponse));
+
+            new ServerCommunication().testHandleLabels(ServerResponse);
         },
         error: function(jqXHR, textStatus, errorThrown)
         {
@@ -240,7 +253,8 @@ ServerCommunication.prototype.testServerConnection = function()
         success: function (ServerResponse)
         {
             responseEvent.data = ServerResponse;
-            responseEvent.dispatch();
+            responseEvent.dispatchEvent(responseEvent);
+            //responseEvent.dispatch();
 
             //statusMessageHandler.add(ServerResponse);
         },
@@ -250,4 +264,16 @@ ServerCommunication.prototype.testServerConnection = function()
             responseEvent.dispatch();
         }
     })
+};
+
+ServerCommunication.prototype.testHandleLabels = function(serverResponse)
+{
+    var labels = serverResponse["Labels"];
+    var output = "";
+
+    labels.forEach(function (element) {
+        output += "<br>" + element["Name"] + ", " + element["Confidence"];
+    });
+
+    statusMessageHandler.add("Found labels: " + output);
 };
