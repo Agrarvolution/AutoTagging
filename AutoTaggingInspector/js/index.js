@@ -326,16 +326,18 @@ function setupEventListeners() {
         }
     });
 
+    //contextmenu event handling
     $('.itemSingle').contextmenu(function (e) {
         $('body').trigger('mousedown');
         csInterface.updateContextMenuItem('clickAll', true);
         csInterface.updateContextMenuItem('rename', true);
         csInterface.updateContextMenuItem('remove', true);
 
-
-        document.addEventListener('remove', function () {
+        let ctxRemove = function removeLabelEvent() {
             $('body').trigger('mousedown');
-        });
+            removeLabel(e);
+        };
+        document.addEventListener('remove', ctxRemove);
 
         let ctxRename = function () {
             $(e.target).parent().children('.itemLabel').trigger('dblclick');
@@ -351,6 +353,7 @@ function setupEventListeners() {
 
         let resetContextMenu = function (event) {
             disableContextMenuItems();
+            document.removeEventListener('remove', ctxRemove);
             document.removeEventListener('rename', ctxRename);
             document.removeEventListener('clickAll', ctxClickAll);
             $('body').off('mousedown', resetContextMenu);
@@ -417,6 +420,35 @@ function checkboxDblClickProcessing(event) {
         });
     }
     return false;
+}
+
+function removeLabel(event) {
+    let targetCheckbox = $(event.target).parent().children('.itemCheckbox');
+
+    let hierarchy = generateHierarchy(targetCheckbox[0]);
+    let subjects = findChildren(targetCheckbox[0]);
+    let history = [];
+
+    for (let i = 0; i < subjects.length; i++)
+    {
+        let historyTemp = searchInResponse(subjects[i], 0);
+        if (historyTemp.name)
+        {
+            history.push(historyTemp);
+        }
+    }
+
+    csInterface.evalScript("removeLabels(" + JSON.stringify(subjects) + "," + JSON.stringify(hierarchy) + "," + JSON.stringify(history) + ")", function (e) {
+        if (e === 'success') {
+            let parent = $(event.target).parent().parent();
+            if (!parent.hasClass('itemParent'))
+            {
+                parent = $(event.target).parent();
+            }
+            parent.remove();
+            return true;
+        }
+    });
 }
 
 //@ToDo replace parenting strings of children -> wrong order

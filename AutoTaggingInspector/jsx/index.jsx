@@ -131,6 +131,81 @@ function writeSelectionChange(nodes, parents, add)
     return "failure";
 }
 
+function removeLabels(subjectsDel, parentsDel, historyUpdates)
+{
+    var thumb = app.document.selections[0];
+
+    if(thumb.hasMetadata && subjectsDel.length && parentsDel.length) {
+        // Get the metadata object - wait for  valid values
+        var md = thumb.synchronousMetadata;
+
+        // Get the XMP packet as a string and create the XMPMeta object
+        var xmp = new XMPMeta(md.serialize());
+
+        // Change the creator tool
+        xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by AutoTaggingGUI - RemoveElements");
+
+        // Change the date modified
+        var d = new XMPDateTime(new Date());
+        d.convertToLocalTime();
+        xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
+
+        var subjects = loadSubjects(xmp);
+        var hierarchy = loadHierarchy(xmp);
+
+
+        for (var i = 0; i < subjectsDel.length; i++)
+        {
+            var indexInSubjects = searchInXMPArray(subjects, subjectsDel[i])+1;
+            if (indexInSubjects)
+            {
+                xmp.deleteArrayItem(XMPConst.NS_DC, "subject", indexInSubjects);
+            }
+        }
+
+        for (i = 0; i < parentsDel.length; i++)
+        {
+            var hierarchyIndex = searchInXMPArray(hierarchy, parentsDel[i])+1;
+            if (hierarchyIndex)
+            {
+                xmp.deleteArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", hierarchyIndex);
+            }
+        }
+
+        if (historyUpdates.length)
+        {
+            XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
+            var history = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
+
+            if (history !== undefined && history != null && history != '')
+            {
+                history = JSON.parse(history);
+                for (i = 0; i < historyUpdates.length; i++)
+                {
+                    if (searchInArray(history, historyUpdates[i].name) < 0)
+                    {
+                        history.push(historyUpdates[i]);
+                    }
+                }
+            }
+            else
+            {
+                history = historyUpdates;
+            }
+            xmp.setProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", JSON.stringify(history));
+        }
+
+        // Write the packet back to the selected file
+        var updatedPacket = xmp.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
+
+        // Uncomment to see the XMP packet in XML form
+        // $.writeln(updatedPacket);
+        thumb.metadata = new Metadata(updatedPacket);
+
+        return "success";
+    }
+    return "failure";
+}
 /**
  * Compares two array and removes duplicates from the target array.
  * @return array with strings
