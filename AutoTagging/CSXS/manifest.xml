@@ -6,6 +6,7 @@
     <ExtensionList>
         <!-- Extension Id: A unique ID you assign to your extension. It usually follows this syntax: ExtensionBundleID + .panel = com.my.test.panel (note that this ID appears twice in the manifest) -->
         <Extension Id="com.AutoTagging.panel" Version="1.0.0"/>
+        <Extension Id="com.AutoTagging.localServer" Version="1.0.0"/>
     </ExtensionList>
     <ExecutionEnvironment>
         <HostList>
@@ -49,6 +50,26 @@
                             <Width>350</Width>
                         </Size>
                     </Geometry>
+                    <Icons/>
+                </UI>
+            </DispatchInfo>
+        </Extension>
+        <!-- Extension Id: A unique ID you assign to your extension. It usually follows this syntax: ExtensionBundleID + .panel = com.my.test.panel (note that this ID appears twice in the manifest) -->
+        <Extension Id="com.AutoTagging.localServer">
+            <DispatchInfo>
+                <Resources>
+                    <!-- MainPath: Path to your index.html. Make sure the path to this file is from the top level directory of your code base-->
+                    <MainPath>./client/localServer.html</MainPath>
+                    <CEFCommandLine>
+                        <Parameter>--enable-nodejs</Parameter>
+                        <Parameter>--mixed-context</Parameter>
+                    </CEFCommandLine>
+                </Resources>
+                <Lifecycle>
+                    <AutoVisible>false</AutoVisible>
+                </Lifecycle>
+                <UI>
+                    <Type>Custom</Type>
                     <Icons/>
                 </UI>
             </DispatchInfo>
