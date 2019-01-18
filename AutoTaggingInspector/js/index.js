@@ -3,12 +3,54 @@
 // Get a reference to a CSInterface object
 let csInterface = new CSInterface();
 loadJSX("js/libs/json2.js");
+//let test = '{"menu":[{"id":"menuItemId1","label":"testExample1","enabled":true,"checkable":true,"checked":false},{"id":"menuItemId2","label":"testExample2","menu":[{"id":"menuItemId2-1","label":"testExample2-1","menu":[{"id":"menuItemId2-1-1","label":"testExample2-1-1","enabled":false,"checkable":true,"checked":true}]},{"id":"menuItemId2-2","label":"testExample2-2","enabled":true,"checkable":true,"checked":true}]},{"label":"---"},{"id":"menuItemId3","label":"testExample3","enabled":false,"checkable":true,"checked":false}]}';
+setupContextMenu();
 
 let callResponse = {};
 
 // Add an event listener to update the background colour of Extension to match the Bridge Theme.
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
 csInterface.addEventListener("updateAutoTagInspector", loadContentListener);
+
+
+function setupContextMenu() {
+    let contextMenu = {};
+    contextMenu.menu = [];
+
+    let clickAllItem = {};
+    clickAllItem.id = 'clickAll';
+    clickAllItem.label = 'Click all';
+    clickAllItem.enabled = false;
+
+    contextMenu.menu.push(clickAllItem);
+
+    let renameItem = {};
+    renameItem.id = 'rename';
+    renameItem.label = 'Rename';
+    renameItem.enabled = false;
+
+    contextMenu.menu.push(renameItem);
+
+    let removeItem = {};
+    removeItem.id = 'remove';
+    removeItem.label = 'Remove';
+    removeItem.enabled = false;
+
+    contextMenu.menu.push(removeItem);
+
+    csInterface.setContextMenuByJSON(JSON.stringify(contextMenu), function (callback) {
+        let contextMenuEvent = new Event(callback, {
+        });
+        //alert(contextMenuEvent);
+        document.dispatchEvent(contextMenuEvent);
+        //alert(e);
+    });
+}
+function disableContextMenuItems() {
+    csInterface.updateContextMenuItem('clickAll', false);
+    csInterface.updateContextMenuItem('rename', false);
+    csInterface.updateContextMenuItem('remove', false);
+}
 
 //Listener for ThemeColorChanged event.
 function themeChangedEventListener(event)
@@ -122,8 +164,25 @@ function displayContent(response)
     toggleHelpText((!response));
 
     let contentDOMTarget = document.getElementById('tags');
+    if (contentDOMTarget !== undefined && contentDOMTarget != null)
+    {
+        resetContent(contentDOMTarget);
+    }
+    else
+    {
+        let disableMessage = document.createElement('p');
+        disableMessage.textContent = "No image selected / no tags are available for this image!";
+        disableMessage.id = 'help';
 
-    resetContent(contentDOMTarget);
+        contentDOMTarget = document.createElement('main');
+        contentDOMTarget.classList.add(tags);
+        let body = document.createElement('body');
+        body.appendChild(disableMessage);
+        body.appendChild(contentDOMTarget);
+
+        (document.getElementsByName('html'))[0].appendChild(body);
+    }
+
     if (response)
     {
         for(let i = 0; i < response.length; i++)
@@ -266,6 +325,42 @@ function setupEventListeners() {
             $(this).blur();
         }
     });
+
+    //contextmenu event handling
+    $('.itemSingle').contextmenu(function (e) {
+        $('body').trigger('mousedown');
+        csInterface.updateContextMenuItem('clickAll', true);
+        csInterface.updateContextMenuItem('rename', true);
+        csInterface.updateContextMenuItem('remove', true);
+
+        let ctxRemove = function removeLabelEvent() {
+            $('body').trigger('mousedown');
+            removeLabel(e);
+        };
+        document.addEventListener('remove', ctxRemove);
+
+        let ctxRename = function () {
+            $(e.target).parent().children('.itemLabel').trigger('dblclick');
+            $('body').trigger('mousedown');
+        };
+        document.addEventListener('rename', ctxRename);
+
+        let ctxClickAll = function () {
+            $(e.target).parent().children('.itemCheckbox').trigger('dblclick');
+            $('body').trigger('mousedown');
+        };
+        document.addEventListener('clickAll', ctxClickAll);
+
+        let resetContextMenu = function (event) {
+            disableContextMenuItems();
+            document.removeEventListener('remove', ctxRemove);
+            document.removeEventListener('rename', ctxRename);
+            document.removeEventListener('clickAll', ctxClickAll);
+            $('body').off('mousedown', resetContextMenu);
+        };
+
+        $('body').mousedown(resetContextMenu);
+    });
 }
 
 /*
@@ -325,6 +420,35 @@ function checkboxDblClickProcessing(event) {
         });
     }
     return false;
+}
+
+function removeLabel(event) {
+    let targetCheckbox = $(event.target).parent().children('.itemCheckbox');
+
+    let hierarchy = generateHierarchy(targetCheckbox[0]);
+    let subjects = findChildren(targetCheckbox[0]);
+    let history = [];
+
+    for (let i = 0; i < subjects.length; i++)
+    {
+        let historyTemp = searchInResponse(subjects[i], 0);
+        if (historyTemp.name)
+        {
+            history.push(historyTemp);
+        }
+    }
+
+    csInterface.evalScript("removeLabels(" + JSON.stringify(subjects) + "," + JSON.stringify(hierarchy) + "," + JSON.stringify(history) + ")", function (e) {
+        if (e === 'success') {
+            let parent = $(event.target).parent().parent();
+            if (!parent.hasClass('itemParent'))
+            {
+                parent = $(event.target).parent();
+            }
+            parent.remove();
+            return true;
+        }
+    });
 }
 
 //@ToDo replace parenting strings of children -> wrong order
