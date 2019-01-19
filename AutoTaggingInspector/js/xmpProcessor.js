@@ -161,7 +161,7 @@ function findInHierarchy (array, targetString)
 {
     if (array[0])
     {
-        for (var i = 0; i < array.length; i++)
+        for (let i = 0; i < array.length; i++)
         {
             if (array[i].name.toLowerCase() === targetString.toLowerCase())
             {
@@ -189,32 +189,22 @@ function findInHistory (history, nodeString)
  */
 function sortArrayOutput (outPutArray)
 {
-    var traverseStack = [];
+    let traverseStack = [];
     traverseStack.push(outPutArray);
     while (traverseStack.length !== 0)
     {
-        var array = traverseStack.pop();
-        sortOutput(array);
-        for (var i = 0; i < array.length; i++)
+        let array = traverseStack.pop();
+        array.sort(function(a, b) {
+            return a.name.toLowerCase() === b.name.toLowerCase() ?
+                (a.confidence === b.confidence ? 0 : (a.confidence < b.confidence ? 1 : -1))
+                : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+        });
+        for (let i = 0; i < array.length; i++)
         {
             traverseStack.push(array[i].children);
         }
     }
 }
-
-/**
- * Sort item array by descending confidence and by ascending name
- * @param {array} outputObj
- */
-function sortOutput (outputObj)
-{
-    outputObj.sort(function(a, b) {
-        return a.name.toLowerCase() === b.name.toLowerCase() ?
-            (a.confidence === b.confidence ? 0 : (a.confidence < b.confidence ? 1 : -1))
-            : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-    });
-}
-
 
 /**
  * Searches through searchArray if name exists
@@ -224,7 +214,7 @@ function sortOutput (outputObj)
  */
 function isTicked(name, searchArray)
 {
-    for (var i = 0; i < searchArray.length; i++)
+    for (let i = 0; i < searchArray.length; i++)
     {
         if (searchArray[i].toLowerCase() === name.toLowerCase())
         {
