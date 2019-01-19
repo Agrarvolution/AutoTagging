@@ -3,10 +3,10 @@
 // Get a reference to a CSInterface object
 let csInterface = new CSInterface();
 loadJSX("js/libs/json2.js");
+let callResponse = {};
 
 setupContextMenu();
-
-let callResponse = {};
+guiUpdateListener();
 
 // Add an event listener to update the background colour of Extension to match the Bridge Theme.
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
@@ -139,18 +139,27 @@ function loadContentListener(event)
     if (event.data.type)
     {
         //Handles AutoTaggingCustomBridgeEvents
-        callResponse = loadXMPContent(csInterface);
+        loadXMPContent();
     }
     else
     {
         //Handles for SendMetaDataHandler events
         callResponse = event.data;
+        displayContent(event.data.content);
     }
 
 
-    displayContent(event.data.content);
+
     return 0;
 }
+
+function guiUpdateListener()
+{
+    document.addEventListener('updateGUI', function (event) {
+        alert(event);
+    });
+}
+
 
 function resetContent(tag)
 {

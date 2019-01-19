@@ -1,80 +1,73 @@
 "use strict";
 
-function loadXMPContent (csInterface) {
-        let jsxResponse = {};
+//don't call before csInterface is declared
+function loadXMPContent () {
         csInterface.evalScript('loadMetaData()', function (event) {
+            try {
+                event = JSON.parse(event);
+            }
+            catch (e) {
+                alert(e);
+            }
             if (event.metadata) {
-                jsxResponse = event;
+                processXMPContent(event);
             }
         });
+}
 
-        var response = [];
-        //reverse child to parents relationship to parent to children
-        for (var i = 0; i < tagList.length; i++) {
-            var parentIndices = [];
+function processXMPContent(xmpContent) {
+    let response = [];
 
-            //insert parents
-            for (var pi = 0; pi < tagList[i].parents.length; pi++) {
-                var index = -1;
-                var name = tagList[i].parents[pi].description;
-                if (name === undefined) {
-                    name = tagList[i].parents[pi].name;
-                }
+    //reverse child to parents relationship to parent to children
+    for (let i = 0; i < xmpContent.response.length; i++) {
+        var parentIndices = [];
 
-                index = findInHierarchy(response, name);
-                var histIndex = findInHistory(history, name);
-                //check if parent terminated
-                if ((index < 0 && histIndex < 0) || (histIndex >= 0 && history[histIndex].property !== "terminate")) {
-                    response.push({
-                        name: name,
-                        confidence: 1.0,
-                        children: [],
-                        ticked: false
-                    });
-                    parentIndices.push(response.length - 1);
-                } else {
-                    parentIndices.push(index);
-                }
+        //insert parents
+        for (let parentIndex = 0; parentIndex < xmpContent.response[i].parents.length; parentIndex++) {
+            let name = xmpContent.response[i].parents[parentIndex].description;
+
+            if (name === undefined) {
+                name = xmpContent.response[i].parents[parentIndex].name;
             }
 
-            histIndex = findInHistory(history, tagList[i].description);
-            //terminate child
-            if (histIndex < 0 || (histIndex >= 0 && history[histIndex].property !== "terminate"))
-            {
-                //setup child
-                var child = {
-                    name: tagList[i].description,
-                    confidence: tagList[i].confidence,
+            let index = findInHierarchy(response, name);
+            let histIndex = findInHistory(xmpContent.history, name);
+            //check if parent terminated
+            if ((index < 0 && histIndex < 0) || (histIndex >= 0 && history[histIndex].property !== "terminate")) {
+                response.push({
+                    name: name,
+                    confidence: 1.0,
                     children: [],
                     ticked: false
-                };
-                for (pi = 0; pi < parentIndices.length; pi++) {
-                    if (parentIndices >= 0 && findInHierarchy(response[parentIndices[pi]], tagList[i].description) < 0) {
-                        //set parent reference
-                        response[parentIndices[pi]].children.push(child);
-                    }
+                });
+                parentIndices.push(response.length - 1);
+            } else {
+                parentIndices.push(index);
+            }
+        }
+
+        let histIndex = findInHistory(history, xmpContent.response[i].description);
+        //terminate child
+        if (histIndex < 0 || (histIndex >= 0 && xmpContent.history[histIndex].property !== "terminate")) {
+            //setup child
+            let child = {
+                name: tagList[i].description,
+                confidence: tagList[i].confidence,
+                children: [],
+                ticked: false
+            };
+            for (let parentIndex = 0; parentIndex < parentIndices.length; parentIndex++) {
+                if (parentIndices >= 0 && findInHierarchy(response[parentIndices[parentIndex]], tagList[i].description) < 0) {
+                    //set parent reference
+                    response[parentIndices[parentIndex]].children.push(child);
                 }
-                if (parentIndices.length === 0) {
-                    response.push(child);
-                }
+            }
+            if (parentIndices.length === 0) {
+                response.push(child);
             }
         }
     }
-    $.writeln("Done response");
 
-    var subjects = [];
-    var hierarchy = [];
-    for (i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++)
-    {
-        subjects.push(xmp.getArrayItem(XMPConst.NS_DC, "subject", i));
-    }
-    XMPMeta.registerNamespace("http://ns.adobe.com/lightroom/1.0/", "lr:");
-    for (i = 1; i <= xmp.countArrayItems("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject"); i++)
-    {
-        hierarchy.push(xmp.getArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", i));
-    }
-
-    //$.writeln("Retrieved tags");
     //get hierarchical object
     var nodeHierarchy = [];
     for (i = 0; i < hierarchy.length; i++) {
@@ -162,17 +155,38 @@ function loadXMPContent (csInterface) {
     //$.writeln("Combined tags & response");
     sortArrayOutput(nodeHierarchy);
 
-    $.writeln("Init xLib");
-    var xLib;
-    try {
-        xLib = new ExternalObject("lib:\PlugPlugExternalObject");
-    } catch(e) { alert("Missing ExternalObject: "+e); }
-    //throw update event
-    $.writeln("About to throw event");
-    if (xLib) {
-        var eventObj = new CSXSEvent();
-        eventObj.type = "updateAutoTagInspector";
-        eventObj.data = JSON.stringify({response: tagList, content: nodeHierarchy, history: "", thumb: true});
-        eventObj.dispatch();
+    let updateGUIEvent = new Event('updateGUI', {data: {response: xmpContent.response, content: nodeHierarchy, history: xmpContent.history}
+    });
+    document.dispatchEvent(updateGUIEvent);
+}
+
+/**
+ * @param {array} array
+ * @param {string} targetString search target
+ * @return index if string exists, -1 if it doesn't
+ */
+function findInHierarchy (array, targetString)
+{
+    if (array[0])
+    {
+        for (var i = 0; i < array.length; i++)
+        {
+            if (array[i].name.toLowerCase() === targetString.toLowerCase())
+            {
+                return i;
+            }
+        }
     }
+    return -1;
+}
+function findInHistory (history, nodeString)
+{
+    for (var i = 0; i < history.length; i++)
+    {
+        if (history[i].name.toLowerCase() === nodeString.toLowerCase())
+        {
+            return i;
+        }
+    }
+    return -1;
 }

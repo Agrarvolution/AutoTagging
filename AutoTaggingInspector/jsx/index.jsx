@@ -1,12 +1,25 @@
 /**
+ * Adds XMP lib in case it is not declared yet.
+ */
+function addDependencies()
+{
+    if (ExternalObject.AdobeXMPScript === undefined) {
+        ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript');
+    }
+}
+
+/**
  * Loads metadata for a given image. This includes all subject and hierarchy strings of the start of a selection and response and history arrays.
  * @returns {{response: Array, subjects: Array, hierarchy: Array, history: Array, metadata: Boolean}} <- if image has no thumb this is empty
  */
 function loadMetaData()
 {
-    var subjects = [], hierarchy = [], response = [], history = [];
+    addDependencies();
 
-    if(app.document.selections[0].hasMetadata) {
+    var subjects = [], hierarchy = [], response = [], history = [];
+    var thumb = app.document.selections[0];
+
+    if(thumb.hasMetadata) {
         // Get the metadata object - wait for  valid values
         var md = thumb.synchronousMetadata;
 
@@ -20,32 +33,12 @@ function loadMetaData()
 
         XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
 
-        response = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
-        history = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
-
-        /*if (history !== undefined && history != null && history != "")
-        {
-            history = JSON.parse(history);
-        }
-        else
-        {
-            history = [];
-        }
-
-        if (response !== undefined && response != null && response != "")
-        {
-            response = JSON.parse(response);
-        }
-        else
-        {
-            response = [];
-        }*/
-
-        subjects = loadSubjects(xmp);
-        hierarchy = loadHierarchy(xmp);
+        response = loadAutoTaggingProperties(xmp, "labelListJSON");
+        history = loadAutoTaggingProperties(xmp, "historyListJSON");
+        subjects = xmpObjectsToString(loadSubjects(xmp));
+        hierarchy = xmpObjectsToString(loadHierarchy(xmp));
     }
-
-    return {subjects: subjects, hierarchy: hierarchy, response: response, history: history, metadata: app.document.selections[0].hasMetadata};
+    return JSON.stringify({subjects: subjects, hierarchy: hierarchy, response: response, history: history, metadata: thumb.hasMetadata});
 }
 
 /**
@@ -58,6 +51,8 @@ function loadMetaData()
  */
 function renameLabel(previousNode, newNode, historyChange)
 {
+    addDependencies();
+
     var thumb = app.document.selections[0];
 
     if(thumb.hasMetadata) {
@@ -97,20 +92,10 @@ function renameLabel(previousNode, newNode, historyChange)
         }
         if (historyChange.name)
         {
-            XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
-            var history = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
+            var history = loadAutoTaggingProperties(xmp, "historyListJSON");
 
-            if (history !== undefined && history != null && history != '')
+            if (searchInArray(history, historyChange.name) < 0)
             {
-                history = JSON.parse(history);
-                if (searchInArray(history, historyChange.name) < 0)
-                {
-                    history.push(historyChange);
-                }
-            }
-            else
-            {
-                history = [];
                 history.push(historyChange);
             }
             xmp.setProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", JSON.stringify(history));
@@ -136,7 +121,7 @@ function renameLabel(previousNode, newNode, historyChange)
  */
 function writeSelectionChange(nodes, parents, add)
 {
-
+    addDependencies();
     // Get the selected file
     var thumb = app.document.selections[0];
 
@@ -205,6 +190,8 @@ function writeSelectionChange(nodes, parents, add)
  */
 function removeLabels(subjectsDel, parentsDel, historyUpdates)
 {
+    addDependencies();
+
     var thumb = app.document.selections[0];
 
     if(thumb.hasMetadata && subjectsDel.length && parentsDel.length) {
@@ -246,12 +233,10 @@ function removeLabels(subjectsDel, parentsDel, historyUpdates)
 
         if (historyUpdates.length)
         {
-            XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
-            var history = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
+            var history = loadAutoTaggingProperties(xmp, "historyListJSON");
 
-            if (history !== undefined && history != null && history != '')
+            if (history.length !== 0)
             {
-                history = JSON.parse(history);
                 for (i = 0; i < historyUpdates.length; i++)
                 {
                     if (searchInArray(history, historyUpdates[i].name) < 0)
@@ -345,6 +330,25 @@ function loadHierarchy(xmp) {
     return hierarchy;
 }
 
+/**
+ * Loads AutoTagging propoerties from XMP metadata.
+ * @param xmp initialized object
+ * @param propertyName - name of AutoTagging property
+ * @returns {Array|*} - parsed AuoTagging JSON string
+ */
+function loadAutoTaggingProperties(xmp, propertyName) {
+    var propertyData = xmp.getProperty("http://ns.adobe.autotaggingJSON/", propertyName, XMPConst.STRING);
+
+    if (propertyData !== undefined && propertyData != null && propertyData != "")
+    {
+        propertyData = JSON.parse(propertyData);
+    }
+    else
+    {
+        propertyData = [];
+    }
+    return propertyData;
+}
 
 /**
  * @param {array} array
@@ -391,4 +395,13 @@ function searchInArray(array, value)
         }
     }
     return -1;
+}
+
+function xmpObjectsToString(xmpObjectArray)
+{
+    for (var i = 0; i < xmpObjectArray.length; i++)
+    {
+        xmpObjectArray[i] = xmpObjectArray[i].toString();
+    }
+    return xmpObjectArray;
 }
