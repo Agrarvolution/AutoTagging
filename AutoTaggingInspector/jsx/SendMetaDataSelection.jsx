@@ -1,6 +1,6 @@
 ﻿"use strict";
 
-#include "js/libs/json2.js"  
+#include "js/libs/json2.js"
 
 function SendMetaDataSelection()
 {
@@ -9,13 +9,13 @@ function SendMetaDataSelection()
 	 The context in which this snippet can run.
 	 @type String
 	*/
-	this.requiredContext = "Needs to run in Bridge, \nwith a selection of a file, \nideally with some metadata";	
+	this.requiredContext = "Needs to run in Bridge, \nwith a selection of a file, \nideally with some metadata";
 }
 
 /**
  Functional part of this snippet.  Get the selected Thumbnail and creates an XMPFile object which
  is used to get access to the XMP data.
- 
+
  @return True if the snippet ran as expected, false otherwise
  @type boolean
 */
@@ -33,18 +33,18 @@ SendMetaDataSelection.prototype.run = function()
 		if( Folder.fs === "Windows" )
 		{
 			var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.dll";
-		} 
-		else 
+		}
+		else
 		{
 			pathToLib = Folder.startup.fsName + "/AdobeXMPScript.framework";
 		}
-	
+
 		var libfile = new File( pathToLib );
 		var xmpLib = new ExternalObject("lib:" + pathToLib );
 	}
 
 	$.writeln("About to run AddSelectionListener");
-	
+
 	// Get the selected file
     app.eventHandlers.push( {handler: createSelectionHandler} );
     return true;
@@ -74,9 +74,9 @@ function createSelectionHandler(event)
                 var tagList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
                 var historyList = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
 
-                if (historyList !== undefined && historyList != null && historyList != "")
+                if (history !== undefined && history != null && history != "")
                 {
-                    historyList = JSON.parse(historyList);
+                    historyList = JSON.parse(history);
                 }
                 else
                 {
@@ -102,9 +102,9 @@ function createSelectionHandler(event)
                             }
 
                             index = findInHierarchy(response, name);
-                            var histIndex = findInHistory(historyList, name);
+                            var histIndex = findInHistory(history, name);
                             //check if parent terminated
-                            if ((index < 0 && histIndex < 0) || (histIndex >= 0 && historyList[histIndex].property !== "terminate")) {
+                            if ((index < 0 && histIndex < 0) || (histIndex >= 0 && history[histIndex].property !== "terminate")) {
                                 response.push({
                                     name: name,
                                     confidence: 1.0,
@@ -117,9 +117,9 @@ function createSelectionHandler(event)
                             }
                         }
 
-                        histIndex = findInHistory(historyList, tagList[i].description);
+                        histIndex = findInHistory(history, tagList[i].description);
                         //terminate child
-                        if (histIndex < 0 || (histIndex >= 0 && historyList[histIndex].property !== "terminate"))
+                        if (histIndex < 0 || (histIndex >= 0 && history[histIndex].property !== "terminate"))
                         {
                             //setup child
                             var child = {
@@ -278,8 +278,8 @@ function createSelectionHandler(event)
 
 /**
  * Traverses item tree to tick all items.
- * @param {*} inputTree 
- * @param {array} searchArray 
+ * @param {*} inputTree
+ * @param {array} searchArray
  */
 function depthSearchTick(inputTree, searchArray)
 {
@@ -297,8 +297,8 @@ function depthSearchTick(inputTree, searchArray)
 }
 /**
  * Searches through searchArray if name exists
- * @param {Item} item 
- * @param {array} searchArray 
+ * @param {Item} item
+ * @param {array} searchArray
  * @return true if item exists (is ticked), false if it doesn't
  */
 function isTicked(item, searchArray)
@@ -315,7 +315,7 @@ function isTicked(item, searchArray)
 
 /**
  * traverse through object tree to sort all child nodes
- * @param {array} outPutArray 
+ * @param {array} outPutArray
  */
 function sortArrayOutput (outPutArray)
 {
@@ -334,7 +334,7 @@ function sortArrayOutput (outPutArray)
 
 /**
  * Sort item array by descending confidence and by ascending name
- * @param {array} outputObj 
+ * @param {array} outputObj
  */
 function sortOutput (outputObj)
 {
@@ -354,9 +354,9 @@ function findInHierarchy (array, targetString)
 {
     if (array[0])
     {
-        for (var i = 0; i < array.length; i++) 
+        for (var i = 0; i < array.length; i++)
         {
-            if (array[i].name.toLowerCase() === targetString.toLowerCase()) 
+            if (array[i].name.toLowerCase() === targetString.toLowerCase())
             {
                 return i;
             }
@@ -377,11 +377,11 @@ function findInHistory (history, nodeString)
     return -1;
 }
 /**
-  Determines whether snippet can be run given current context.  The snippet 
+  Determines whether snippet can be run given current context.  The snippet
   fails if these preconditions are not met:
   <ul>
   <li> Must be running in Bridge
-  <li> A selection must be made in the Content pane of Bridge 
+  <li> A selection must be made in the Content pane of Bridge
   </ul>
 
   @return True is this snippet can run, false otherwise
@@ -391,12 +391,12 @@ SendMetaDataSelection.prototype.canRun = function()
  {
     // Must be running in Bridge & have a selection
 	$.writeln(BridgeTalk.appName);
-    
+
 	if( (BridgeTalk.appName === "bridge")) {
 		return true;
 	}
 
-	// Fail if these preconditions are not met.  
+	// Fail if these preconditions are not met.
 	// Bridge must be running,
 	// There must be a selection.
 	$.writeln("ERROR:: Cannot run AddSelectionListener");

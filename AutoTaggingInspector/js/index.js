@@ -3,7 +3,7 @@
 // Get a reference to a CSInterface object
 let csInterface = new CSInterface();
 loadJSX("js/libs/json2.js");
-//let test = '{"menu":[{"id":"menuItemId1","label":"testExample1","enabled":true,"checkable":true,"checked":false},{"id":"menuItemId2","label":"testExample2","menu":[{"id":"menuItemId2-1","label":"testExample2-1","menu":[{"id":"menuItemId2-1-1","label":"testExample2-1-1","enabled":false,"checkable":true,"checked":true}]},{"id":"menuItemId2-2","label":"testExample2-2","enabled":true,"checkable":true,"checked":true}]},{"label":"---"},{"id":"menuItemId3","label":"testExample3","enabled":false,"checkable":true,"checked":false}]}';
+
 setupContextMenu();
 
 let callResponse = {};
@@ -98,17 +98,6 @@ return parsed object
  */
 function loadContentListener(event)
 {
-    /*
-    response part, written part (=user defined), version history
-    {
-        response: "",
-        content: "",
-        history: "",
-    }
-    reverse order compared to data management -> parent: [children] instead of child: [parents]
-     */
-
-
     // placeholder -> replace by call to jsx & XMP parser
     /*let answer = '{"response":[{"description":"dog","confidence":0.8858542056,"parents":[\n' +
         '\n' +
@@ -146,7 +135,19 @@ function loadContentListener(event)
     */
 
     //let content = JSON.parse(answer);
-    callResponse = event.data;
+    //Enable for SendMetaDataHandler events
+    if (event.data.type)
+    {
+        //Handles AutoTaggingCustomBridgeEvents
+        callResponse = loadXMPContent(csInterface);
+    }
+    else
+    {
+        //Handles for SendMetaDataHandler events
+        callResponse = event.data;
+    }
+
+
     displayContent(event.data.content);
     return 0;
 }

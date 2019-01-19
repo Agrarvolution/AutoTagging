@@ -1,3 +1,61 @@
+/**
+ * Loads metadata for a given image. This includes all subject and hierarchy strings of the start of a selection and response and history arrays.
+ * @returns {{response: Array, subjects: Array, hierarchy: Array, history: Array, metadata: Boolean}} <- if image has no thumb this is empty
+ */
+function loadMetaData()
+{
+    var subjects = [], hierarchy = [], response = [], history = [];
+
+    if(app.document.selections[0].hasMetadata) {
+        // Get the metadata object - wait for  valid values
+        var md = thumb.synchronousMetadata;
+
+        // Get the XMP packet as a string and create the XMPMeta object
+        var xmp = new XMPMeta(md.serialize());
+
+        // Change the date modified
+        var d = new XMPDateTime(new Date());
+        d.convertToLocalTime();
+        xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
+
+        XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
+
+        response = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", XMPConst.STRING);
+        history = xmp.getProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", XMPConst.STRING);
+
+        /*if (history !== undefined && history != null && history != "")
+        {
+            history = JSON.parse(history);
+        }
+        else
+        {
+            history = [];
+        }
+
+        if (response !== undefined && response != null && response != "")
+        {
+            response = JSON.parse(response);
+        }
+        else
+        {
+            response = [];
+        }*/
+
+        subjects = loadSubjects(xmp);
+        hierarchy = loadHierarchy(xmp);
+    }
+
+    return {subjects: subjects, hierarchy: hierarchy, response: response, history: history, metadata: app.document.selections[0].hasMetadata};
+}
+
+/**
+ * Renames given XMP Keywords or strings in response list by supressing the response objects or replacing the xmp values.
+ * Always ads hierarchy strings for response keywords.
+ * @param previousNode - previous node that was saved in xmp files {subject: [], hierarchy: []}
+ * @param newNode - new node that replaces the old values {subject: [], hierarchy: []}
+ * @param historyChange - Object that is pushed onto the history array
+ * @returns {string} returns 'failure' or 'success'
+ */
 function renameLabel(previousNode, newNode, historyChange)
 {
     var thumb = app.document.selections[0];
@@ -69,6 +127,13 @@ function renameLabel(previousNode, newNode, historyChange)
     return "failure";
 }
 
+/**
+ * Checks or unchecks given subjects. It always stores their hierarchy strings.
+ * @param nodes - array of subjects strings
+ * @param parents - array of hierarchy strings
+ * @param add - false [remove checked] <-> true [check keywords]
+ * @returns {string} returns 'failure' or 'success'
+ */
 function writeSelectionChange(nodes, parents, add)
 {
 
@@ -131,6 +196,13 @@ function writeSelectionChange(nodes, parents, add)
     return "failure";
 }
 
+/**
+ * Removes all traces of a given keyword elements including its children.
+ * @param subjectsDel - subject string to be removed
+ * @param parentsDel - hierarchy strings needed for removing
+ * @param historyUpdates - Object that is pushed onto the history array
+ * @returns {string} returns 'failure' or 'success'
+ */
 function removeLabels(subjectsDel, parentsDel, historyUpdates)
 {
     var thumb = app.document.selections[0];
@@ -207,7 +279,7 @@ function removeLabels(subjectsDel, parentsDel, historyUpdates)
     return "failure";
 }
 /**
- * Compares two array and removes duplicates from the target array.
+ * Compares if value is in the target array, and removes it if it exists.
  * @return array with strings
  * @param {array} target
  * @param {array} decider
@@ -223,6 +295,13 @@ function stripArray(target, decider)
     }
     return target;
 }
+
+/**
+ * Compares if value is in target array and stores intersections in an array including the index of its occurance
+ * @param target
+ * @param decider
+ * @returns {Array}
+ */
 function intersectArray(target, decider)
 {
     var intersection = [];
@@ -237,7 +316,11 @@ function intersectArray(target, decider)
     return intersection;
 }
 
-
+/**
+ * Loads all subjects of a given thumb object (ticked/checked keywords)
+ * @param xmp
+ * @returns {Array} oof strings containing subjects
+ */
 function loadSubjects(xmp) {
     var subjects = [];
     for (i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++)
@@ -246,6 +329,12 @@ function loadSubjects(xmp) {
     }
     return subjects;
 }
+
+/**
+ * Loads all hierarchical objects of a given thumb object
+ * @param xmp
+ * @returns {Array} of strings containing hierarchy strings
+ */
 function loadHierarchy(xmp) {
     XMPMeta.registerNamespace("http://ns.adobe.com/lightroom/1.0/", "lr:");
     var hierarchy = [];

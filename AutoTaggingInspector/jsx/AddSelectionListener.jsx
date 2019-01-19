@@ -30,11 +30,11 @@ AddSelectionListener.prototype.run = function()
 	$.writeln("About to run AddSelectionListener");
 
 	// Get the selected file
-    app.eventHandlers.push( {handler: createSelectionHandler} );
+    app.eventHandlers.push( {handler: autoTaggingCustomEventHandler} );
     return true;
 };
 
-createSelectionHandler = function(event)
+autoTaggingCustomEventHandler = function(event)
 {
     if ( event.object instanceof Document && event.type === 'selectionsChanged') {
         if (app.document.selectionLength > 0)
