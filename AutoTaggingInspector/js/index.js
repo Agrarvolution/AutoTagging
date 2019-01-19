@@ -156,7 +156,7 @@ function loadContentListener(event)
 function guiUpdateListener()
 {
     document.addEventListener('updateGUI', function (event) {
-        alert(event);
+        displayContent(callResponse.content);
     });
 }
 

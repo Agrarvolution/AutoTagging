@@ -32,7 +32,7 @@ function processXMPContent(xmpContent) {
             let index = findInHierarchy(responseHierarchy, name);
             let histIndex = findInHistory(xmpContent.history, name);
             //check if parent terminated
-            if ((index < 0 && histIndex < 0) || (histIndex >= 0 && history[histIndex].property !== "terminate")) {
+            if ((index < 0 && histIndex < 0) || (histIndex >= 0 && xmpContent.history[histIndex].property !== "terminate")) {
                 responseHierarchy.push({
                     name: name,
                     confidence: 1.0,
@@ -115,7 +115,7 @@ function processXMPContent(xmpContent) {
     }
 
     //combine written tags and reponse tags -> could be made into a depth/breadth traverse method
-    for (let childIndex = 0; i < responseHierarchy.length; i++)
+    for (let i = 0; i < responseHierarchy.length; i++)
     {
         let index = findInHierarchy(nodeHierarchy, responseHierarchy[i].name);
         if (index >= 0)
@@ -144,11 +144,12 @@ function processXMPContent(xmpContent) {
 
     //$.writeln("Combined tags & responseHierarchy");
     sortArrayOutput(nodeHierarchy);
-
-    let updateGUIEvent = new Event('updateGUI', {data: {
-        response: xmpContent.response, content: nodeHierarchy, history: xmpContent.history
-    }});
-    document.dispatchEvent(updateGUIEvent);
+    callResponse = {
+        response: xmpContent.response,
+        content: nodeHierarchy,
+        history: xmpContent.history
+    };
+    document.dispatchEvent(new Event('updateGUI'));
 }
 
 /**
