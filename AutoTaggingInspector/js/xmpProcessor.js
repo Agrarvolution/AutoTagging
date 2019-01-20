@@ -11,6 +11,9 @@ function loadXMPContent () {
             }
             if (event.metadata) {
                 processXMPContent(event);
+            } else {
+                toggleHelpText(true);
+                $('#tags').empty();
             }
         });
 }
@@ -149,7 +152,7 @@ function processXMPContent(xmpContent) {
         content: nodeHierarchy,
         history: xmpContent.history
     };
-    document.dispatchEvent(new Event('updateGUI'));
+    $('body').trigger('updateGUI');
 }
 
 /**

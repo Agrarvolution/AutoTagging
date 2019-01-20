@@ -6,11 +6,11 @@ loadJSX("js/libs/json2.js");
 let callResponse = {};
 
 setupContextMenu();
-guiUpdateListener();
 
 // Add an event listener to update the background colour of Extension to match the Bridge Theme.
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
 csInterface.addEventListener("updateAutoTagInspector", loadContentListener);
+
 
 
 function setupContextMenu() {
@@ -63,6 +63,24 @@ function disableContextMenuItems() {
 function themeChangedEventListener(event)
 {
     changeThemeColor();
+}
+
+function rebuildHtml() {
+    let contentDOMTarget = document.getElementById('tags');
+    if (contentDOMTarget === undefined && contentDOMTarget == null)
+    {
+        let disableMessage = document.createElement('p');
+        disableMessage.textContent = "No image selected / no tags are available for this image!";
+        disableMessage.id = 'help';
+
+        contentDOMTarget = document.createElement('main');
+        contentDOMTarget.classList.add('tags');
+        let body = document.createElement('body');
+        body.appendChild(disableMessage);
+        body.appendChild(contentDOMTarget);
+
+        (document.getElementsByName('html'))[0].appendChild(body);
+    }
 }
 
 //Gets Bridge Theme information and updates the body colour
@@ -136,12 +154,12 @@ function loadContentListener(event)
 
     //let content = JSON.parse(answer);
     //Enable for SendMetaDataHandler events
-    if (event.data.type)
+    if (event.data && event.data.type)
     {
         //Handles AutoTaggingCustomBridgeEvents
         loadXMPContent();
     }
-    else
+    else if (event.data)
     {
         //Handles for SendMetaDataHandler events
         callResponse = event.data;
@@ -155,7 +173,7 @@ function loadContentListener(event)
 
 function guiUpdateListener()
 {
-    document.addEventListener('updateGUI', function (event) {
+    $('body').on('updateGUI', function (event) {
         displayContent(callResponse.content);
     });
 }
@@ -171,55 +189,31 @@ call parenting and create single item
  */
 function displayContent(response)
 {
-    /**
-     * Should be an event listener
-     * @type {any}
-     */
     //let fullResponse = loadContentListener();
     //let content = fullResponse.content;
 
     toggleHelpText((!response));
 
-    let contentDOMTarget = document.getElementById('tags');
-    if (contentDOMTarget !== undefined && contentDOMTarget != null)
-    {
-        resetContent(contentDOMTarget);
-    }
-    else
-    {
-        let disableMessage = document.createElement('p');
-        disableMessage.textContent = "No image selected / no tags are available for this image!";
-        disableMessage.id = 'help';
+    let newContent = createItems(response);
+    $('body').children('#tags').remove();
+    $('body').append(newContent);
 
-        contentDOMTarget = document.createElement('main');
-        contentDOMTarget.classList.add(tags);
-        let body = document.createElement('body');
-        body.appendChild(disableMessage);
-        body.appendChild(contentDOMTarget);
-
-        (document.getElementsByName('html'))[0].appendChild(body);
-    }
-
-    if (response)
-    {
-        for(let i = 0; i < response.length; i++)
-        {
-            contentDOMTarget.appendChild(createParentItem(response[i]));
-        }
-    }
     setupEventListeners();
 }
 
 function toggleHelpText(show)
 {
     let text = $('#help');
+    let tags = $('#tags');
     if (show)
     {
         text.removeClass('hidden');
+        tags.addClass('hidden');
     }
     else
     {
         text.addClass('hidden');
+        tags.removeClass('hidden');
     }
 }
 
@@ -236,39 +230,41 @@ or
     <p>item</p>
 </div>
  */
-function createParentItem(parentGroup)
+function createItems(response)
 {
-    let mainParent = document.createElement('section');
-    mainParent.classList.add('itemParent');
+    let contentDOMTarget = document.createElement('main');
+    contentDOMTarget.id = 'tags';
 
-    let parent;
+    if (response !== undefined && response != null && response.length) {
+        let parentStack = [];
+        let responseArrayStack = [];
 
-    let stack = [];
-    let nodeStack = [];
+        parentStack.push(contentDOMTarget);
+        responseArrayStack.push(response);
 
-    stack.push(parentGroup);
-    nodeStack.push(mainParent);
+        while (parentStack.length !== 0) {
+            let itemNode = parentStack.pop();
+            let itemArray = responseArrayStack.pop();
 
-    while (stack.length !== 0)
-    {
-        let itemArray = stack.pop();
-        let itemNode = nodeStack.pop();
-        itemNode.appendChild(createItem(itemArray));
+            for (let i = 0; i < itemArray.length; i++) {
+                let group = document.createElement('section');
+                group.classList.add('itemParent');
+                group.appendChild(createItem(itemArray[i]));
 
-        if (itemArray.children.length > 0)
-        {
-            parent = document.createElement('div');
-            parent.classList.add('items');
-            itemNode.appendChild(parent);
-        }
+                if (itemArray[i].children.length > 0) {
+                    let parent = document.createElement('div');
+                    parent.classList.add('items');
 
-        for (let i = 0; i < itemArray.children.length; i++)
-        {
-            nodeStack.push(parent);
-            stack.push(itemArray.children[i]);
+                    group.appendChild(parent);
+
+                    responseArrayStack.push(itemArray[i].children);
+                    parentStack.push(parent);
+                }
+                itemNode.appendChild(group);
+            }
         }
     }
-    return mainParent;
+    return contentDOMTarget;
 }
 /*
 @Todo Create Single Item
@@ -329,13 +325,15 @@ Group:
 function setupEventListeners() {
     $('.itemCheckbox').click(checkboxClickProcessing).dblclick(checkboxDblClickProcessing);
 
-    $('.itemLabel').click( function() {
-        $(this).parent().children('.itemCheckbox').trigger('click');
-    }).dblclick(function (e) {
+    $('.itemLabel').dblclick(function (e) {
         e.target.nextSibling.classList.remove('hidden');
         e.target.classList.add('hidden');
         e.target.nextSibling.focus();
     });
+    // disbaled -> gets overwritten by changemetadata event
+    //.click( function() {
+    //         $(this).parent().children('.itemCheckbox').trigger('click');
+    //     })
 
     $('.itemChange').blur(changeLabel).keydown(function (e) {
         if (e.which === 13) {
@@ -514,23 +512,12 @@ function changeLabel(event) {
 }
 
 function sortDomItem (label){
-    let parent = label.parentNode.parentNode;
+    let parent = label.parentNode.parentNode.parentNode;
     let nameStack = [];
 
-    if (parent.classList.contains('itemParent'))
+    for (let i = 0; i < parent.childNodes.length; i++)
     {
-        parent = parent.parentNode;
-        for (let i = 0; i < parent.childNodes.length; i++)
-        {
-            nameStack.push(parent.childNodes[i].childNodes[0].childNodes[1].textContent);
-        }
-    }
-    else
-    {
-        for (let i = 0; i < parent.childNodes.length; i++)
-        {
-            nameStack.push(parent.childNodes[i].childNodes[1].textContent);
-        }
+        nameStack.push(parent.childNodes[i].childNodes[0].childNodes[1].textContent);
     }
 
     let sortIndex = 0;
@@ -540,14 +527,7 @@ function sortDomItem (label){
     }
     sortIndex = sortIndex <= 0 ? 0: sortIndex--;
 
-    if (parent.classList.contains('itemParent'))
-    {
-        parent.insertBefore(label.parentNode, parent.childNodes[sortIndex]);
-    }
-    else
-    {
-        parent.insertBefore(label.parentNode.parentNode, parent.childNodes[sortIndex]);
-    }
+    parent.insertBefore(label.parentNode, parent.childNodes[sortIndex]);
 }
 /**
  * Creates hierarchy string of a given DOM Checkbox element
@@ -565,9 +545,9 @@ function discoverParentString(target) {
                 chain.push(valueTemp.name);
             }
 
-            if (target.parentNode.parentNode.parentNode.firstChild.firstChild)
+            if (target.parentNode.parentNode.parentNode.parentNode && target.parentNode.parentNode.parentNode.parentNode.firstChild.firstChild)
             {
-                target = target.parentNode.parentNode.parentNode.firstChild.firstChild;
+                target = target.parentNode.parentNode.parentNode.parentNode.firstChild.firstChild;
             }
             else
             {
@@ -626,7 +606,7 @@ function generateHierarchy(parent) {
         {
             for (let i = 0; i < currentParent.parentNode.nextSibling.childNodes.length; i++)
             {
-                parentStack.push(currentParent.parentNode.nextSibling.childNodes[i].firstChild);
+                parentStack.push(currentParent.parentNode.nextSibling.childNodes[i].firstChild.firstChild);
                 parentPrefixStack.push(hierarchyString);
             }
         }
@@ -663,7 +643,7 @@ function findChildren(parent) {
         {
             for (let i = 0; i < currentParent.parentNode.nextSibling.childNodes.length; i++)
             {
-                parentStack.push(currentParent.parentNode.nextSibling.childNodes[i].firstChild);
+                parentStack.push(currentParent.parentNode.nextSibling.childNodes[i].firstChild.firstChild);
             }
         }
     }
@@ -693,7 +673,7 @@ function checkChildCheckboxes(parent, checked) {
         {
             for (let i = 0; i < currentParent.parentNode.nextSibling.childNodes.length; i++)
             {
-                parentStack.push(currentParent.parentNode.nextSibling.childNodes[i].firstChild);
+                parentStack.push(currentParent.parentNode.nextSibling.childNodes[i].firstChild.firstChild);
             }
         }
     }
@@ -772,6 +752,11 @@ function loadJSX(fileName) {
 
 
 window.onload = function(event) {
-
     displayContent();
 };
+
+$(document).ready(function (e) {
+    rebuildHtml();
+    guiUpdateListener();
+    loadXMPContent(); // first call after refresh / crash
+});

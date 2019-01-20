@@ -37,8 +37,9 @@ function loadMetaData()
         history = loadAutoTaggingProperties(xmp, "historyListJSON");
         subjects = xmpObjectsToString(loadSubjects(xmp));
         hierarchy = xmpObjectsToString(loadHierarchy(xmp));
+        return JSON.stringify({subjects: subjects, hierarchy: hierarchy, response: response, history: history, metadata: thumb.hasMetadata});
     }
-    return JSON.stringify({subjects: subjects, hierarchy: hierarchy, response: response, history: history, metadata: thumb.hasMetadata});
+    return JSON.stringify({metadata: false});
 }
 
 /**

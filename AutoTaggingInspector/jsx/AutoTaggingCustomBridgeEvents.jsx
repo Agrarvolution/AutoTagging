@@ -1,6 +1,8 @@
 ﻿"use strict";
 #include "js/libs/json2.js"
 
+var previousThumb, previousThumbInterest;
+
 function AutoTaggingCustomBridgeEvents()
 {
 
@@ -58,17 +60,24 @@ function autoTaggingCustomEventHandler(event)
             eventObj.dispatch();
         }
 
-        if (app.document.selections[0] && app.document.selections[0].hasMetadata)
+        if (app.document.selections[0] && app.document.selections[0].hasMetadata && app.document.selections[0] !== previousThumb)
         {
-            $.writeln("Register thumb message");
-            app.document.selections[0].registerInterest(function (thumb, message) {
+            if (previousThumbInterest !== undefined && previousThumbInterest != null && previousThumb !== undefined && previousThumb != null)
+            {
+                previousThumb.unregisterInterest(previousThumbInterest);
+            }
+
+            previousThumb = app.document.selections[0];
+            previousThumbInterest = function (thumb, message) {
                 $.writeln("About to throw metadata update event");
                 if (xLib && message === 'metadata') {
                     var eventObj = new CSXSEvent();
                     eventObj.type = "updateAutoTagInspector";
                     eventObj.data = JSON.stringify({type: 'metadataChanged'});
                     eventObj.dispatch();
-            }});
+                }};
+            $.writeln("Register thumb message");
+            app.document.selections[0].registerInterest(previousThumbInterest);
         }
     }
 }
