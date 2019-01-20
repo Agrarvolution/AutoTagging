@@ -42,7 +42,6 @@ AutoTaggingCustomBridgeEvents.prototype.run = function()
 
 function autoTaggingCustomEventHandler(event)
 {
-    $.writeln(event.object + " event type " + event.type);
     if ( event.object instanceof Document && event.type === 'selectionsChanged') {
         $.writeln("Init xLib");
         var xLib;
@@ -51,7 +50,7 @@ function autoTaggingCustomEventHandler(event)
         } catch(e) { alert("Missing ExternalObject: "+e); }
 
         //throw update event
-        $.writeln("About to throw event");
+        $.writeln("About to throw selection change event");
         if (xLib) {
             var eventObj = new CSXSEvent();
             eventObj.type = "updateAutoTagInspector";
@@ -59,15 +58,19 @@ function autoTaggingCustomEventHandler(event)
             eventObj.dispatch();
         }
 
-        if (app.document.selections[0])
+        if (app.document.selections[0] && app.document.selections[0].hasMetadata)
         {
+            $.writeln("Register thumb message");
             app.document.selections[0].registerInterest(function (thumb, message) {
-                $.writeln('Thumbnail event Message: ' + message);
-            })
+                $.writeln("About to throw metadata update event");
+                if (xLib && message === 'metadata') {
+                    var eventObj = new CSXSEvent();
+                    eventObj.type = "updateAutoTagInspector";
+                    eventObj.data = JSON.stringify({type: 'metadataChanged'});
+                    eventObj.dispatch();
+            }});
         }
     }
-
-
 }
 
 
