@@ -58,7 +58,16 @@ function autoTaggingCustomEventHandler(event)
             eventObj.data = JSON.stringify({type: 'selectionsChanged'});
             eventObj.dispatch();
         }
+
+        if (app.document.selections[0])
+        {
+            app.document.selections[0].registerInterest(function (thumb, message) {
+                $.writeln('Thumbnail event Message: ' + message);
+            })
+        }
     }
+
+
 }
 
 
