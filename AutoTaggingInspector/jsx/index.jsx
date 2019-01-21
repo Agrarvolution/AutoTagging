@@ -19,7 +19,7 @@ function loadMetaData()
     var subjects = [], hierarchy = [], response = [], history = [];
     var thumb = app.document.selections[0];
 
-    if(thumb.hasMetadata) {
+    if(thumb !== undefined && thumb != null && thumb.hasMetadata) {
         // Get the metadata object - wait for  valid values
         var md = thumb.synchronousMetadata;
 

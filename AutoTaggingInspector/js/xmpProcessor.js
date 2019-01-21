@@ -3,11 +3,13 @@
 //don't call before csInterface is declared
 function loadXMPContent () {
         csInterface.evalScript('loadMetaData()', function (event) {
-            try {
-                event = JSON.parse(event);
-            }
-            catch (e) {
-                alert(e);
+            if (event !== "") {
+                try {
+                    event = JSON.parse(event);
+                } catch (e) {
+                    alert(event);
+                    alert(e);
+                }
             }
             if (event.metadata) {
                 processXMPContent(event);
