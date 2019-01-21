@@ -77,9 +77,11 @@ function renameLabel(previousNode, newNode, historyChange)
         if (indexInSubjects)
         {
             xmp.deleteArrayItem(XMPConst.NS_DC, "subject", indexInSubjects);
+        }
+        if (newNode.name !== "")
+        {
             xmp.appendArrayItem(XMPConst.NS_DC, "subject", newNode.name, 0, XMPConst.ARRAY_IS_ORDERED);
         }
-
 
         var hierarchy = loadHierarchy(xmp);
         for (var i = 0; i < previousNode.parent.length; i++)
@@ -89,8 +91,11 @@ function renameLabel(previousNode, newNode, historyChange)
             {
                 xmp.deleteArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", hierarchyIndex);
             }
+        }
+        for (i = 0; i < newNode.parent.length; i++) {
             xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", newNode.parent[i], 0, XMPConst.ARRAY_IS_ORDERED);
         }
+
         if (historyChange.name)
         {
             var history = loadAutoTaggingProperties(xmp, "historyListJSON");
