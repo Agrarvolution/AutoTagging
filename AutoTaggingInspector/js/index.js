@@ -330,10 +330,6 @@ function setupEventListeners() {
         e.target.classList.add('hidden');
         e.target.nextSibling.focus();
     });
-    // disbaled -> gets overwritten by changemetadata event
-    //.click( function() {
-    //         $(this).parent().children('.itemCheckbox').trigger('click');
-    //     })
 
     $('.itemChange').blur(changeLabel).keydown(function (e) {
         if (e.which === 13) {
@@ -342,7 +338,7 @@ function setupEventListeners() {
     });
 
     //contextmenu event handling
-    $('.itemSingle').contextmenu(function (e) {
+    $('.itemSingle').click(toggleChildrenProcessing).contextmenu(function (e) {
         $('body').trigger('mousedown');
         csInterface.updateContextMenuItem('clickAll', true);
         csInterface.updateContextMenuItem('rename', true);
@@ -376,6 +372,12 @@ function setupEventListeners() {
 
         $('body').mousedown(resetContextMenu);
     });
+}
+
+function toggleChildrenProcessing (event) {
+    event.preventDefault();
+    $(event.target).parent().parent().children('.items').toggleClass('hidden');
+    return true;
 }
 
 /*
@@ -434,7 +436,7 @@ function checkboxDblClickProcessing(event) {
             }
         });
     }
-    return false;
+    return true;
 }
 
 function removeLabel(event) {
