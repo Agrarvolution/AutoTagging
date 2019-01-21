@@ -11,8 +11,6 @@ setupContextMenu();
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
 csInterface.addEventListener("updateAutoTagInspector", loadContentListener);
 
-
-
 function setupContextMenu() {
     let contextMenu = {};
     contextMenu.menu = [];
@@ -51,6 +49,37 @@ function setupContextMenu() {
         //alert(contextMenuEvent);
         document.dispatchEvent(contextMenuEvent);
         //alert(e);
+    });
+
+    let ctxMenuTarget = document.getElementsByClassName('html')[0];
+    //general context menu listener
+    $('html').contextmenu(function(event) {
+        if (event.target.parentNode !== document && event.target.parentNode.classList.contains('itemSingle'))
+        {
+            let contextMenuOpen = new Event('contextMenuOpen', {
+                bubble: true,
+                details: event
+            });
+            ctxMenuTarget = event.target.parentNode;
+            event.target.parentNode.dispatchEvent(contextMenuOpen);
+        }
+        else
+        {
+            ctxMenuTarget = event.target;
+            disableContextMenuItems();
+        }
+
+    });
+    $(document).on('add', function (event) {
+        if (ctxMenuTarget.classList.contains('itemSingle')) {
+            let addItemEvent = new Event('addNewItem', {
+                bubble: true,
+                details: event
+            });
+            ctxMenuTarget.dispatchEvent(addItemEvent);
+        } else {
+            addNewItem(document.getElementById('tags'));
+        }
     });
 }
 function disableContextMenuItems() {
@@ -195,8 +224,10 @@ function displayContent(response)
     toggleHelpText((!response));
 
     let newContent = createItems(response);
-    $('body').children('#tags').remove();
-    $('body').append(newContent);
+
+    let body = $('body');
+    body.children('#tags').remove();
+    body.append(newContent);
 
     setupEventListeners();
 }
@@ -265,6 +296,52 @@ function createItems(response)
         }
     }
     return contentDOMTarget;
+}
+
+function addNewItem(parent) {
+    let group = document.createElement('section');
+    group.classList.add('itemParent');
+    group.appendChild(createItem({name: "", confidence: 1, ticked: false})); //create empty item template
+    parent.appendChild(group);
+
+    $(group).children('.itemSingle').children('.itemLabel').addClass('hidden').parent()
+        .children('.itemChange').removeClass('hidden').focus().blur(function (event) {
+        if (event.target.value === "")
+        {
+            $(this).parent().parent().remove();
+        }
+        else
+        {
+            let value = JSON.parse(event.target.previousSibling.previousSibling.value);
+            value.name = event.target.value;
+            event.target.previousSibling.previousSibling.value = JSON.stringify(value);
+
+            let newNode = {
+                name: "", //empty because it is not ticked by default -> //name: event.target.value (then ticked by default)
+                parent: generateHierarchy(event.target.previousSibling.previousSibling)
+            };
+            csInterface.evalScript("renameLabel(" + JSON.stringify(
+                {name: "", parent: []}) + "," +
+                JSON.stringify(newNode) + "," + JSON.stringify([]) + ")",
+                function (e) {
+                alert(e);
+                if (e === 'success') {
+                    $(this).addClass('hidden').prev().removeClass('hidden').html(event.target.value);
+                    sortDomItem(event.target.previousSibling);
+                    setupEventListeners();
+                }
+                else
+                {
+                   event.target.focus();
+                }
+            });
+        }
+    }).keydown(function (e) {
+        if (e.which === 13) {
+            $(this).blur();
+        }
+    });
+
 }
 /*
 @Todo Create Single Item
@@ -338,7 +415,7 @@ function setupEventListeners() {
     });
 
     //contextmenu event handling
-    $('.itemSingle').click(toggleChildrenProcessing).contextmenu(function (e) {
+    $('.itemSingle').click(toggleChildrenProcessing).on('contextMenuOpen', function (e) {
         $('body').trigger('mousedown');
         csInterface.updateContextMenuItem('clickAll', true);
         csInterface.updateContextMenuItem('rename', true);
@@ -371,6 +448,19 @@ function setupEventListeners() {
         };
 
         $('body').mousedown(resetContextMenu);
+    }).on('addNewItem', function (event) {
+        let parent;
+        if (event.target.parentNode.childNodes[1] && event.target.parentNode.childNodes[1].classList.contains('items'))
+        {
+            parent = event.target.childNodes[1];
+        }
+        else
+        {
+            parent = document.createElement('div');
+            parent.classList.add('items');
+            event.target.parentNode.appendChild(parent);
+        }
+        addNewItem(parent);
     });
 }
 
