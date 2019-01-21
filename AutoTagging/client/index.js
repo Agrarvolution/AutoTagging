@@ -2,6 +2,7 @@
 var csInterface = new CSInterface();
 var statusMessageHandler = new StatusMessage();
 var serverCommunication = new ServerCommunication();
+var dataManagement = new DataManagement();
 
 csInterface.requestOpenExtension("com.AutoTagging.localServer");
 
@@ -17,8 +18,6 @@ var AWS_selected; // global variable on whether AWS is selected (checked) or not
 
 var Vision_loggedIn; // global variable on whether Google Vision is logged in or not
 var Vision_selected; // global variable on whether Google Vision is selected (checked) or not
-
-var imagePath = "C:/AutoTagging/tempImage.jpg";
 
 // ----------------------------------------------------------
 // internet connection is required to access the AWS and Google Vision services
@@ -212,26 +211,23 @@ StatusMessage.prototype.write = function()
 
 function ServerCommunication()
 {
-    /* Make sure to include the full URL */
+
 }
 
 ServerCommunication.prototype.startLabeling = function()
 {
     var ServerUrl = "http://localhost:3200/tagImage";
-    var responseEvent = new CSEvent('AWSResponse');
     statusMessageHandler.add("Sending a request to the server");
+    statusMessageHandler.add("Waiting for the servers response");
     /* Use ajax to communicate with your server */
     $.ajax({
         type: "GET",
         url: ServerUrl,
         success: function (ServerResponse)
         {
-            responseEvent.data = ServerResponse;
-            csInterface.dispatchEvent(responseEvent);
+            statusMessageHandler.add("Labels found!");
 
-            //statusMessageHandler.add(JSON.stringify(ServerResponse));
-
-            new ServerCommunication().testHandleLabels(ServerResponse);
+            new ServerCommunication().handleLabels(ServerResponse);
         },
         error: function(jqXHR, textStatus, errorThrown)
         {
@@ -266,7 +262,7 @@ ServerCommunication.prototype.testServerConnection = function()
     })
 };
 
-ServerCommunication.prototype.testHandleLabels = function(serverResponse)
+ServerCommunication.prototype.handleLabels = function(serverResponse)
 {
     var labels = serverResponse["Labels"];
     var output = "";
@@ -276,4 +272,10 @@ ServerCommunication.prototype.testHandleLabels = function(serverResponse)
     });
 
     statusMessageHandler.add("Found labels: " + output);
+
+
+
+    var tagArray = dataManagement.handleRecognitionResponse(serverResponse);
+
+    
 };

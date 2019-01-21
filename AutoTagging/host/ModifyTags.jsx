@@ -322,7 +322,7 @@ function storeResponse(xmp, responseObject)
 /**
  * Has to run after XMP was initialized.
  * @param {object} xmp 
- * @param {array} responseObject 
+ * @param {array} responseObject
  * @param {float} confidence 
  * @param {boolean} writeParents -> decides wether parents are ticked or not
  */
@@ -331,7 +331,7 @@ function writeTags(xmp, responseObject, confidence, writeParents)
     storeResponse(xmp, responseObject);
     
     var existingTags = readTags(xmp);
-    responseObject = deleteByConfidence(responseObject, confidence);
+    responseObject =  deleteByConfidence(responseObject, confidence);
     var respondTags = responseTags(responseObject, writeParents);
 
     respondTags.subjects = stripArray(respondTags.subjects, existingTags.subjects);
@@ -450,7 +450,7 @@ function readTags(xmp)
     {
         subjects.push(xmp.getArrayItem(XMPConst.NS_DC, "subject", i));
     }
-    for (var i = 1; i <= xmp.countArrayItems("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject"); i++) 
+    for (i = 1; i <= xmp.countArrayItems("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject"); i++)
     {
         hierarchy.push(xmp.getArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", i));
     }
