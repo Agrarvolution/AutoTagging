@@ -1,7 +1,3 @@
-
-alert("Opening Label");
-#include "js/libs/json2.js"  
-
 function Label(name, confidence, parents)
 {
     this.name = name;
@@ -25,21 +21,22 @@ Label.prototype.toJSON = function()
     */
 
     return JSON.stringify(this);
-}
+};
 
 Label.prototype.square = function()
 {
+    //noinspection JSUnresolvedFunction
     this.confidence *= this.confidence;
 
     this.clamp();
-}
+};
 
 Label.prototype.clamp = function()
 {
     this.confidence = Math.min(Math.max(parseFloat(this.confidence), 0), 1);
-}
+};
 
 Label.prototype.sanitize = function()
 {
     
-}
+};

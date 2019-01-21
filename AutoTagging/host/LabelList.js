@@ -3,7 +3,6 @@
  */
 LabelList = function () {
     this.labels = [];
-    this.imagePath = "C:/AutoTagging/tempImage.jpg";
 };
 
 
@@ -17,7 +16,7 @@ LabelList.prototype.stripArray = function(decider)
     {
         for (var i = 0; i < this.labels.length; i++)
         {
-            if (searchInArray(decider, this.labels[i]))
+            if (this.searchInArray(decider, this.labels[i]))
             {
                 this.labels.splice(i--,1);
             }

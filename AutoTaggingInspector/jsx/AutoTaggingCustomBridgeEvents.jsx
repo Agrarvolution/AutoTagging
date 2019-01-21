@@ -54,9 +54,14 @@ function autoTaggingCustomEventHandler(event)
         //throw update event
         $.writeln("About to throw selection change event");
         if (xLib) {
+            var imagePath = "C:/AutoTagging/tempImage.jpg";
+
+            var currentPreviewFile = app.document.selections[0].core.preview.preview;
+            currentPreviewFile.exportTo (imagePath, 100);
+    
             var eventObj = new CSXSEvent();
             eventObj.type = "updateAutoTagInspector";
-            eventObj.data = JSON.stringify({type: 'selectionsChanged'});
+            eventObj.data = JSON.stringify({type: 'selectionsChanged', "metaData": app.document.selections[0].synchronousMetadata });
             eventObj.dispatch();
         }
 

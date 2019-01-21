@@ -12,14 +12,15 @@ const image2base64 = require('image-to-base64');
 
 function init()
 {
+    console.log("Starting server");
     //writeCredentials("asdf", "jklo");
     start();
     run();
+    console.log("Waiting for an incoming request");
 }
 
 function start()
 {
-    console.log("Starting server");
     var port = 3200;
     var hostname = "localhost";
 
@@ -43,7 +44,7 @@ function run()
     app.get("/tagImage", function (req, res, next)
     {
         console.log("Incoming Labeling Request");
-        res.send(202, "Starting image labeling");
+        //res.status(202).send("Starting image labeling");
 
         detectLabels()
             .then(function (data) {
