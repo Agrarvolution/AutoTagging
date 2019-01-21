@@ -532,7 +532,7 @@ function checkboxDblClickProcessing(event) {
 }
 
 function removeLabel(event) {
-    let targetCheckbox = $(event.target).parent().children('.itemCheckbox');
+    let targetCheckbox = $(event.target).children('.itemCheckbox');
 
     let hierarchy = generateHierarchy(targetCheckbox[0]);
     let subjects = findChildren(targetCheckbox[0]);
