@@ -305,7 +305,9 @@ function addNewItem(parent) {
     parent.appendChild(group);
 
     $(group).children('.itemSingle').children('.itemLabel').addClass('hidden').parent()
-        .children('.itemChange').removeClass('hidden').focus().blur(function (event) {
+        .children('.itemChange').removeClass('hidden').focus().blur(function (event)
+    {
+        event.target.value = htmlEntities(event.target.value);
         if (event.target.value === "")
         {
             $(this).parent().parent().remove();
@@ -575,6 +577,7 @@ function changeLabel(event) {
 
     let tempValue = JSON.parse(event.target.previousSibling.previousSibling.value);
     if (tempValue.name !== event.target.value) {
+        event.target.value = htmlEntities(event.target.value);
         let hierarchy = generateHierarchy(event.target.previousSibling.previousSibling);
         let prevNode = {
             name: tempValue.name,
@@ -841,6 +844,9 @@ function loadJSX(fileName) {
     csInterface.evalScript('$.evalFile("' + extensionRoot + fileName + '")');
 }
 
+function htmlEntities(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 
 window.onload = function(event) {
