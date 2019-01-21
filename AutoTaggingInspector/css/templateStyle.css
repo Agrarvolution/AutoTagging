@@ -1,3 +1,13 @@
+body {
+    background-color: #323232;
+    font-family: Segoe UI, Tahoma, sans-serif;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    font-size: 14px;
+    color: #e1e1e1;
+}
+
+
 /* Center checkboxes with label -> only works with size input beforehand */
 .centerItems {
     float: left;
@@ -18,13 +28,23 @@ p.item {
 }
 /* ToDo Offset for p / container depending on parenting -> first one without one including hiding
  */
+section.itemParent {
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 0.15em;
+    padding-bottom: 0.15em;
+}
 div.items {
-    margin-left: 10px;
+    padding-left: 1em;
 }
 div.itemSingle {
     white-space: nowrap;
     overflow: hidden;
     min-height: 1.6em;
+    display: inline-block;
+}
+div.itemSingle:hover {
+    background-color: #4a4a4a;
 }
 .hidden {
     display: none;
