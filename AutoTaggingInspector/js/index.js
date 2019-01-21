@@ -5,6 +5,9 @@ let csInterface = new CSInterface();
 loadJSX("js/libs/json2.js");
 let callResponse = {};
 
+/**
+ * Setups context menu and its item listeners.
+ */
 setupContextMenu();
 
 // Add an event listener to update the background colour of Extension to match the Bridge Theme.
@@ -70,6 +73,10 @@ function setupContextMenu() {
         }
 
     });
+    /**
+     * handles add method from context menu
+     * might be a better template to handle contextmenu events
+     */
     $(document).on('add', function (event) {
         if (ctxMenuTarget.classList.contains('itemSingle')) {
             let addItemEvent = new Event('addNewItem', {
@@ -82,6 +89,10 @@ function setupContextMenu() {
         }
     });
 }
+
+/**
+ * Disables content menu items (called if context menu is opened on not inside of .itemSingle)
+ */
 function disableContextMenuItems() {
     csInterface.updateContextMenuItem('clickAll', false);
     csInterface.updateContextMenuItem('rename', false);
@@ -94,6 +105,9 @@ function themeChangedEventListener(event)
     changeThemeColor();
 }
 
+/**
+ * Rebuilds html incase it was wiped.
+ */
 function rebuildHtml() {
     let contentDOMTarget = document.getElementById('tags');
     if (contentDOMTarget === undefined && contentDOMTarget == null)
@@ -195,11 +209,12 @@ function loadContentListener(event)
         displayContent(event.data.content);
     }
 
-
-
     return 0;
 }
 
+/**
+ * Listener if 'updateGUI' occures and calls display method.
+ */
 function guiUpdateListener()
 {
     $('body').on('updateGUI', function (event) {
@@ -207,14 +222,20 @@ function guiUpdateListener()
     });
 }
 
-
+/**
+ * Reset content.
+ * @param tag {HTMLElement}
+ */
 function resetContent(tag)
 {
     tag.innerHTML = "";
 }
-/*
-@Todo Display JSON items
-call parenting and create single item
+
+/**
+ * Toggles help text.
+ * Calls create items. Adds them to .tags
+ *
+ * @param response {Object}
  */
 function displayContent(response)
 {
@@ -232,6 +253,10 @@ function displayContent(response)
     setupEventListeners();
 }
 
+/**
+ * Toggles visibility of help text and tags.
+ * @param show {boolean}
+ */
 function toggleHelpText(show)
 {
     let text = $('#help');
@@ -248,18 +273,10 @@ function toggleHelpText(show)
     }
 }
 
-/*
-@ToDo Make parenting for items -> put parented items in container
-either
-<p>Parent Item <br> <- maybe limit to inline / use ul?
-    <p>item</p>
-    <p>item</p>
-</p>
-or
-<div>
-    <p>parent</p>
-    <p>item</p>
-</div>
+/**
+ * Creates all items for a given response.
+ * @param response from callResponse.response
+ * @returns {HTMLElement}
  */
 function createItems(response)
 {
@@ -298,6 +315,10 @@ function createItems(response)
     return contentDOMTarget;
 }
 
+/**
+ * Create new empty item and append it to the parent children.
+ * @param parent .tags / .items
+ */
 function addNewItem(parent) {
     let group = document.createElement('section');
     group.classList.add('itemParent');
@@ -466,6 +487,11 @@ function setupEventListeners() {
     });
 }
 
+/**
+ * Toggles visibility of .items
+ * @param event .itemSingle
+ * @returns {boolean}
+ */
 function toggleChildrenProcessing (event) {
     //disbale checkbox from hiding content
     if (!event.target.classList.contains('itemCheckbox'))
@@ -534,6 +560,10 @@ function checkboxDblClickProcessing(event) {
     return true;
 }
 
+/**
+ * Removes selected item from DOM and XMP metadata.
+ * @param event target = .itemSingle
+ */
 function removeLabel(event) {
     let targetCheckbox = $(event.target).children('.itemCheckbox');
 
@@ -609,6 +639,10 @@ function changeLabel(event) {
     return false;
 }
 
+/**
+ * Sorts one .itemParent node in parenting node ascending.
+ * @param label { Object } - childNode[1] of .itemSingle}
+ */
 function sortDomItem (label){
     let parent = label.parentNode.parentNode.parentNode;
     let nameStack = [];
@@ -833,25 +867,31 @@ function searchInResponse(name, property) {
     return {};
 }
 
-
-
-
-/*
-@ToDo Update if data was changed external
+/**
+ * Loads additional jsx ressources from jsx folder in the extension root.
+ * fileName is a String (with the .jsx extension included)
+ * @param fileName {string}
  */
-
-
-// fileName is a String (with the .jsx extension included)
 function loadJSX(fileName) {
     var extensionRoot = csInterface.getSystemPath(SystemPath.EXTENSION) + "/jsx/";
     csInterface.evalScript('$.evalFile("' + extensionRoot + fileName + '")');
 }
 
+/**
+ * Removes html special chars
+ * @param str
+ * @returns {string}
+ */
 function removeSpecialChars(str)
 {
     return String(str).replace(/[&\/\\#,().'":?<>{}]/g, '')
 }
 
+/**
+ * Replaces html special chars
+ * @param str
+ * @returns {string}
+ */
 function htmlEntities(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
