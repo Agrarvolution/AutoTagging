@@ -436,7 +436,7 @@ function setupEventListeners() {
         document.addEventListener('rename', ctxRename);
 
         let ctxClickAll = function () {
-            $(e.target).parent().children('.itemCheckbox').trigger('dblclick');
+            $(e.target).children('.itemCheckbox').trigger('dblclick');
             $('body').trigger('mousedown');
         };
         document.addEventListener('clickAll', ctxClickAll);
