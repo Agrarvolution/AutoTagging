@@ -277,5 +277,5 @@ ServerCommunication.prototype.handleLabels = function(serverResponse)
 
     var tagArray = dataManagement.handleRecognitionResponse(serverResponse);
 
-    
+
 };
