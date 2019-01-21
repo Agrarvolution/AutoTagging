@@ -307,7 +307,7 @@ function addNewItem(parent) {
     $(group).children('.itemSingle').children('.itemLabel').addClass('hidden').parent()
         .children('.itemChange').removeClass('hidden').focus().blur(function (event)
     {
-        event.target.value = htmlEntities(event.target.value);
+        event.target.value = removeSpecialChars(event.target.value);
         if (event.target.value === "")
         {
             $(this).parent().parent().remove();
@@ -467,9 +467,12 @@ function setupEventListeners() {
 }
 
 function toggleChildrenProcessing (event) {
-    event.preventDefault();
-    $(event.target).parent().parent().children('.items').toggleClass('hidden');
-    return true;
+    //disbale checkbox from hiding content
+    if (!event.target.classList.contains('itemCheckbox'))
+    {
+        $(event.target).parent().parent().children('.items').toggleClass('hidden');
+        return true;
+    }
 }
 
 /*
@@ -577,7 +580,7 @@ function changeLabel(event) {
 
     let tempValue = JSON.parse(event.target.previousSibling.previousSibling.value);
     if (tempValue.name !== event.target.value) {
-        event.target.value = htmlEntities(event.target.value);
+        event.target.value = removeSpecialChars(event.target.value);
         let hierarchy = generateHierarchy(event.target.previousSibling.previousSibling);
         let prevNode = {
             name: tempValue.name,
@@ -842,6 +845,11 @@ function searchInResponse(name, property) {
 function loadJSX(fileName) {
     var extensionRoot = csInterface.getSystemPath(SystemPath.EXTENSION) + "/jsx/";
     csInterface.evalScript('$.evalFile("' + extensionRoot + fileName + '")');
+}
+
+function removeSpecialChars(str)
+{
+    return String(str).replace(/[&\/\\#,().'":?<>{}]/g, '')
 }
 
 function htmlEntities(str) {
