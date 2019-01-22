@@ -10,12 +10,22 @@ const httpServer = http.Server(app);
 const AWS = require('../node_modules/aws-sdk');
 const image2base64 = require('image-to-base64');
 
+// Imports the Google Cloud client library
+const vision = require('@google-cloud/vision');
+
+// Imports the Google Cloud client library.
+const googleStorage = require('@google-cloud/storage');
+
+
+var imagePath = "C:/AutoTagging/tempImage.jpg";
+
 function init()
 {
     console.log("Starting server");
     //writeCredentials("asdf", "jklo");
     start();
     run();
+    testGoogleVision();
     console.log("Waiting for an incoming request");
 }
 
@@ -47,6 +57,7 @@ function run()
         //res.status(202).send("Starting image labeling");
 
         detectLabels()
+            .then(getVisionLabels())
             .then(function (data) {
                 res.status(200).send(data);
             });
@@ -56,8 +67,6 @@ function run()
 
 function detectLabels()
 {
-    var imagePath = "C:/AutoTagging/tempImage.jpg";
-
     return new Promise(function (resolve)
     {
         image2base64(imagePath) // you can also to use url
@@ -90,6 +99,58 @@ function detectLabels()
                 resolve(-1); // ERROR!
             });
     })
+}
+
+function getVisionLabels()
+{
+    // Creates a client
+    const client = new vision.ImageAnnotatorClient({
+        keyFilename: 'C:\\Users\\Matthias\\AutoTagging-a2c76c70f1f4.json'
+    });
+
+    // Performs label detection on the image file
+    client
+        .labelDetection(imagePath)
+        .then(function(results)
+        {
+            var labels = results[0].labelAnnotations;
+
+            console.log('Labels:');
+            labels.forEach(function(label)
+            {
+                console.log(label.description)
+            });
+        })
+        .catch(function(err)
+        {
+                console.error('ERROR:', err);
+        });
+}
+
+function testGoogleVision()
+{
+    // Instantiates a client. If you don't specify credentials when constructing
+    // the client, the client library will look for credentials in the
+    // environment.
+    var storage = new googleStorage.Storage();
+
+    // Makes an authenticated API request.
+    storage
+        .getBuckets()
+        .then(function(results)
+        {
+            const buckets = results[0];
+
+            console.log('Buckets:');
+            buckets.forEach(function(bucket)
+            {
+                console.log(bucket.name);
+            });
+        })
+        .catch(function(err)
+        {
+                console.error('ERROR:', err);
+        });
 }
 
 

@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@google-cloud/storage": "^2.3.4",
+    "@google-cloud/vision": "^0.24.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
     "request": "^2.85.0"
