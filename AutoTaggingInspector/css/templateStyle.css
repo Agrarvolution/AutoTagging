@@ -31,11 +31,12 @@ p.item {
 div.items {
     padding-left: 1em;
 }
+
 div.itemSingle {
     white-space: nowrap;
     overflow: hidden;
     min-height: 1.6em;
-    display: inline-block;
+    display: block;
     padding-left: 1em;
     padding-right: 1em;
     padding-top: 0.05em;
