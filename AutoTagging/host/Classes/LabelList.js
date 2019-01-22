@@ -5,6 +5,15 @@ LabelList = function ()
 {
     this.labels = [];
 };
+/**
+ *
+ * @param {Array} labels
+ * @constructor
+ */
+LabelList = function (labels)
+{
+    this.labels = labels;
+};
 
 
 /**

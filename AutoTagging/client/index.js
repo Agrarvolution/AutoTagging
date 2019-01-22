@@ -69,20 +69,18 @@ function startNodeServer()
 function registerEventHandler()
 {
     csInterface.addEventListener("updateAutoTagInspector", catchSelectionEvent);
-    csInterface.addEventListener("AWSResponse", catchResponseEvent);
+
+    csInterface.evalScript("registerEventHandler()", function (e) {
+        statusMessageHandler.add(e);
+    });
 }
 
 function catchSelectionEvent(event)
 {
     statusMessageHandler.add("registering a click event");
+    var metaData = event.data.metaData;
     serverCommunication.startLabeling();
     //serverCommunication.testServerConnection();
-}
-
-function catchResponseEvent(event)
-{
-    statusMessageHandler.add("Received the server finished event");
-    statusMessageHandler.add(event.data);
 }
 
 function updateUI()

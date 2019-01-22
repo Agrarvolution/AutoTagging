@@ -10,11 +10,12 @@
 
 function ServerCommunication()
 {
-
+    this.latestMetaData = "";
 }
 
-ServerCommunication.prototype.startLabeling = function()
+ServerCommunication.prototype.startLabeling = function(metaData)
 {
+    this.latestMetaData = metaData;
     var ServerUrl = "http://localhost:3200/tagImage";
     statusMessageHandler.add("Sending a request to the server");
     statusMessageHandler.add("Waiting for the servers response");
@@ -61,20 +62,39 @@ ServerCommunication.prototype.testServerConnection = function()
     })
 };
 
+/**
+ *
+ * @param {Object} serverResponse
+ * @param {Object} serverResponse.dataAWS
+ * @param {Object} serverResponse.dataVision
+ * @param {Array} serverResponse.dataVision.labelAnnotations
+ */
 ServerCommunication.prototype.handleLabels = function(serverResponse)
 {
-    var labels = serverResponse["Labels"];
+    var labelsAWS = serverResponse.dataAWS["Labels"];
+    var labelsVision = serverResponse.dataVision.labelAnnotations;
     var output = "";
 
-    labels.forEach(function (element) {
+    output += "Amazons labels:<br>========================<br>";
+    labelsAWS.forEach(function (element) {
         output += "<br>" + element["Name"] + ", " + element["Confidence"];
     });
+
+    output += "<br>========================<br>Google's labels:<br>========================<br>";
+    if (typeof labelsVision !== 'undefined')
+    {
+        labelsVision.forEach(function (element) {
+            output += "<br>" + element["Name"] + ", " + element["Confidence"];
+        });
+    }
 
     statusMessageHandler.add("Found labels: " + output);
 
 
 
-    var tagArray = dataManagement.handleRecognitionResponse(serverResponse);
+    var combineScript = new CombineScript();
+    var labelList = combineScript.getSingleList(serverResponse.dataVision, serverResponse.dataAWS);
 
+    csInterface.evalScript("writeTags(" + JSON.stringify(this.latestMetaData) + ", " + labelList + ")");
 
 };

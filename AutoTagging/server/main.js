@@ -56,10 +56,12 @@ function run()
         console.log("Incoming Labeling Request");
         //res.status(202).send("Starting image labeling");
 
+        var dataVision = [];
+
         detectLabels()
-            .then(getVisionLabels())
-            .then(function (data) {
-                res.status(200).send(data);
+            .then(dataVision = getVisionLabels())
+            .then(function (dataAWS) {
+                res.status(200).send({"dataAWS": dataAWS,"dataVision": dataVision});
             });
 
     });
@@ -88,6 +90,8 @@ function detectLabels()
                     }
                     else
                     {
+                        console.log("==========================");
+                        console.log("Amazon Recognition Labels:");
                         console.log(data);
                         resolve(data); // return the labels
                     }
@@ -98,33 +102,33 @@ function detectLabels()
                 console.log(error); //Exception error....
                 resolve(-1); // ERROR!
             });
-    })
+    });
 }
 
 function getVisionLabels()
 {
-    // Creates a client
-    const client = new vision.ImageAnnotatorClient({
-        keyFilename: 'C:\\Users\\Matthias\\AutoTagging-a2c76c70f1f4.json'
-    });
-
-    // Performs label detection on the image file
-    client
-        .labelDetection(imagePath)
-        .then(function(results)
-        {
-            var labels = results[0].labelAnnotations;
-
-            console.log('Labels:');
-            labels.forEach(function(label)
-            {
-                console.log(label.description)
-            });
-        })
-        .catch(function(err)
-        {
-                console.error('ERROR:', err);
+    return new Promise(function (resolve) {
+        // Creates a client
+        const client = new vision.ImageAnnotatorClient({
+            keyFilename: 'C:\\Users\\Matthias\\vision\\AutoTagging-4abe7e16e510.json'
         });
+
+        // Performs label detection on the image file
+        client
+            .labelDetection(imagePath)
+            .then(function(results)
+            {
+                console.log("==========================");
+                console.log("Google Vision Labels:");
+                console.log(results);
+                resolve(results);
+            })
+            .catch(function(err)
+            {
+                console.error('ERROR:', err);
+                resolve(-1);
+            });
+    });
 }
 
 function testGoogleVision()

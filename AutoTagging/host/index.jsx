@@ -1,26 +1,3 @@
-//var AWS; // global variable for accessing AWS services
-//var image2base64; // global variable for encoding .png and .jpeg to a base64 string
-
-// ----------------------------------------------------------
-// ==========================================================
-// ----------------------------------------------------------
-function startLabelDetection() {
-    // setup global variables for AWS and image2base64
-    //AWS = require('aws-sdk');
-    //image2base64 = require('image-to-base64');
-    
-    //TODO: open file browser and let user select pics
-    //TODO: get pic URLs/paths
-    //TODO: execute getLabels(path) for each of them
-    //TODO: save labels..... _where exactly?_
-}
-
-
-
-// ----------------------------------------------------------
-// ==========================================================
-// ----------------------------------------------------------
-
 /**
  * @description Checks if the credentials file exists at all. If it does, it is checked on whether the credentials are valid or not via the
  * AWS.Config class.
@@ -75,40 +52,187 @@ function writeCredentials(aws_access_key_id, aws_secret_access_key) {
     return fileCreated;
 }
 
+function writeTags(metaData, response)
+{
+    alert("Opening the writeTags method");
+    /**
+     * Include XMP Lib
+     */
+    if (ExternalObject.AdobeXMPScript === undefined) {
+        ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript');
+    }
+
+    /**
+     * open up current xmp
+     */
+    var xmp = new XMPMeta(metaData.serialize());
+
+
+    /**
+     * Set some needed properties for the xmp actions
+     */
+    // Change the creator tool
+    xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by ModifyTags");
+
+    // Change the date modified
+    var d = new XMPDateTime(new Date());
+    xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
+
+    // Create some custom data.  Register a new namespace and prefix
+    XMPMeta.registerNamespace("http://ns.adobe.com/lightroom/1.0/", "lr:");
+
+    // Stores the label list items into the XMP-File with atdata: property.
+    var tagNamespace = "http://ns.adobe.autotaggingJSON/";
+    var tagPrefix = "atdata:";
+    XMPMeta.registerNamespace(tagNamespace, tagPrefix);
+    //xmp.deleteProperty(tagNamespace, "labelListJSON"); // not necessary
+    xmp.setProperty(tagNamespace, "labelListJSON", JSON.stringify(response));
+
+
+
+    var writeParents = true;
+
+    var existingTags = readTags(xmp);
+    var respondTags = responseTags(response, writeParents);
+
+    respondTags.subjects = stripArray(respondTags.subjects, existingTags.subjects);
+    respondTags.hierarchy = stripArray(respondTags.hierarchy, existingTags.hierarchy);
+
+    if (!respondTags.subjects)
+    {
+        respondTags.subjects = [];
+    }
+    if (!respondTags.hierarchy)
+    {
+        respondTags.hierarchy = [];
+    }
+
+    for (var i = 0; i < respondTags.subjects.length; i++)
+    {
+        xmp.appendArrayItem(XMPConst.NS_DC, "subject", respondTags.subjects[i], 0, XMPConst.ARRAY_IS_ORDERED);
+    }
+    for (i = 0; i < respondTags.hierarchy.length; i++)
+    {
+        xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", respondTags.hierarchy[i], 0, XMPConst.ARRAY_IS_ORDERED);
+    }
+
+    // Write the packet back to the selected file
+    var updatedPacket = xmp.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
+
+    // Uncomment to see the XMP packet in XML form
+    // $.writeln(updatedPacket);
+    metaData = new Metadata(updatedPacket);
+
+
+    return true;
+}
+
 /**
- * @description Uses the AWS Image Rekognition service to detect the labels of a given image supplied via an absolute path or URL
- *
- * @param path - the absolute path of the image to be analyzed. Can also be a URL
- * @returns {Promise} - returns a Promise that itself returns either the JSON containing the labels upon success; or returns -1 if anything went
- * wrong.
+ * Reads the existing tags in the XMP Metadata
+ * @return Object containing a subject and hierarchy array
+ * @param {Object} xmp
  */
-function getLabels(path) {
-    return new Promise(resolve => {
-        image2base64(path) // you can also to use url
-            .then((response) => {
-                // console.log(response); //cGF0aC90by9maWxlLmpwZw==
-                var params = {
-                    Image: {
-                        Bytes: Buffer.from(response, 'base64')
-                    },
-                };
-                var rekognition = new AWS.Rekognition({ apiVersion: '2016-06-27', region: 'us-west-2' });
-                rekognition.detectLabels(params, (err, data) => {
-                    if (err) {
-                        console.error(err);
-                        // console.error(err.stack);
-                        resolve(-1); // ERROR!
-                    } else {
-                        // console.log(data);
-                        resolve(data); // return the labels
-                    }
-                });
-            })
-            .catch((error) => {
-                console.log(error); //Exception error....
-                resolve(-1); // ERROR!
-            });
-    });
+function readTags(xmp)
+{
+    var subjects = [];
+    var hierarchy = [];
+
+    for (var i = 1; i <= xmp.countArrayItems(XMPConst.NS_DC, "subject"); i++)
+    {
+        subjects.push(xmp.getArrayItem(XMPConst.NS_DC, "subject", i));
+    }
+    for (i = 1; i <= xmp.countArrayItems("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject"); i++)
+    {
+        hierarchy.push(xmp.getArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", i));
+    }
+    return {subjects: subjects, hierarchy: hierarchy};
 }
 
 
+/**
+ * Creates the same structure for the tag response as is written in XMP
+ * @return Object containing a subject and hierarchy array
+ * @param {Array} responseObject
+ * @param {boolean} writeParents -> decides whether parents are ticked or not
+ */
+function responseTags(responseObject, writeParents)
+{
+    var subjects = [];
+    var hierarchy = [];
+
+    if (!responseObject)
+    {
+        responseObject = [];
+    }
+
+    for (var i = 0; i < responseObject.length; i++)
+    {
+        subjects.push(responseObject[i].description);
+        if (responseObject[i].parents.length > 0)
+        {
+            for (var pIndex = 0; pIndex < responseObject[i].parents.length; pIndex++)
+            {
+                hierarchy.push(responseObject[i].parents[pIndex].name + "|" + responseObject[i].description);
+                if (!searchInArray(subjects, responseObject[i].parents[pIndex].name) && writeParents)
+                {
+                    subjects.push(responseObject[i].parents[pIndex].name);
+                }
+            }
+        }
+        else
+        {
+            hierarchy.push(responseObject[i].description);
+        }
+    }
+    return {subjects: subjects, hierarchy: hierarchy};
+}
+
+/**
+ check if array contains value
+ because indexOf doesn't work
+ */
+function searchInXMPArray(array, value)
+{
+    for (var i = 0; i < array.length; i++)
+    {
+        if (array[i].toString().toLowerCase() === value.toLowerCase())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ check if array contains value
+ because indexOf doesn't work
+ */
+function searchInArray(array, value)
+{
+    for (var i = 0; i < array.length; i++)
+    {
+        if (array[i].toLowerCase() === value.toLowerCase())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Compares two array and removes duplicates from the target array.
+ * @return {Array} array with strings
+ * @param {Array} target
+ * @param {Array} decider
+ */
+function stripArray(target, decider)
+{
+    for (var i = 0; i < target.length; i++)
+    {
+        if (searchInXMPArray(decider, target[i]))
+        {
+            target.splice(i--,1);
+        }
+    }
+    return target;
+}
