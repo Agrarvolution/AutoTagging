@@ -1,5 +1,9 @@
 "use strict";
 
+
+/**
+ * Loads metadata from XMP file. If there is metadata calls a process function, otherwise empties the tags.
+ */
 //don't call before csInterface is declared
 function loadXMPContent () {
         csInterface.evalScript('loadMetaData()', function (event) {
@@ -20,6 +24,10 @@ function loadXMPContent () {
         });
 }
 
+/**
+ * Processes XMP metadata and writes the result into callResponse. On finishing throws 'updataGUI' event.
+ * @param xmpContent {subjects: { Array }, hierarchy: { Array }, response: { Array }, history: { Array }, metadata: { Boolean }}
+ */
 function processXMPContent(xmpContent) {
     let responseHierarchy = [];
     //reverse child to parents relationship to parent to children
