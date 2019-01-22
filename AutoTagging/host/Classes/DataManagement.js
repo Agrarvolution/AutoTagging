@@ -4,15 +4,6 @@
 
  */
 
-/**
- * Exports the selected image(s) and returns the absolute path to the copy or creates a list of files to tag if multiple images are selected
- */
-function getImagePath()
-{
-    var imagePath = "C:/AutoTagging/tempImage.jpg";
-
-    return imagePath;
-}
 
 function DataManagement()
 {
@@ -20,9 +11,21 @@ function DataManagement()
 }
 
 /**
- * responseJSON gets parsed and the object is checked, whether the result is a valid Amazon Rekognition response.
- * @return empty array or array map with the description and confidence of the found tags
- * @param responseJSON
+ * @return {string} the absolute path to the copy of file to tag
+ */
+DataManagement.prototype.getImagePath = function()
+{
+    return "C:/AutoTagging/tempImage.jpg";
+};
+
+/**
+ * responseJSON gets parsed and the object is checked, whether the result is a valid Amazon Recognition response.
+ * @return Array, that is either empty or filled with the description and confidence of the found tags
+ * @param {Object} responseJSON
+ * @param {Object} responseJSON.Labels
+ * @param {string} responseJSON.Labels.Name
+ * @param {number} responseJSON.Labels.Confidence
+ * @param {Array} responseJSON.Labels.Parents
  */
 DataManagement.prototype.handleRecognitionResponse = function(responseJSON)
 {
@@ -50,20 +53,14 @@ DataManagement.prototype.handleRecognitionResponse = function(responseJSON)
 
             if (typeof(responsePart.Name) === 'string')
             {
-                var labelNew = new Label(recognitionObject.Labels[i].Name, recognitionObject.Labels[i].Confidence, parents);
-                labelNew.clamp();
-                labelNew.sanitize();
-                tagArray.push(labelNew);
+                tagArray.push(new Label(recognitionObject.Labels[i].Name, recognitionObject.Labels[i].Confidence / 100.0, parents));
             }
         }
         else if (recognitionObject.Labels[i].Name && recognitionObject.Labels[i].Confidence)
         {
             if (typeof(responsePart.Name) === 'string')
             {
-                var labelNew = new Label(recognitionObject.Labels[i].Name, recognitionObject.Labels[i].Confidence, []);
-                labelNew.clamp();
-                labelNew.sanitize();
-                tagArray.push(labelNew);
+                tagArray.push(new Label(recognitionObject.Labels[i].Name, recognitionObject.Labels[i].Confidence / 100.0, []));
             }
         }
     }
@@ -72,12 +69,16 @@ DataManagement.prototype.handleRecognitionResponse = function(responseJSON)
 
 /**
  * responseJSON gets parsed and the object is checked, whether the result is a valid Google Vision response.
- * @return empty array or array map with the description and confidence of the found tags
- * @param {string} responseJSON
+ * @return Array, that is either empty or filled with the description and confidence of the found tags
+ * @param {Object} responseJSON
+ * @param {Object} responseJSON.responses
+ * @param {string} responseJSON.responses.labelAnnotations
+ * @param {number} responseJSON.responses.score
  */
-function handleVisionResponse(responseJSON) 
+DataManagement.prototype.handleVisionResponse = function(responseJSON)
 {
-    var visionObject = secureParseJSON(responseJSON);
+    //var visionObject = secureParseJSON(responseJSON);
+    var visionObject = responseJSON;
     var tagArray = [];
 
     // check validity
@@ -99,12 +100,10 @@ function handleVisionResponse(responseJSON)
             if (responsePart.description === 'string' || responsePart.description instanceof String)
             {
                 var labelNew = new Label(responsePart.description, responsePart.score, []);
-                labelNew.clamp();
-                labelNew.sanitize();
                 tagArray.push(labelNew);
             }
         }
     }
 
     return tagArray;
-}
+};

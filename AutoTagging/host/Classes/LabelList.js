@@ -1,14 +1,15 @@
 ﻿/**
  * Stores and processes all the labels for a picture
  */
-LabelList = function () {
+LabelList = function ()
+{
     this.labels = [];
 };
 
 
 /**
  * Compares to another array and removes duplicates from the current array.
- * @param {array} decider
+ * @param {Array} decider
  */
 LabelList.prototype.stripArray = function(decider)
 {
@@ -31,7 +32,7 @@ LabelList.prototype.toJSON = function()
 };
 
 /**
- * Deletes all objects in the array that have a lower ocnfidence than a given threshold.
+ * Deletes all objects in the array that have a lower confidence than a given threshold.
  * @param {float} confidence Threshold to decide if a entry is deleted or not
  */
 LabelList.prototype.deleteByConfidence = function(confidence)

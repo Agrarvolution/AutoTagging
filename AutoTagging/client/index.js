@@ -1,17 +1,12 @@
-/* 1) Create an instance of CSInterface. */
+/**
+ * Create Instances of all commonly used classes
+ *
+ */
 var csInterface = new CSInterface();
 var statusMessageHandler = new StatusMessage();
 var serverCommunication = new ServerCommunication();
 var dataManagement = new DataManagement();
 
-csInterface.requestOpenExtension("com.AutoTagging.localServer");
-
-// ==========================================================
-// ----------------------------------------------------------
-
-/* YOUR CLIENT-SIDE CODE HERE */
-/* anything that doesn't involve the host application’s functionalities, such as opening a document, editing it, exporting it, and almost anything
- else the host application can do */
 
 var AWS_loggedIn; // global variable on whether AWS is logged in or not
 var AWS_selected; // global variable on whether AWS is selected (checked) or not
@@ -21,21 +16,20 @@ var Vision_selected; // global variable on whether Google Vision is selected (ch
 
 // ----------------------------------------------------------
 // internet connection is required to access the AWS and Google Vision services
-if (navigator.onLine === true) {
+if (navigator.onLine === true)
+{
     // setup global variables and update the UI
     init();
     
     // as a last step - system is online; thus, do not display the error message
-    removeOfflineOverlay();
-    
-    var start_button = document.getElementById('button_start');
-    start_button.onclick = CEP_startLabeling;
+    //removeOfflineOverlay();
 }
 
 /**
  * @description Hides the 'no internet connection' error message overlay and displays the content
  */
-function removeOfflineOverlay() {
+function removeOfflineOverlay()
+{
     // hide the error message
     var offline_message = document.getElementById('offline_message');
     offline_message.classList.add('hidden');
@@ -68,6 +62,8 @@ function startNodeServer()
     //var wshShell = new ActiveXObject("WScript.Shell");
     //wshShell.Run("../server/startNodeServer.bat");
     //statusMessageHandler.add("Attempting to start the node server");
+
+    csInterface.requestOpenExtension("com.AutoTagging.localServer");
 }
 
 function registerEventHandler()
@@ -89,34 +85,44 @@ function catchResponseEvent(event)
     statusMessageHandler.add(event.data);
 }
 
-function updateUI() {
+function updateUI()
+{
     setAWSCheckboxListener();
-    if (!AWS_loggedIn) {
+    if (!AWS_loggedIn)
+    {
         //TODO: do stuff
-    } else {
+    }
+    else
+    {
     
     }
     
-    if (!Vision_loggedIn) {
+    if (!Vision_loggedIn)
+    {
         //TODO: do stuff
     }
 }
 
-function setAWSCheckboxListener() {
+function setAWSCheckboxListener()
+{
     // get img#AWS_checkbox element
     var AWS_checkbox = document.getElementById('AWS_checkbox');
     
-    AWS_checkbox.onclick = function () {
+    AWS_checkbox.onclick = function ()
+    {
         // if checkbox is not disabled
-        if (!AWS_checkbox.classList.contains('disabled')) {
-            if (AWS_checkbox.classList.contains('enabled')) {
+        if (!AWS_checkbox.classList.contains('disabled'))
+        {
+            if (AWS_checkbox.classList.contains('enabled'))
+            {
                 AWS_checkbox.classList.remove('enabled');
                 AWS_checkbox.classList.add('checked');
                 AWS_checkbox.setAttribute('src', 'img/checkbox_checked.png');
 
                 AWS_selected = true;
             }
-            if (AWS_checkbox.classList.contains('checked')) {
+            if (AWS_checkbox.classList.contains('checked'))
+            {
                 AWS_checkbox.classList.remove('checked');
                 AWS_checkbox.classList.add('enabled');
                 AWS_checkbox.setAttribute('src', 'img/checkbox.png');
@@ -145,10 +151,6 @@ function CEP_checkIfAWSLoggedIn()
     });
 }
 
-function CEP_startLabeling() {
-    csInterface.evalScript("startLabelDetection()");
-}
-
 /**
  * Sanitation method for a single string
  * @param {string} text
@@ -157,125 +159,3 @@ function sanitizeString(text)
 {
     return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").replace("\(^[\s\n\r\t\x0B]+)|([\s\n\r\t\x0B]+$)/g", "");
 }
-
-
-
-/**
- *
- *
- *      Status message
- *
- *  This class can set and manage a various amount of status messages to display information to the user.
- */
-
-function StatusMessage()
-{
-    messages = [];
-}
-
-StatusMessage.prototype.add = function(message)
-{
-    var nrOfMessagesDisplayed = 5;
-
-    if (!this.messages)
-    {
-        this.messages = [nrOfMessagesDisplayed];
-    }
-
-    if (this.messages.length >= nrOfMessagesDisplayed)
-    {
-        this.messages.shift();
-    }
-
-    this.messages.push(message);
-
-    this.write();
-};
-
-StatusMessage.prototype.write = function()
-{
-    var offlineMessage = document.getElementById('offline_message');
-    offlineMessage.innerHTML = this.messages.join("<br>");
-};
-
-
-/**
- *
- *
- *
- *      Server communication
- *
- *  This class grants the interface to the in the background running Node.js server and catches its response.
- *
- */
-
-function ServerCommunication()
-{
-
-}
-
-ServerCommunication.prototype.startLabeling = function()
-{
-    var ServerUrl = "http://localhost:3200/tagImage";
-    statusMessageHandler.add("Sending a request to the server");
-    statusMessageHandler.add("Waiting for the servers response");
-    /* Use ajax to communicate with your server */
-    $.ajax({
-        type: "GET",
-        url: ServerUrl,
-        success: function (ServerResponse)
-        {
-            statusMessageHandler.add("Labels found!");
-
-            new ServerCommunication().handleLabels(ServerResponse);
-        },
-        error: function(jqXHR, textStatus, errorThrown)
-        {
-            //responseEvent.data = { Response: "Something went wrong on the server side\r\n" + jqXHR + "\r\n" + errorThrown };
-            //responseEvent.dispatch();
-        }
-    })
-};
-
-ServerCommunication.prototype.testServerConnection = function()
-{
-    var ServerUrl = "http://localhost:3200/test";
-    var responseEvent = new Event('AWSResponse');
-    statusMessageHandler.add("Sending a request to the server");
-    /* Use ajax to communicate with your server */
-    $.ajax({
-        type: "GET",
-        url: ServerUrl,
-        success: function (ServerResponse)
-        {
-            responseEvent.data = ServerResponse;
-            responseEvent.dispatchEvent(responseEvent);
-            //responseEvent.dispatch();
-
-            //statusMessageHandler.add(ServerResponse);
-        },
-        error: function(jqXHR, textStatus, errorThrown)
-        {
-            responseEvent.data = { Response: "Something went wrong on the server side\r\n" + jqXHR + "\r\n" + errorThrown };
-            responseEvent.dispatch();
-        }
-    })
-};
-
-ServerCommunication.prototype.handleLabels = function(serverResponse)
-{
-    var labels = serverResponse["Labels"];
-    var output = "";
-
-    labels.forEach(function (element) {
-        output += "<br>" + element["Name"] + ", " + element["Confidence"];
-    });
-
-    statusMessageHandler.add("Found labels: " + output);
-
-
-
-    var tagArray = dataManagement.handleRecognitionResponse(serverResponse);
-
-
-};

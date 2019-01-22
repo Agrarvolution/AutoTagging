@@ -3,6 +3,9 @@ function Label(name, confidence, parents)
     this.name = name;
     this.confidence = confidence;
     this.parents = parents;
+
+    this.clamp();
+    this.sanitize();
 }
 
 Label.prototype.toJSON = function()

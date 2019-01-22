@@ -1,11 +1,10 @@
-﻿"use strict";
+﻿"use strict"
 #include "js/libs/json2.js"
 
 var previousThumb, previousThumbInterest;
 
 function AutoTaggingCustomBridgeEvents()
 {
-
     /**
      The context in which this snippet can run.
      @type String
@@ -20,9 +19,9 @@ function AutoTaggingCustomBridgeEvents()
  @return True if the snippet ran as expected, false otherwise
  @type boolean
  */
-AutoTaggingCustomBridgeEvents.prototype.run = function()
+AutoTaggingCustomBridgeEvents.prototype.run = function ()
 {
-    if(!this.canRun())
+    if (!this.canRun())
     {
         return false;
     }
@@ -42,47 +41,87 @@ AutoTaggingCustomBridgeEvents.prototype.run = function()
     return true;
 };
 
+function labelAll()
+{
+    var metaDatas = [];
+
+    app.document.selectAll();
+
+    for (var i = 0; i < app.document.selectionLength; i++)
+    {
+        metaDatas.push(app.document.selections[i].synchronousMetadata);
+    }
+
+    app.document.deselectAll();
+
+    //TODO: send all the collected meta data to CEP
+}
+
 function autoTaggingCustomEventHandler(event)
 {
-    if ( event.object instanceof Document && event.type === 'selectionsChanged') {
+    if (event.object instanceof Document && event.type === 'selectionsChanged')
+    {
         $.writeln("Init xLib");
         var xLib;
-        try {
+        try
+        {
             xLib = new ExternalObject("lib:\PlugPlugExternalObject");
-        } catch(e) { alert("Missing ExternalObject: "+e); }
+        }
+        catch (e)
+        {
+            alert("Missing ExternalObject: " + e);
+        }
 
         //throw update event
         $.writeln("About to throw selection change event");
-        if (xLib) {
+        if (xLib)
+        {
             var imagePath = "C:/AutoTagging/tempImage.jpg";
+            
+            if (app.document.selectionLength < 1)
+            {
+                $.writeln("No selection!");
+            } else {
+                
+                $.writeln(app.document.selectionLength + " documents selected");
+                var currentPreviewFile = app.document.selections[0].core.preview.preview;
+                currentPreviewFile.exportTo(imagePath, 100);
 
-            var currentPreviewFile = app.document.selections[0].core.preview.preview;
-            currentPreviewFile.exportTo (imagePath, 100);
-    
-            var eventObj = new CSXSEvent();
-            eventObj.type = "updateAutoTagInspector";
-            eventObj.data = JSON.stringify({type: 'selectionsChanged', "metaData": app.document.selections[0].synchronousMetadata });
-            eventObj.dispatch();
+                var eventObj = new CSXSEvent();
+                eventObj.type = "updateAutoTagInspector";
+                eventObj.data = JSON.stringify({
+                    type: 'selectionsChanged',
+                    "metaData": app.document.selections[0].synchronousMetadata
+                });
+                eventObj.dispatch();
+            }
         }
 
-        if (app.document.selections[0] && app.document.selections[0].hasMetadata && app.document.selections[0] !== previousThumb)
+        if (app.document.selectionLength > 0)
         {
-            if (previousThumbInterest !== undefined && previousThumbInterest != null && previousThumb !== undefined && previousThumb != null)
+            if (app.document.selections[0] && app.document.selections[0].hasMetadata && app.document.selections[0] !== previousThumb)
             {
-                previousThumb.unregisterInterest(previousThumbInterest);
-            }
+                if (previousThumbInterest !== undefined && previousThumbInterest != null && previousThumb !== undefined && previousThumb != null)
+                {
+                    previousThumb.unregisterInterest(previousThumbInterest);
+                }
 
-            previousThumb = app.document.selections[0];
-            previousThumbInterest = function (thumb, message) {
-                $.writeln("About to throw metadata update event");
-                if (xLib && message === 'metadata') {
-                    var eventObj = new CSXSEvent();
-                    eventObj.type = "updateAutoTagInspector";
-                    eventObj.data = JSON.stringify({type: 'metadataChanged'});
-                    eventObj.dispatch();
-                }};
-            $.writeln("Register thumb message");
-            app.document.selections[0].registerInterest(previousThumbInterest);
+                previousThumb = app.document.selections[0];
+                previousThumbInterest = function (thumb, message)
+                {
+                    $.writeln("About to throw metadata update event");
+
+                    if (xLib && message === 'metadata')
+                    {
+                        var eventObj = new CSXSEvent();
+                        eventObj.type = "updateAutoTagInspector";
+                        eventObj.data = JSON.stringify({type: 'metadataChanged'});
+                        eventObj.dispatch();
+                    }
+                };
+                $.writeln("Register thumb message");
+                app.document.selections[0].registerInterest(previousThumbInterest);
+            }
         }
     }
 }
@@ -99,12 +138,13 @@ function autoTaggingCustomEventHandler(event)
  @return True is this snippet can run, false otherwise
  @type boolean
  */
-AutoTaggingCustomBridgeEvents.prototype.canRun = function()
+AutoTaggingCustomBridgeEvents.prototype.canRun = function ()
 {
     // Must be running in Bridge & have a selection
     $.writeln(BridgeTalk.appName);
 
-    if( (BridgeTalk.appName === "bridge")) {
+    if ((BridgeTalk.appName === "bridge"))
+    {
         return true;
     }
 
@@ -120,6 +160,7 @@ AutoTaggingCustomBridgeEvents.prototype.canRun = function()
  "main program": construct an anonymous instance and run it
  as long as we are not unit-testing this snippet.
  */
-if(typeof(SaveMetaData_unitTest ) == "undefined") {
+if (typeof(SaveMetaData_unitTest ) == "undefined")
+{
     new AutoTaggingCustomBridgeEvents().run();
 }
