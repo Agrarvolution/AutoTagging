@@ -57,6 +57,10 @@ function setupContextMenu() {
     let ctxMenuTarget = document.getElementsByClassName('html')[0];
     //general context menu listener
     $('html').contextmenu(function(event) {
+        if (event.target.classList.contains('itemSingle') && event.target.childNodes[1] && event.target.childNodes[1].classList.contains('itemLabel'))
+        {
+            event.target = event.target.childNodes[1];
+        }
         if (event.target.parentNode !== document && event.target.parentNode.classList.contains('itemSingle'))
         {
             let contextMenuOpen = new Event('contextMenuOpen', {
