@@ -57,9 +57,9 @@ function setupContextMenu() {
     let ctxMenuTarget = document.getElementsByClassName('html')[0];
     //general context menu listener
     $('html').contextmenu(function(event) {
-        if (event.target.classList.contains('itemSingle') && event.target.childNodes[1] && event.target.childNodes[1].classList.contains('itemLabel'))
+        if (event.target.parentNode !== document && event.target.parentNode.classList.contains('itemParent'))
         {
-            event.target = event.target.childNodes[1];
+            event.target = event.target.firstChild;
         }
         if (event.target.parentNode !== document && event.target.parentNode.classList.contains('itemSingle'))
         {
@@ -315,7 +315,6 @@ function addNewItem(parent) {
                 {name: "", parent: []}) + "," +
                 JSON.stringify(newNode) + "," + JSON.stringify([]) + ")",
                 function (e) {
-                alert(e);
                 if (e === 'success') {
                     $(this).addClass('hidden').prev().removeClass('hidden').html(event.target.value);
                     sortDomItem(event.target.previousSibling);
@@ -419,7 +418,7 @@ function setupEventListeners() {
         document.addEventListener('remove', ctxRemove);
 
         let ctxRename = function () {
-            $(e.target).parent().children('.itemLabel').trigger('dblclick');
+            $(e.target).children('.itemLabel').trigger('dblclick');
             $('body').trigger('mousedown');
         };
         document.addEventListener('rename', ctxRename);
@@ -443,7 +442,7 @@ function setupEventListeners() {
         let parent;
         if (event.target.parentNode.childNodes[1] && event.target.parentNode.childNodes[1].classList.contains('items'))
         {
-            parent = event.target.childNodes[1];
+            parent = event.target.parentNode.childNodes[1];
         }
         else
         {
