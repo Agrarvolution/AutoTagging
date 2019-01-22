@@ -31,7 +31,17 @@ p.item {
 div.items {
     padding-left: 1em;
 }
-
+main>section.itemParent {
+    display: block;
+    border-top: 2px solid #303030;
+    border-bottom: 2px solid #303030;
+}
+main>section.itemParent:first-child {
+    border-top: 0;
+}
+main>section.itemParent:last-child {
+    border-bottom: 0;
+}
 div.itemSingle {
     white-space: nowrap;
     overflow: hidden;
