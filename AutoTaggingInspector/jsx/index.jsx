@@ -156,7 +156,7 @@ function writeSelectionChange(nodes, parents, add)
         {
             nodes = intersectArray(nodes, subjects);
         }
-        //return [nodes[0].value,nodes[0].index, add];
+
         for (var i = 0; i < nodes.length; i++)
         {
             if (add)
@@ -302,6 +302,7 @@ function intersectArray(target, decider)
         if (index >= 0)
         {
             intersection.push({value: target[i], index: index+1});
+            decider.splice(index, 1);
         }
     }
     return intersection;
