@@ -47,10 +47,10 @@ function loadMetaData()
  * Always ads hierarchy strings for response keywords.
  * @param previousNode - previous node that was saved in xmp files {subject: [], hierarchy: []}
  * @param newNode - new node that replaces the old values {subject: [], hierarchy: []}
- * @param historyChange - Object that is pushed onto the history array
+ * @param historyUpdates - Objects that are pushed onto the history array
  * @returns {string} returns 'failure' or 'success'
  */
-function renameLabel(previousNode, newNode, historyChange)
+function renameLabel(previousNode, newNode, historyUpdates)
 {
     addDependencies();
 
@@ -96,13 +96,23 @@ function renameLabel(previousNode, newNode, historyChange)
             xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", newNode.parent[i], 0, XMPConst.ARRAY_IS_ORDERED);
         }
 
-        if (historyChange.name)
+        if (historyUpdates !== undefined && historyUpdates != null && historyUpdates.length > 0)
         {
             var history = loadAutoTaggingProperties(xmp, "historyListJSON");
 
-            if (searchInArray(history, historyChange.name) < 0)
+            if (history.length)
             {
-                history.push(historyChange);
+                for (i = 0; i < historyUpdates.length; i++)
+                {
+                    if (searchInArray(history, historyUpdates[i].name) < 0)
+                    {
+                        history.push(historyUpdates[i]);
+                    }
+                }
+            }
+            else
+            {
+                history = historyUpdates;
             }
             xmp.setProperty("http://ns.adobe.autotaggingJSON/", "historyListJSON", JSON.stringify(history));
         }
@@ -237,8 +247,9 @@ function removeLabels(subjectsDel, parentsDel, historyUpdates)
             }
         }
 
-        if (historyUpdates.length)
+        if (historyUpdates !== undefined && historyUpdates != null && historyUpdates.length > 0)
         {
+
             var history = loadAutoTaggingProperties(xmp, "historyListJSON");
 
             if (history.length !== 0)
@@ -348,7 +359,11 @@ function loadAutoTaggingProperties(xmp, propertyName) {
 
     if (propertyData !== undefined && propertyData != null && propertyData != "")
     {
-        propertyData = JSON.parse(propertyData);
+        try {
+            propertyData = JSON.parse(propertyData);
+        } catch (e) {
+            $.writeln('JSON property read failed.');
+        }
     }
     else
     {

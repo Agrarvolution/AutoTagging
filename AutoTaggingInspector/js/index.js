@@ -265,6 +265,7 @@ function createItems(response)
             for (let i = 0; i < itemArray.length; i++) {
                 let group = document.createElement('section');
                 group.classList.add('itemParent');
+                group.setAttribute('draggable', true);
                 group.appendChild(createItem(itemArray[i]));
 
                 if (itemArray[i].children.length > 0) {
@@ -290,6 +291,7 @@ function createItems(response)
 function addNewItem(parent) {
     let group = document.createElement('section');
     group.classList.add('itemParent');
+    group.setAttribute('draggable', true);
     group.appendChild(createItem({name: "", confidence: 1, ticked: false})); //create empty item template
     parent.appendChild(group);
 
@@ -452,6 +454,36 @@ function setupEventListeners() {
         }
         addNewItem(parent);
     });
+
+    let dragStart;
+    $('.itemParent').on('dragstart', function (event) {
+        dragStart = event.target;
+    }).on('dragenter', function (event) {
+        if (event.target !== document && event.target.parentNode.classList&& event.target.parentNode.classList.contains('itemSingle')) {
+            event.target = event.target.parentNode;
+        }
+        if (event.target.classList.contains('itemSingle')) {
+            event.target.classList.add('highlight');
+        }
+    }).on('dragleave', function (event) {
+        if (event.target !== document && event.target.parentNode.classList&& event.target.parentNode.classList.contains('itemSingle')) {
+            event.target = event.target.parentNode;
+        }
+        if (event.target.classList.contains('itemSingle')) {
+            event.target.classList.remove('highlight')
+        }
+    }).on('drop', function (event) {
+        dropItemHandler(event, dragStart, this);
+    }).on('dragover', function (event) {
+        event.preventDefault();
+    });
+    $('html').on('drop', function (event) {
+        if (dragStart !== undefined && dragStart != null) {
+            moveItem(dragStart, document.getElementById('tags'));
+        }
+    }).on('dragover', function (event) {
+        event.preventDefault();
+    });
 }
 
 /**
@@ -460,7 +492,7 @@ function setupEventListeners() {
  * @returns {boolean}
  */
 function toggleChildrenProcessing (event) {
-    //disbale checkbox from hiding content
+    //disable checkbox from hiding content
     if (!event.target.classList.contains('itemCheckbox'))
     {
         $(event.target).parent().parent().children('.items').toggleClass('hidden');
@@ -585,6 +617,12 @@ function changeLabel(event) {
         };
 
         let history = searchInResponse(tempValue.name, 0);
+        if (history.name && history.property) {
+            history = [history];
+        } else {
+            history = [];
+        }
+
         hierarchy = replaceStringInArray(hierarchy, tempValue.name, event.target.value);
 
         let newNode = {
@@ -600,12 +638,68 @@ function changeLabel(event) {
 
                 sortDomItem(event.target.previousSibling);
                 return true;
+            } else {
+                event.target.previousSibling.classList.add('hidden');
+                event.target.classList.remove('hidden');
+                event.target.focus();
             }
         });
     }
     return false;
 }
 
+/**
+ * Handles item drop onto new space in html dom
+ * @param event - drop event
+ */
+function dropItemHandler(event, dragStart, dragTarget) {
+    if (dragStart !== dragTarget) {
+        let parent;
+        if (dragTarget.firstChild.childNodes[1] && dragTarget.firstChild.childNodes[1].classList.contains('items')) {
+            parent = this.childNodes[1];
+        } else {
+            parent = document.createElement('div');
+            parent.classList.add('items');
+            dragTarget.appendChild(parent);
+        }
+        moveItem(dragStart, parent);
+    }
+}
+
+function moveItem (dragStart, parent) {
+    if (dragStart.firstChild.firstChild && dragStart.firstChild.firstChild.classList.contains('itemCheckbox')) {
+        let checkbox = dragStart.firstChild.firstChild;
+        let prevNode = {
+            name: "", //can be empty, no change in checked items
+            parent: generateHierarchy(checkbox)
+        };
+        parent.appendChild(dragStart);
+        let newNode = {
+            name: "", //can be empty, no change in checked items
+            parent: generateHierarchy(checkbox)
+        };
+
+        let subjects = findChildren(checkbox);
+        let history = [];
+
+        for (let i = 0; i < subjects.length; i++) {
+            let historyTemp = searchInResponse(subjects[i], 0);
+            if (historyTemp.name)
+            {
+                history.push(historyTemp);
+            }
+        }
+        csInterface.evalScript("renameLabel(" + JSON.stringify(prevNode) + "," + JSON.stringify(newNode) + "," + JSON.stringify(history) + ")", function (e) {
+            if (e === 'success') {
+                if (dragStart.firstChild.firstChild.nextSibling && dragStart.firstChild.firstChild.nextSibling.classList.contains('itemLabel'))
+                {
+                    sortDomItem(dragStart.firstChild.firstChild.nextSibling);
+                }
+                return true;
+            }
+        });
+    }
+}
 /**
  * Sorts one .itemParent node in parenting node ascending.
  * @param label { Object } - childNode[1] of .itemSingle}
