@@ -84,25 +84,39 @@ function writeTags(latestImagePath, response)
     }
     else
     {
+        var eventObj = new CSXSEvent();
+        eventObj.type = "updateAutoTagInspector";
+        eventObj.data = JSON.stringify({
+            type: 'labelsFound',
+            'serverResponse': response
+        });
+        eventObj.dispatch();
+
+
+        /**
+         * old code
+         */
+
+        /*
         var thumb = app.document.selections[0];
 
         if (thumb.hasMetadata)
         {
             /**
              * Get the metadata object - wait for  valid values
-             */
+             /
             var md = thumb.synchronousMetadata;
 
             /**
              * open up current xmp
-             */
+             /
             var xmp = new XMPMeta(md.serialize());
 
             var xmpFile = new XMPFile(latestImagePath.fsName, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_UPDATE);
 
             /**
              * Set some needed properties for the xmp actions
-             */
+             /
             // Change the creator tool
             xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by ModifyTags");
 
@@ -164,6 +178,7 @@ function writeTags(latestImagePath, response)
 
             return "could not write to file";
         }
+        */
     }
 }
 
