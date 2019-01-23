@@ -98,6 +98,7 @@ function writeTags(latestImagePath, response)
              */
             var xmp = new XMPMeta(md.serialize());
 
+            var xmpFile = new XMPFile(latestImagePath.fsName, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_UPDATE);
 
             /**
              * Set some needed properties for the xmp actions
@@ -155,7 +156,13 @@ function writeTags(latestImagePath, response)
             // $.writeln(updatedPacket);
             thumb.metaData = new Metadata(updatedPacket);
 
-            return "successfully wrote xmp";
+            if (xmpFile.canPutXMP(xmp))
+            {
+                xmpFile.putXMP(xmp);
+                return "successfully wrote xmp";
+            }
+
+            return "could not write to file";
         }
     }
 }
