@@ -318,13 +318,14 @@ function addNewItem(parent) {
                 JSON.stringify(newNode) + "," + JSON.stringify([]) + ")",
                 function (e) {
                 if (e === 'success') {
-                    $(this).addClass('hidden').prev().removeClass('hidden').html(event.target.value);
+                    $(event.target).addClass('hidden').prev().removeClass('hidden').html(event.target.value);
                     sortDomItem(event.target.previousSibling);
                     setupEventListeners();
                 }
                 else
                 {
                    event.target.focus();
+                   event.target.classList.remove('hidden');
                 }
             });
         }
@@ -395,6 +396,7 @@ function setupEventListeners() {
     $('.itemCheckbox').click(checkboxClickProcessing).dblclick(checkboxDblClickProcessing);
 
     $('.itemLabel').dblclick(function (e) {
+        e.target.parentNode.parentNode.removeAttribute('draggable');
         e.target.nextSibling.classList.remove('hidden');
         e.target.classList.add('hidden');
         e.target.nextSibling.focus();
@@ -478,7 +480,7 @@ function setupEventListeners() {
         event.preventDefault();
     });
     $('html').on('drop', function (event) {
-        if (dragStart !== undefined && dragStart != null) {
+        if (dragStart !== undefined && dragStart != null && event.target.nodeName === 'HTML') {
             moveItem(dragStart, document.getElementById('tags'));
         }
     }).on('dragover', function (event) {
@@ -604,6 +606,7 @@ function removeLabel(event) {
  * @returns {boolean} true on success
  */
 function changeLabel(event) {
+    event.target.parentNode.parentNode.setAttribute('draggable', true);
     event.target.previousSibling.classList.remove('hidden');
     event.target.classList.add('hidden');
 
@@ -667,7 +670,7 @@ function dropItemHandler(event, dragStart, dragTarget) {
 }
 
 function moveItem (dragStart, parent) {
-    if (dragStart.firstChild.firstChild && dragStart.firstChild.firstChild.classList.contains('itemCheckbox')) {
+    if (dragStart.parentNode !== parent && dragStart.firstChild && dragStart.firstChild.firstChild && dragStart.firstChild.firstChild.classList.contains('itemCheckbox')) {
         let checkbox = dragStart.firstChild.firstChild;
         let prevNode = {
             name: "", //can be empty, no change in checked items
@@ -720,7 +723,7 @@ function sortDomItem (label){
     }
     sortIndex = sortIndex <= 0 ? 0: sortIndex--;
 
-    parent.insertBefore(label.parentNode, parent.childNodes[sortIndex]);
+    parent.insertBefore(label.parentNode.parentNode, parent.childNodes[sortIndex]);
 }
 /**
  * Creates hierarchy string of a given DOM Checkbox element
@@ -738,7 +741,7 @@ function discoverParentString(target) {
                 chain.push(valueTemp.name);
             }
 
-            if (target.parentNode.parentNode.parentNode.parentNode && target.parentNode.parentNode.parentNode.parentNode.firstChild.firstChild)
+            if (target.parentNode.parentNode.parentNode && target.parentNode.parentNode.parentNode.parentNode && target.parentNode.parentNode.parentNode.parentNode.firstChild.firstChild)
             {
                 target = target.parentNode.parentNode.parentNode.parentNode.firstChild.firstChild;
             }
