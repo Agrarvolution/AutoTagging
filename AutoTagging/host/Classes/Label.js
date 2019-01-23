@@ -8,24 +8,6 @@ function Label(name, confidence, parents)
     this.sanitize();
 }
 
-Label.prototype.toJSON = function()
-{
-    /*
-    var parentsJSON = { parents : [] };
-
-    for (var i = 0; i < this.parents.length; i++)
-    {
-        const currentParentJSON = this.parents[i].toJSON();
-        
-        parentsJSON.parents.concat(currentParentJSON);
-    }
-
-    return JSON.stringify({name : this.name, confidence : this.confidence, parents : parentsJSON});
-    */
-
-    return JSON.stringify(this);
-};
-
 Label.prototype.square = function()
 {
     //noinspection JSUnresolvedFunction

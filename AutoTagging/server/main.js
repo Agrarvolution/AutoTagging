@@ -16,6 +16,8 @@ const vision = require('@google-cloud/vision');
 // Imports the Google Cloud client library.
 const googleStorage = require('@google-cloud/storage');
 
+var dataVision = {};
+
 
 var imagePath = "C:/AutoTagging/tempImage.jpg";
 
@@ -56,13 +58,16 @@ function run()
         console.log("Incoming Labeling Request");
         //res.status(202).send("Starting image labeling");
 
-        var dataVision = [];
-
-        detectLabels()
-            .then(dataVision = getVisionLabels())
-            .then(function (dataAWS) {
-                res.status(200).send({"dataAWS": dataAWS,"dataVision": dataVision});
-            });
+        getVisionLabels()
+            .then(function (data)
+            {
+                dataVision = data;
+            })
+            .then(detectLabels()
+                .then(function (dataAWS)
+                {
+                    res.status(200).send({"dataAWS": dataAWS,"dataVision": dataVision});
+                }));
 
     });
 }
@@ -107,7 +112,8 @@ function detectLabels()
 
 function getVisionLabels()
 {
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve)
+    {
         // Creates a client
         const client = new vision.ImageAnnotatorClient({
             keyFilename: 'C:\\Users\\Matthias\\vision\\AutoTagging-4abe7e16e510.json'
@@ -116,14 +122,15 @@ function getVisionLabels()
         // Performs label detection on the image file
         client
             .labelDetection(imagePath)
-            .then(function(results)
+            .then(function (results)
             {
                 console.log("==========================");
                 console.log("Google Vision Labels:");
                 console.log(results);
                 resolve(results);
+                //dataVision = results;
             })
-            .catch(function(err)
+            .catch(function (err)
             {
                 console.error('ERROR:', err);
                 resolve(-1);

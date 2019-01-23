@@ -10,12 +10,11 @@
 
 function ServerCommunication()
 {
-    this.latestMetaData = "";
+
 }
 
-ServerCommunication.prototype.startLabeling = function(metaData)
+ServerCommunication.prototype.startLabeling = function(imagePath)
 {
-    this.latestMetaData = metaData;
     var ServerUrl = "http://localhost:3200/tagImage";
     statusMessageHandler.add("Sending a request to the server");
     statusMessageHandler.add("Waiting for the servers response");
@@ -27,7 +26,7 @@ ServerCommunication.prototype.startLabeling = function(metaData)
         {
             statusMessageHandler.add("Labels found!");
 
-            new ServerCommunication().handleLabels(ServerResponse);
+            new ServerCommunication().handleLabels(ServerResponse, imagePath);
         },
         error: function(jqXHR, textStatus, errorThrown)
         {
@@ -65,14 +64,15 @@ ServerCommunication.prototype.testServerConnection = function()
 /**
  *
  * @param {Object} serverResponse
+ * @param {String} selectedImagePath
  * @param {Object} serverResponse.dataAWS
  * @param {Object} serverResponse.dataVision
  * @param {Array} serverResponse.dataVision.labelAnnotations
  */
-ServerCommunication.prototype.handleLabels = function(serverResponse)
+ServerCommunication.prototype.handleLabels = function(serverResponse, selectedImagePath)
 {
     var labelsAWS = serverResponse.dataAWS["Labels"];
-    var labelsVision = serverResponse.dataVision.labelAnnotations;
+    var labelsVision = serverResponse.dataVision[0].labelAnnotations;
     var output = "";
 
     output += "Amazons labels:<br>========================<br>";
@@ -84,7 +84,7 @@ ServerCommunication.prototype.handleLabels = function(serverResponse)
     if (typeof labelsVision !== 'undefined')
     {
         labelsVision.forEach(function (element) {
-            output += "<br>" + element["Name"] + ", " + element["Confidence"];
+            output += "<br>" + element.description + ", " + element.score;
         });
     }
 
@@ -95,6 +95,9 @@ ServerCommunication.prototype.handleLabels = function(serverResponse)
     var combineScript = new CombineScript();
     var labelList = combineScript.getSingleList(serverResponse.dataVision, serverResponse.dataAWS);
 
-    csInterface.evalScript("writeTags(" + JSON.stringify(this.latestMetaData) + ", " + labelList + ")");
+    var labelListString = JSON.stringify(labelList);
 
+    csInterface.evalScript("writeTags(" + JSON.stringify(selectedImagePath) + ", " + JSON.stringify(labelList) + ")", function (koe) {
+        statusMessageHandler.add(koe);
+    });
 };

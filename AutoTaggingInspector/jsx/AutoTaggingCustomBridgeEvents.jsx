@@ -82,16 +82,21 @@ function autoTaggingCustomEventHandler(event)
             {
                 $.writeln("No selection!");
             } else {
-                
                 $.writeln(app.document.selectionLength + " documents selected");
                 var currentPreviewFile = app.document.selections[0].core.preview.preview;
                 currentPreviewFile.exportTo(imagePath, 100);
+                
+                /*
+                var thumb = app.document.selections[0];
+                var md = thumb.synchronousMetadata;
+                md.serialize();
+                */
 
                 var eventObj = new CSXSEvent();
                 eventObj.type = "updateAutoTagInspector";
                 eventObj.data = JSON.stringify({
                     type: 'selectionsChanged',
-                    "metaData": app.document.selections[0].synchronousMetadata
+                    "selectedImage": app.document.selections[0].path
                 });
                 eventObj.dispatch();
             }

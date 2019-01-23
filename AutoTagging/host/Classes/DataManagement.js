@@ -82,26 +82,23 @@ DataManagement.prototype.handleVisionResponse = function(responseJSON)
     var tagArray = [];
 
     // check validity
-    if (!visionObject.responses) 
+    if (!visionObject)
     {
         return [];
     }
-    else if (!visionObject.responses[0].labelAnnotations) 
+    else if (!visionObject[0].labelAnnotations)
     {
         return [];
     }
 
 
-    for (var i = 0; i < visionObject.responses[0].labelAnnotations.length; i++) 
+    for (var i = 0; i < visionObject[0].labelAnnotations.length; i++)
     {
-        var responsePart = visionObject.responses[0].labelAnnotations[i];
+        var responsePart = visionObject[0].labelAnnotations[i];
         if (responsePart.description && responsePart.score)
         {
-            if (responsePart.description === 'string' || responsePart.description instanceof String)
-            {
-                var labelNew = new Label(responsePart.description, responsePart.score, []);
-                tagArray.push(labelNew);
-            }
+            var labelNew = new Label(responsePart.description, responsePart.score, []);
+            tagArray.push(labelNew);
         }
     }
 

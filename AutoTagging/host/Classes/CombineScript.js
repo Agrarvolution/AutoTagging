@@ -19,7 +19,7 @@ CombineScript.prototype.getSingleList = function(visionResponse, recognitionResp
     {
         for (var i = 0; i < visionObject.length; i++)
         {
-            var matchingIndex = this.searchInDescription(recognitionObject, visionObject[i].description);
+            var matchingIndex = this.searchInDescription(recognitionObject, visionObject[i].name);
             if (matchingIndex >= 0)
             {
                 var tempObject = recognitionObject[matchingIndex];
@@ -29,16 +29,20 @@ CombineScript.prototype.getSingleList = function(visionResponse, recognitionResp
                 visionObject.splice(i--,1);
             }
         }
-        outputObject.concat(this.squareConfidence(visionObject));
-        outputObject.concat(this.squareConfidence(recognitionObject));
+
+        visionObject = this.squareConfidence(visionObject);
+        recognitionObject = this.squareConfidence(recognitionObject);
+
+        outputObject = outputObject.concat(visionObject);
+        outputObject = outputObject.concat(recognitionObject);
     }
     else if (typeof visionObject !== 'undefined' && visionObject.length > 0)
     {
-        outputObject = this.squareConfidence(recognitionObject);
+        outputObject = this.squareConfidence(visionObject);
     }
     else if (typeof recognitionObject !== 'undefined' && recognitionObject.length > 0)
     {
-        outputObject = this.squareConfidence(visionObject);
+        outputObject = this.squareConfidence(recognitionObject);
     }
 
     return new LabelList(outputObject);

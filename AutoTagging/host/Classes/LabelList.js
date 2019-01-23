@@ -34,12 +34,6 @@ LabelList.prototype.stripArray = function(decider)
     }
 };
 
-
-LabelList.prototype.toJSON = function()
-{
-    return JSON.stringify(this);
-};
-
 /**
  * Deletes all objects in the array that have a lower confidence than a given threshold.
  * @param {float} confidence Threshold to decide if a entry is deleted or not

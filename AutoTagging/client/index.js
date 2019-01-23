@@ -8,6 +8,9 @@ var serverCommunication = new ServerCommunication();
 var dataManagement = new DataManagement();
 
 
+loadJSX("host/js/libs/json2.js");
+
+
 var AWS_loggedIn; // global variable on whether AWS is logged in or not
 var AWS_selected; // global variable on whether AWS is selected (checked) or not
 
@@ -78,8 +81,8 @@ function registerEventHandler()
 function catchSelectionEvent(event)
 {
     statusMessageHandler.add("registering a click event");
-    var metaData = event.data.metaData;
-    serverCommunication.startLabeling();
+    var imagePath = event.data.selectedImage;
+    serverCommunication.startLabeling(imagePath);
     //serverCommunication.testServerConnection();
 }
 
@@ -156,4 +159,14 @@ function CEP_checkIfAWSLoggedIn()
 function sanitizeString(text)
 {
     return text.replace("/[/\\<>|,.;:%{}()\[\]#\'\"&?~*+\-_!@`´^]/gi", "").replace("\(^[\s\n\r\t\x0B]+)|([\s\n\r\t\x0B]+$)/g", "");
+}
+
+/**
+ * Loads additional jsx resources from jsx folder in the extension root.
+ * fileName is a String (with the .jsx extension included)
+ * @param fileName {string}
+ */
+function loadJSX(fileName) {
+    var extensionRoot = csInterface.getSystemPath(SystemPath.EXTENSION) + "/jsx/";
+    csInterface.evalScript('$.evalFile("' + extensionRoot + fileName + '")');
 }
