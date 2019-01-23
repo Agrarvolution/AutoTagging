@@ -65,6 +65,11 @@ input.change {
     margin-top: 0;
     position: relative;
 }
+
+.itemSingle.highlight {
+    border: 2px blue;
+    background-color: #4a4a4a;
+}
 /* ToDo Container Hiding for Dropdown */
 
 /* ToDo layout - Single or Multicolumn & Scolling if content doesn't fit */

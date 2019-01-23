@@ -114,8 +114,6 @@ function autoTaggingCustomEventHandler(event)
                 previousThumb = app.document.selections[0];
                 previousThumbInterest = function (thumb, message)
                 {
-                    $.writeln("About to throw metadata update event");
-
                     if (xLib && message === 'metadata')
                     {
                         var eventObj = new CSXSEvent();

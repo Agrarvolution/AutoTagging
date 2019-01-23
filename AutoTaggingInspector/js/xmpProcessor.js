@@ -188,7 +188,7 @@ function findInHistory (history, nodeString)
 {
     for (var i = 0; i < history.length; i++)
     {
-        if (history[i].name.toLowerCase() === nodeString.toLowerCase())
+        if (history[i].name && history[i].name.toLowerCase() === nodeString.toLowerCase())
         {
             return i;
         }
