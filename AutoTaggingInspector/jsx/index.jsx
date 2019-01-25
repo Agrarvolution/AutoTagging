@@ -91,7 +91,6 @@ function renameLabel(previousNode, newNode, historyUpdates)
             {
                 if (hierarchy[hi].toString().toLowerCase() === previousNode.parent[i].toLowerCase())
                 {
-                    alert("Delete " + hierarchy[hi].toString() +"@"+(hi+1));
                     xmp.deleteArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", hi+1);
                     hierarchy.splice(hi--,1);
                 }
@@ -99,7 +98,9 @@ function renameLabel(previousNode, newNode, historyUpdates)
         }
 
         for (i = 0; i < newNode.parent.length; i++) {
-            xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", newNode.parent[i], 0, XMPConst.ARRAY_IS_ORDERED);
+            if (searchInXMPArray(hierarchy, newNode.parent[i])) {
+                xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", newNode.parent[i], 0, XMPConst.ARRAY_IS_ORDERED);
+            }
         }
 
         if (historyUpdates !== undefined && historyUpdates != null && historyUpdates.length > 0)

@@ -486,7 +486,10 @@ function setupEventListeners() {
             event.target.classList.remove('highlight')
         }
     }).on('drop', function (event) {
-        dropItemHandler(event, dragStart, this);
+        if (dragStart !== undefined && dragStart != null) {
+            dropItemHandler(event, dragStart, this);
+        }
+        dragStart = undefined; //further drop events from parent nodes are disarmed
     }).on('dragover', function (event) {
         event.preventDefault();
     });
@@ -692,7 +695,7 @@ function moveItem (dragStart, parent) {
             name: "", //can be empty, no change in checked items
             parent: generateHierarchy(checkbox)
         };
-
+        let equal = compareStrArray(prevNode.parent, newNode.parent);
         let subjects = findChildren(checkbox);
         let history = [];
 
@@ -955,6 +958,25 @@ function searchInResponse(name, property) {
         }
     }
     return {};
+}
+
+/**
+ * Compares if two string arrays are identical
+ * @param arr1
+ * @param arr2
+ * @returns {boolean}
+ */
+function compareStrArray (arr1, arr2) {
+    if (arr1.length !== arr2.length)
+    {
+        return false;
+    }
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] === arr2[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /**
