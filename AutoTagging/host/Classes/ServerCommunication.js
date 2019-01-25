@@ -71,29 +71,52 @@ ServerCommunication.prototype.testServerConnection = function()
  */
 ServerCommunication.prototype.handleLabels = function(serverResponse, selectedImagePath)
 {
-    var labelsAWS = serverResponse.dataAWS["Labels"];
-    var labelsVision = serverResponse.dataVision[0].labelAnnotations;
+    var awsObject = serverResponse.dataAWS;
+    var visionObject = serverResponse.dataVision;
     var output = "";
 
-    output += "Amazons labels:<br>========================<br>";
-    labelsAWS.forEach(function (element) {
-        output += "<br>" + element["Name"] + ", " + element["Confidence"];
-    });
-
-    output += "<br>========================<br>Google's labels:<br>========================<br>";
-    if (typeof labelsVision !== 'undefined')
+    if (awsObject !== 'undefined' && awsObject !== -1)
     {
-        labelsVision.forEach(function (element) {
-            output += "<br>" + element.description + ", " + element.score;
+        var labelsAWS = serverResponse.dataAWS["Labels"];
+
+        output += "Amazons labels:<br>========================<br>";
+        labelsAWS.forEach(function (element) {
+            output += "<br>" + element["Name"] + ", " + element["Confidence"];
         });
     }
+    else
+    {
+        output += "Communication with Amazon failed!";
 
-    statusMessageHandler.add("Found labels: " + output);
+        awsObject = {};
+    }
+
+    if (visionObject !== 'undefined' && visionObject !== -1)
+    {
+        var labelsVision = serverResponse.dataVision[0].labelAnnotations;
+
+        output += "<br>========================<br>Google's labels:<br>========================<br>";
+        if (typeof labelsVision !== 'undefined')
+        {
+            labelsVision.forEach(function (element) {
+                output += "<br>" + element.description + ", " + element.score;
+            });
+        }
+    }
+    else
+    {
+        output += "<br><br><br>Communication with Google failed!";
+
+        visionObject = {};
+    }
+
+
+    statusMessageHandler.add("Result: " + output);
 
 
 
     var combineScript = new CombineScript();
-    var labelList = combineScript.getSingleList(serverResponse.dataVision, serverResponse.dataAWS);
+    var labelList = combineScript.getSingleList(visionObject, awsObject);
 
     var labelListString = JSON.stringify(labelList);
 

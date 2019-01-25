@@ -83,6 +83,8 @@ function autoTaggingCustomEventHandler(event)
                 $.writeln("No selection!");
             } else {
                 $.writeln(app.document.selectionLength + " documents selected");
+                $.writeln("document type: " + app.document.selections[0].type);
+                $.writeln("document type: " + app.document.selections[0].mimeType);
                 var currentPreviewFile = app.document.selections[0].core.preview.preview;
                 currentPreviewFile.exportTo(imagePath, 100);
                 
@@ -96,12 +98,14 @@ function autoTaggingCustomEventHandler(event)
                 eventObj.type = "updateAutoTagInspector";
                 eventObj.data = JSON.stringify({
                     type: 'selectionsChanged',
-                    "selectedImage": app.document.selections[0].path
+                    "selectedImage": app.document.selections[0].path,
+                    "selectionType" : app.document.selections[0].type,
+                    "fileType" : app.document.selections[0].mimeType
                 });
                 eventObj.dispatch();
             }
         }
-
+    
         if (app.document.selectionLength > 0)
         {
             if (app.document.selections[0] && app.document.selections[0].hasMetadata && app.document.selections[0] !== previousThumb)
@@ -114,6 +118,7 @@ function autoTaggingCustomEventHandler(event)
                 previousThumb = app.document.selections[0];
                 previousThumbInterest = function (thumb, message)
                 {
+                    $.writeln('Thumb interest ' + message);
                     if (xLib && message === 'metadata')
                     {
                         var eventObj = new CSXSEvent();
