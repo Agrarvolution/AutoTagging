@@ -112,11 +112,14 @@ function detectLabels()
 
 function getVisionLabels()
 {
+    const homedir = require('os').homedir();
+    var path = homedir + "\\.vision\\AutoTagging-4abe7e16e510.json";
+
     return new Promise(function (resolve)
     {
         // Creates a client
         const client = new vision.ImageAnnotatorClient({
-            keyFilename: 'C:\\Users\\Matthias\\vision\\AutoTagging-4abe7e16e510.json'
+            keyFilename: path
         });
 
         // Performs label detection on the image file
