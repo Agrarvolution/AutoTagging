@@ -84,15 +84,11 @@ function catchSelectionEvent(event)
     var imagePath = event.data.selectedImage;
     var type = event.data.selectionType;
     var fileType = event.data.fileType;
-<<<<<<< HEAD
-    serverCommunication.startLabeling(imagePath);
-=======
 
     if (type !== 'folder')
     {
         serverCommunication.startLabeling(imagePath);
     }
->>>>>>> origin/master
     //serverCommunication.testServerConnection();
 }
 
