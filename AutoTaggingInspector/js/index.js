@@ -393,23 +393,34 @@ Group:
  * Helper method to setup all the event listeners inside the dom tree.
  */
 function setupEventListeners() {
+    let allowDropDown = true;
+
     $('.itemCheckbox').click(checkboxClickProcessing).dblclick(checkboxDblClickProcessing);
 
     $('.itemLabel').dblclick(function (e) {
-        e.target.parentNode.parentNode.removeAttribute('draggable');
+        allowDropDown = false;
+        $('.itemParent').removeAttr('draggable');
         e.target.nextSibling.classList.remove('hidden');
         e.target.classList.add('hidden');
         e.target.nextSibling.focus();
     });
 
-    $('.itemChange').blur(changeLabel).keydown(function (e) {
+    $('.itemChange').blur(function (event) {
+        allowDropDown = true;
+        changeLabel(event);
+    }).keydown(function (e) {
         if (e.which === 13) {
             $(this).blur();
         }
     });
 
+
     //contextmenu event handling
-    $('.itemSingle').click(toggleChildrenProcessing).on('contextMenuOpen', function (e) {
+    $('.itemSingle').click(function (event) {
+        if (allowDropDown) {
+            toggleChildrenProcessing(event);
+        }
+    }).on('contextMenuOpen', function (e) {
         $('body').trigger('mousedown');
         csInterface.updateContextMenuItem('clickAll', true);
         csInterface.updateContextMenuItem('rename', true);
@@ -606,7 +617,7 @@ function removeLabel(event) {
  * @returns {boolean} true on success
  */
 function changeLabel(event) {
-    event.target.parentNode.parentNode.setAttribute('draggable', true);
+    $('.itemParent').attr('draggable', 'true');
     event.target.previousSibling.classList.remove('hidden');
     event.target.classList.add('hidden');
 
@@ -670,7 +681,7 @@ function dropItemHandler(event, dragStart, dragTarget) {
 }
 
 function moveItem (dragStart, parent) {
-    if (dragStart.parentNode !== parent && dragStart.firstChild && dragStart.firstChild.firstChild && dragStart.firstChild.firstChild.classList.contains('itemCheckbox')) {
+    if (!nodeIsChild(parent, dragStart) && dragStart.firstChild && dragStart.firstChild.firstChild && dragStart.firstChild.firstChild.classList.contains('itemCheckbox')) {
         let checkbox = dragStart.firstChild.firstChild;
         let prevNode = {
             name: "", //can be empty, no change in checked items
@@ -702,6 +713,21 @@ function moveItem (dragStart, parent) {
             }
         });
     }
+}
+
+function nodeIsChild(child, parent) {
+    if (child === document) {
+        return true;
+    }
+    let target = child.parentNode;
+    while (target !== document) {
+        if (target === parent)
+        {
+            return true;
+        }
+        target = target.parentNode;
+    }
+    return false;
 }
 /**
  * Sorts one .itemParent node in parenting node ascending.
