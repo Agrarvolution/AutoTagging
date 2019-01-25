@@ -83,6 +83,7 @@ function catchSelectionEvent(event)
     statusMessageHandler.add("registering a click event");
     var imagePath = event.data.selectedImage;
     var type = event.data.selectionType;
+    var fileType = event.data.fileType;
     serverCommunication.startLabeling(imagePath);
     //serverCommunication.testServerConnection();
 }
