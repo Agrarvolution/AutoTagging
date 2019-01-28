@@ -41,6 +41,14 @@ ServerCommunication.prototype.testServerConnection = function()
     var ServerUrl = "http://localhost:3200/testConnections";
 
     statusMessageHandler.add("Testing the connection to the web services");
+
+    if (typeof $ === 'undefined' || $ === null || $ === 'undefined')
+    {
+        statusMessageHandler.add("Initial load of plugin failed! Attempting to reload.");
+
+        location.reload(true);
+    }
+
     /* Use ajax to communicate with your server */
     $.ajax({
         type: "GET",

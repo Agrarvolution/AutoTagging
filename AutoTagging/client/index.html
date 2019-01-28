@@ -14,9 +14,9 @@
     <section>
         <div class="heading primary">Analysis Services:</div>
     </section>
-    
+
     <hr class="major">
-    
+
     <section>
         <!-- form for AWS Amazon Image Rekognition -->
         <form id="AWS_form">
@@ -24,7 +24,7 @@
                 <img src="img/checkbox.png" id="AWS_checkbox" class="checkbox disabled">
                 <span class="inactive">Amazon Image Rekognition</span>
             </div>
-            
+
             <div class="second_level_element login">
                 <div class="form_row">
                     <label>Access Key Id</label>
@@ -34,7 +34,7 @@
                     <label>Secret Access Key</label>
                     <input id="aws_secret_access_key" type="text" placeholder="aws_secret_access_key">
                 </div>
-                
+
                 <div class="button_div">
                     <button id="button_AWS_login" type="button">Login</button>
                     <button id="button_AWS_config" type="button" class="hidden">Configure</button>
@@ -44,9 +44,9 @@
             </div>
         </form>
     </section>
-    
+
     <hr class="minor">
-    
+
     <section>
         <!-- form for Google Vision -->
         <form id="Vision_form">
@@ -54,7 +54,7 @@
                 <img src="img/checkbox.png" id="Vision_checkbox" class="checkbox disabled">
                 <span class="inactive">Google Vision API</span>
             </div>
-            
+
             <div class="second_level_element">
                 <div class="form_row">
                     <label>???</label>
@@ -64,7 +64,7 @@
                     <label>???</label>
                     <input id="Vision_2" type="text" placeholder="">
                 </div>
-                
+
                 <button id="button_Vision_login">Login</button>
                 <button id="button_Vision_config" class="hidden">Configure</button>
                 <button id="button_Vision_save" class="hidden">Save</button>
@@ -72,12 +72,12 @@
             </div>
         </form>
     </section>
-    
+
     <hr class="major">
-    
+
     <section>
         <div class="heading secondary">Settings:</div>
-        
+
         <div class="second_level_element">
             <div class="form_row">
                 <label class="number">Confidence</label>
@@ -88,19 +88,19 @@
                 <input id="labels_max_amount" class="number" type="number" value="20" required>
             </div>
         </div>
-        
+
         <div id="button_div bottom right">
             <button id="button_start">Start</button>
         </div>
     </section>
 </div>
 
-<button id="testCommunicationButton">Test Webservices</button>
+<button id="testCommunicationButton">Test web services</button>
 
 <!-- 3) Add your script dependencies here, including CEP's CSInterface.js library -->
 <script type="text/javascript" src="CSInterface.js" id="first-script"></script>
 
-<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../client/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="../host/Classes/CombineScript.js"></script>
 <script type="text/javascript" src="../host/Classes/ServerCommunication.js"></script>
 <script type="text/javascript" src="../host/Classes/LabelList.js"></script>
@@ -109,5 +109,6 @@
 <script type="text/javascript" src="../host/Classes/DataManagement.js"></script>
 
 <script type="text/javascript" src="index.js"></script>
+
 </body>
 </html>
