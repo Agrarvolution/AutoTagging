@@ -52,9 +52,9 @@ function setupContextMenu() {
     contextMenu.menu.push(removeItem);
 
     let toggleOptions = {};
-    removeItem.id = 'options';
-    removeItem.label = 'Options';
-    removeItem.enabled = true;
+    toggleOptions.id = 'options';
+    toggleOptions.label = 'Options';
+    toggleOptions.enabled = true;
 
     contextMenu.menu.push(toggleOptions);
 
