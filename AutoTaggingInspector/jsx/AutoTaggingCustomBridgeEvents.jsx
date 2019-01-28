@@ -81,10 +81,12 @@ function autoTaggingCustomEventHandler(event)
             if (app.document.selectionLength < 1)
             {
                 $.writeln("No selection!");
+
                 var eventObj = new CSXSEvent();
                 eventObj.type = "updateAutoTagInspector";
                 eventObj.data = JSON.stringify({
-                    type: 'selectionsChanged'
+                    type: 'selectionsChanged',
+                    "selectedImage": "",
                 });
                 eventObj.dispatch();
             } else {
