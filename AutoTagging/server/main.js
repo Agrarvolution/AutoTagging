@@ -27,7 +27,6 @@ function init()
     //writeCredentials("asdf", "jklo");
     start();
     run();
-    testGoogleVision();
     console.log("Waiting for an incoming request");
 }
 
@@ -67,6 +66,26 @@ function run()
                 .then(function (dataAWS)
                 {
                     res.status(200).send({"dataAWS": dataAWS,"dataVision": dataVision});
+                }));
+
+    });
+
+    app.get("/testConnections", function (req, res, next)
+    {
+        console.log("Incoming connection test request");
+        var awsConnection;
+
+        testAWS()
+            .then(function (dataAWS)
+            {
+                console.log("Amazon Connection: " + dataAWS);
+                awsConnection = dataAWS;
+            })
+            .then(testGoogleVision()
+                .then(function (dataVision)
+                {
+                    console.log("Google Connection: " + dataVision);
+                    res.status(200).send({"awsConnection": awsConnection, "visionConnection": dataVision});
                 }));
 
     });
@@ -143,28 +162,44 @@ function getVisionLabels()
 
 function testGoogleVision()
 {
-    // Instantiates a client. If you don't specify credentials when constructing
-    // the client, the client library will look for credentials in the
-    // environment.
-    var storage = new googleStorage.Storage();
-
-    // Makes an authenticated API request.
-    storage
-        .getBuckets()
-        .then(function(results)
-        {
-            const buckets = results[0];
-
-            console.log('Buckets:');
-            buckets.forEach(function(bucket)
-            {
-                console.log(bucket.name);
-            });
-        })
-        .catch(function(err)
-        {
-                console.error('ERROR:', err);
+    return new Promise(function (resolve)
+    {
+        // Instantiates a client. If you don't specify credentials when constructing
+        // the client, the client library will look for credentials in the
+        // environment.
+        var storage = new googleStorage.Storage({
+            keyFilename: path
         });
+
+        // Makes an authenticated API request.
+        storage
+            .getBuckets()
+            .then(function(results)
+            {
+                resolve(true);
+            })
+            .catch(function(err)
+            {
+                resolve(false);
+            });
+    });
+}
+
+function testAWS()
+{
+    return new Promise(function (resolve)
+    {
+        // "The only way to check if credentials are valid is to attempt to send a request to one of our web services."
+        var s3 = new AWS.S3();
+        s3.getBucketLocation(function (err, data)
+        {
+            if (err)
+            {
+                resolve(false);
+            }
+            resolve(true);
+        });
+    });
 }
 
 
@@ -189,15 +224,12 @@ function checkAWSCredentials()
 
         // "The only way to check if credentials are valid is to attempt to send a request to one of our web services."
         var s3 = new AWS.S3();
-        console.log(s3.config.credentials);
-
-        //TODO: if AWS incorrect credentials -> showAWSLogin + errorMessage (popup)
-        if (true) {
+        s3.getBucketLocation(function (err, data) {
+            if (err)
+                return false;
             return true;
-        } else {
-            // credentials are incorrect -> show Login
-            return false;
-        }
+        });
+        console.log(s3.config.credentials);
     } else {
         // credentials file doesn't exist -> show Login
         return false;
