@@ -39,7 +39,7 @@ function removeOfflineOverlay()
  */
 function init()
 {
-    statusMessageHandler.add("loading plugin");
+    statusMessageHandler.set("loading plugin");
 
     AWS_selected = false;
     Vision_selected = false;
@@ -64,7 +64,7 @@ function init()
         }
         else
         {
-            statusMessageHandler.add("Successfully loaded plugin!");
+            statusMessageHandler.set("Successfully loaded plugin!");
         }
     }, 500);
 }
