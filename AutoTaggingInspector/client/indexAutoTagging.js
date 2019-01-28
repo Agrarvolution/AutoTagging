@@ -11,7 +11,7 @@ var lastSelectedImage = "";
 
 // ----------------------------------------------------------
 // internet connection is required to access the AWS and Google Vision services
-document.onload = init();
+init();
 
 /**
  * @description Hides the 'no internet connection' error message overlay and displays the content

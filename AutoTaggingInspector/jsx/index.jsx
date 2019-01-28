@@ -498,3 +498,172 @@ function xmpObjectsToString(xmpObjectArray)
     }
     return xmpObjectArray;
 }
+
+
+function sendStatusMessage(message)
+{
+    var xLib;
+    try
+    {
+        xLib = new ExternalObject("lib:\PlugPlugExternalObject");
+    }
+    catch (e)
+    {
+        alert("Missing ExternalObject: " + e);
+    }
+
+    if (xLib)
+    {
+        var eventObj = new CSXSEvent();
+        eventObj.type = "AutoTaggingStatusMessageChange";
+        eventObj.data = JSON.stringify({
+            type: 'newMessageAdded',
+            message: message
+        });
+        eventObj.dispatch();
+    }
+}
+
+function writeTags(latestImagePath, response)
+{
+    /**
+     * Include XMP Lib
+     */
+    if (ExternalObject.AdobeXMPScript === undefined)
+    {
+        ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript');
+    }
+
+
+    if( xmpLib == undefined )
+    {
+        if( Folder.fs == "Windows" )
+        {
+            var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.dll";
+        }
+        else
+        {
+            var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.framework";
+        }
+
+        var libfile = new File( pathToLib );
+        var xmpLib = new ExternalObject("lib:" + pathToLib );
+    }
+
+    if (app.document.selections[0].path !== latestImagePath)
+    {
+        return "Selection has changed: Old path: " + latestImagePath + ", new image path: " + app.document.selections[0].path;
+    }
+    else
+    {
+        var xLib;
+        try
+        {
+            xLib = new ExternalObject("lib:\PlugPlugExternalObject");
+        }
+        catch (e)
+        {
+            alert("Missing ExternalObject: " + e);
+        }
+
+        if (xLib)
+        {
+            var eventObj = new CSXSEvent();
+            eventObj.type = "autoTaggingResponseReady";
+            eventObj.data = JSON.stringify({
+                type: 'labelsFound',
+                serverResponse: response
+            });
+            eventObj.dispatch();
+        }
+
+
+
+        /**
+         * old code
+         */
+
+        /*
+         var thumb = app.document.selections[0];
+
+         if (thumb.hasMetadata)
+         {
+         /**
+         * Get the metadata object - wait for  valid values
+         /
+         var md = thumb.synchronousMetadata;
+
+         /**
+         * open up current xmp
+         /
+         var xmp = new XMPMeta(md.serialize());
+
+         var xmpFile = new XMPFile(latestImagePath.fsName, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_UPDATE);
+
+         /**
+         * Set some needed properties for the xmp actions
+         /
+         // Change the creator tool
+         xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by ModifyTags");
+
+         // Change the date modified
+         var d = new XMPDateTime(new Date());
+         xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
+
+         // Create some custom data.  Register a new namespace and prefix
+         XMPMeta.registerNamespace("http://ns.adobe.com/lightroom/1.0/", "lr:");
+
+         // Stores the label list items into the XMP-File with atdata: property.
+         var tagNamespace = "http://ns.adobe.autotaggingJSON/";
+         var tagPrefix = "atdata:";
+         XMPMeta.registerNamespace(tagNamespace, tagPrefix);
+         //xmp.deleteProperty(tagNamespace, "labelListJSON"); // not necessary
+         xmp.setProperty(tagNamespace, "labelListJSON", response);
+
+
+
+         var writeParents = true;
+
+         var existingTags = readTags(xmp);
+         var respondTags = responseTags(response, writeParents);
+
+         respondTags.subjects = stripArray(respondTags.subjects, existingTags.subjects);
+         respondTags.hierarchy = stripArray(respondTags.hierarchy, existingTags.hierarchy);
+
+         if (!respondTags.subjects)
+         {
+         respondTags.subjects = [];
+         }
+         if (!respondTags.hierarchy)
+         {
+         respondTags.hierarchy = [];
+         }
+
+         for (var i = 0; i < respondTags.subjects.length; i++)
+         {
+         xmp.appendArrayItem(XMPConst.NS_DC, "subject", respondTags.subjects[i], 0, XMPConst.ARRAY_IS_ORDERED);
+         }
+         for (var i = 0; i < respondTags.hierarchy.length; i++)
+         {
+         xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", respondTags.hierarchy[i], 0, XMPConst.ARRAY_IS_ORDERED);
+         }
+
+         // Write the packet back to the selected file
+         alert(xmp.dumpObject());
+         var updatedPacket = xmp.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
+
+         // Uncomment to see the XMP packet in XML form
+         // $.writeln(updatedPacket);
+         thumb.metaData = new Metadata(updatedPacket);
+
+         if (xmpFile.canPutXMP(xmp))
+         {
+         xmpFile.putXMP(xmp);
+         return "successfully wrote xmp";
+         }
+
+         return "could not write to file";
+         }
+         */
+    }
+}

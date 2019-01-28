@@ -119,7 +119,7 @@ function autoTaggingCustomEventHandler(event)
                     "selectionType": app.document.selections[0].type,
                     "fileType": app.document.selections[0].mimeType
                 });
-                eventObj.dispatch();
+                eventObjSelection.dispatch();
             }
         }
     
