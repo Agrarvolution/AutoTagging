@@ -19,14 +19,7 @@ var Vision_selected; // global variable on whether Google Vision is selected (ch
 
 // ----------------------------------------------------------
 // internet connection is required to access the AWS and Google Vision services
-if (navigator.onLine === true)
-{
-    // setup global variables and update the UI
-    init();
-    
-    // as a last step - system is online; thus, do not display the error message
-    //removeOfflineOverlay();
-}
+document.onload = init();
 
 /**
  * @description Hides the 'no internet connection' error message overlay and displays the content
@@ -46,6 +39,8 @@ function removeOfflineOverlay()
  */
 function init()
 {
+    statusMessageHandler.add("loading plugin");
+
     AWS_selected = false;
     Vision_selected = false;
 
@@ -57,6 +52,21 @@ function init()
     updateUI();
 
     startNodeServer();
+
+
+    setTimeout(function reloadJS()
+    {
+        if (typeof $ === 'undefined' || $ === null || $ === 'undefined')
+        {
+            statusMessageHandler.add("Initial load of plugin failed! Attempting to reload.");
+
+            location.reload(true);
+        }
+        else
+        {
+            statusMessageHandler.add("Successfully loaded plugin!");
+        }
+    }, 500);
 }
 
 function startNodeServer()
