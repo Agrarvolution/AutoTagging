@@ -52,6 +52,30 @@ function writeCredentials(aws_access_key_id, aws_secret_access_key) {
     return fileCreated;
 }
 
+function sendStatusMessage(message)
+{
+    var xLib;
+    try
+    {
+        xLib = new ExternalObject("lib:\PlugPlugExternalObject");
+    }
+    catch (e)
+    {
+        alert("Missing ExternalObject: " + e);
+    }
+
+    if (xLib)
+    {
+        var eventObj = new CSXSEvent();
+        eventObj.type = "AutoTaggingStatusMessageChange";
+        eventObj.data = JSON.stringify({
+            type: 'newMessageAdded',
+            message: message
+        });
+        eventObj.dispatch();
+    }
+}
+
 function writeTags(latestImagePath, response)
 {
     /**

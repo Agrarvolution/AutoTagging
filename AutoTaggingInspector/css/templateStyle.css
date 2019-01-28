@@ -1,10 +1,12 @@
 body {
     background-color: #323232;
     font-family: Segoe UI, Tahoma, sans-serif;
+    font-family: Lucida Grande, Tahoma, sans-serif;
     text-rendering: optimizeLegibility !important;
     -webkit-font-smoothing: antialiased !important;
     font-size: 0.8em;
     color: #e1e1e1;
+    padding-top: 10px;
 }
 
 
@@ -69,6 +71,16 @@ input.change {
 .itemSingle.highlight {
     border: 2px blue;
     background-color: #4a4a4a;
+}
+
+#StatusBar {
+    width: 99%;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 2px;
+    border-bottom: 1px solid #4a4a4a;
 }
 /* ToDo Container Hiding for Dropdown */
 

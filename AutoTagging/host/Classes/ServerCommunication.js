@@ -16,15 +16,14 @@ function ServerCommunication()
 ServerCommunication.prototype.startLabeling = function(imagePath)
 {
     var ServerUrl = "http://localhost:3200/tagImage";
-    statusMessageHandler.add("Sending a request to the server");
-    statusMessageHandler.add("Waiting for the servers response");
+    statusMessageHandler.set("Sending a request to the server, waiting for the servers response");
     /* Use ajax to communicate with your server */
     $.ajax({
         type: "GET",
         url: ServerUrl,
         success: function (ServerResponse)
         {
-            statusMessageHandler.add("Labels found!");
+            statusMessageHandler.set("Labels found!");
 
             new ServerCommunication().handleLabels(ServerResponse, imagePath);
         },
@@ -55,7 +54,9 @@ ServerCommunication.prototype.testServerConnection = function()
         url: ServerUrl,
         success: function (ServerResponse)
         {
-            statusMessageHandler.add(ServerResponse);
+            var output = "Amazon Rekognition: " + (ServerResponse.awsConnection ? "connected" : "connection failed") +
+                "<br>Google Vision: " + (ServerResponse.visionConnection ? "connected" : "connection failed");
+            statusMessageHandler.add(output);
 
             //responseEvent.data = ServerResponse;
             //responseEvent.dispatchEvent(responseEvent);

@@ -19,6 +19,10 @@ csInterface.addEventListener("autoTaggingResponseReady", function (event) {
         writeXMPContent(event.data.serverResponse, confidence);
     }
 });
+csInterface.addEventListener("AutoTaggingStatusMessageChange", function (event) {
+    var statusBar = document.getElementById("StatusBar");
+    statusBar.innerHTML = event.data.message;
+});
 function setupContextMenu() {
     let contextMenu = {};
     contextMenu.menu = [];

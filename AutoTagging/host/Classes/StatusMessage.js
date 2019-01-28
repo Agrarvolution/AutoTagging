@@ -36,3 +36,9 @@ StatusMessage.prototype.write = function()
     offlineMessage.innerHTML = this.messages.join("<br>");
 };
 
+StatusMessage.prototype.set = function (message)
+{
+    csInterface.evalScript("sendStatusMessage(\"" + message + "\")", function (e) {
+
+    });
+};
