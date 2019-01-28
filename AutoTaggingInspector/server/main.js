@@ -50,12 +50,6 @@ function run()
     app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
     app.use(express.static(path.join(__dirname, "../client")));
 
-    app.get("/test", function (req, res, next)
-    {
-        console.log("Calling test");
-        res.status(200).send("Calling test, the servers response");
-    });
-
     app.get("/tagImage", function (req, res, next)
     {
         console.log("Incoming Labeling Request");
@@ -70,26 +64,6 @@ function run()
                 .then(function (dataAWS)
                 {
                     res.status(200).send({"dataAWS": dataAWS,"dataVision": dataVision});
-                }));
-
-    });
-
-    app.get("/testConnections", function (req, res, next)
-    {
-        console.log("Incoming connection test request");
-        var awsConnection;
-
-        testAWS()
-            .then(function (dataAWS)
-            {
-                console.log("Amazon Connection: " + dataAWS);
-                awsConnection = dataAWS;
-            })
-            .then(testGoogleVision()
-                .then(function (dataVision)
-                {
-                    console.log("Google Connection: " + dataVision);
-                    res.status(200).send({"awsConnection": awsConnection, "visionConnection": dataVision});
                 }));
 
     });

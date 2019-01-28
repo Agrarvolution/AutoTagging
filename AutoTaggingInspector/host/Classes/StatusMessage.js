@@ -32,8 +32,12 @@ StatusMessage.prototype.add = function(message)
 
 StatusMessage.prototype.write = function()
 {
-    var offlineMessage = document.getElementById('offline_message');
-    offlineMessage.innerHTML = this.messages.join("<br>");
+    /**
+     * Messages going to the void in usual mode
+     * those messages were for debug purpose during development
+     */
+    //var offlineMessage = document.getElementById('offline_message');
+    //offlineMessage.innerHTML = this.messages.join("<br>");
 };
 
 StatusMessage.prototype.set = function (message)

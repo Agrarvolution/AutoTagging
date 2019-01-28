@@ -128,8 +128,6 @@ ServerCommunication.prototype.handleLabels = function(serverResponse, selectedIm
     var combineScript = new CombineScript();
     var labelList = combineScript.getSingleList(visionObject, awsObject);
 
-    var labelListString = JSON.stringify(labelList);
-
     csInterface.evalScript("writeTags(" + JSON.stringify(selectedImagePath) + ", " + JSON.stringify(labelList) + ")", function (koe) {
         statusMessageHandler.add(koe);
     });
