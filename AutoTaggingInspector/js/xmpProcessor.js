@@ -116,7 +116,7 @@ function processXMPContent(xmpContent) {
                 ticked: false
             };
             for (let parentIndex = 0; parentIndex < parentIndices.length; parentIndex++) {
-                if (parentIndices >= 0 && findInHierarchy(responseHierarchy[parentIndices[parentIndex]].children, xmpContent.response[childIndex].name) < 0) {
+                if (parentIndex >= 0 && findInHierarchy(responseHierarchy[parentIndices[parentIndex]].children, xmpContent.response[childIndex].name) < 0) {
                     //set parent reference
                     responseHierarchy[parentIndices[parentIndex]].children.push(child);
                 }
@@ -181,10 +181,10 @@ function processXMPContent(xmpContent) {
         if (index >= 0)
         {
             nodeHierarchy[index].confidence = responseHierarchy[i].confidence;
-            for (var ci = 0; ci < responseHierarchy[i].children; ci++)
+            for (let ci = 0; ci < responseHierarchy[i].children.length; ci++)
             {
-                var cIndex = findInHierarchy(nodeHierarchy[index].children, responseHierarchy[i].children[ci].name);
-                if (cIndex > 0)
+                let cIndex = findInHierarchy(nodeHierarchy[index].children, responseHierarchy[i].children[ci].name);
+                if (cIndex >= 0)
                 {
                     nodeHierarchy[index].children[cIndex].confidence = responseHierarchy[i].children[ci].confidence;
                 }
