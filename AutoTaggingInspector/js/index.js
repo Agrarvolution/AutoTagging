@@ -480,7 +480,6 @@ function setupEventListeners() {
         }
     });
 
-
     //contextmenu event handling
     $('.itemSingle').click(function (event) {
         if (allowDropDown) {
@@ -535,7 +534,9 @@ function setupEventListeners() {
     });
 
     let dragStart;
-    $('.itemParent').on('dragstart', function (event) {
+    $('.itemParent').click(function (event) {
+        this.firstChild.firstChild.nextSibling.click();
+    }).on('dragstart', function (event) {
         dragStart = event.target;
     }).on('dragenter', function (event) {
         if (event.target !== document && event.target.parentNode.classList&& event.target.parentNode.classList.contains('itemSingle')) {
