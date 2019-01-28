@@ -1,7 +1,7 @@
 "use strict";
 
 
-function writeXMPContent(response) {
+function writeXMPContent(response, confidence) {
         csInterface.evalScript('loadDate()', function (listDate) {
             let appDate = new Date();
             appDate.setHours(0, 0, 0, 0);
@@ -11,7 +11,7 @@ function writeXMPContent(response) {
             if (appDate !== listDate)
             {
                 let subjects = [],  hierarchy = [];
-                let limConfidence = 0.7;
+                let limConfidence = confidence%100/100;
                 let checkParents = false;
 
                 if (!response.labels)
@@ -116,7 +116,7 @@ function processXMPContent(xmpContent) {
                 ticked: false
             };
             for (let parentIndex = 0; parentIndex < parentIndices.length; parentIndex++) {
-                if (parentIndex >= 0 && findInHierarchy(responseHierarchy[parentIndices[parentIndex]].children, xmpContent.response[childIndex].name) < 0) {
+                if (parentIndices[parentIndex] >= 0 && findInHierarchy(responseHierarchy[parentIndices[parentIndex]].children, xmpContent.response[childIndex].name) < 0) {
                     //set parent reference
                     responseHierarchy[parentIndices[parentIndex]].children.push(child);
                 }

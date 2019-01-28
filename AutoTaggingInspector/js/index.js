@@ -4,7 +4,7 @@
 let csInterface = new CSInterface();
 loadJSX("js/libs/json2.js");
 let callResponse = {};
-
+let confidence = 65;
 /**
  * Setups context menu and its item listeners.
  */
@@ -16,7 +16,7 @@ csInterface.addEventListener("updateAutoTagInspector", loadContentListener);
 csInterface.addEventListener("autoTaggingResponseReady", function (event) {
     if (event.data && event.data.serverResponse)
     {
-        writeXMPContent(event.data.serverResponse);
+        writeXMPContent(event.data.serverResponse, confidence);
     }
 });
 function setupContextMenu() {
@@ -50,6 +50,13 @@ function setupContextMenu() {
     removeItem.enabled = false;
 
     contextMenu.menu.push(removeItem);
+
+    let toggleOptions = {};
+    removeItem.id = 'options';
+    removeItem.label = 'Options';
+    removeItem.enabled = true;
+
+    contextMenu.menu.push(toggleOptions);
 
     csInterface.setContextMenuByJSON(JSON.stringify(contextMenu), function (callback) {
         let contextMenuEvent = new Event(callback, {
@@ -96,9 +103,54 @@ function setupContextMenu() {
         } else {
             addNewItem(document.getElementById('tags'));
         }
+    }).on('options', toggleOptionVisibility);
+}
+
+/**
+ * Setup options
+ */
+function setupOptions() {
+    $('#confidence').html(confidence + " %").click(function (e) {
+        $(this).addClass('hidden');
+        $('#changeConfidence').removeClass('hidden').focus();
+    });
+    $('#changeConfidence').blur(function (e) {
+        confidence = $(this)[0].value.replace(/\D/g,'');
+        if (confidence < 0) {
+            confidence = 0;
+        } else if (confidence > 100) {
+            confidence = 100;
+        }
+        $('#confidence').html(confidence + " %").removeClass('hidden');
+        $(this).addClass('hidden');
+    }).keydown(function (e) {
+        if (e.which === 13) {
+            $(this).blur();
+        }
     });
 }
 
+/**
+ * Toggle the visibility of options or tags -> both can't be visible
+ */
+function toggleOptionVisibility() {
+    let tags = $('#tags');
+
+
+    tags.toggleClass('hidden');
+    let options = $('#options');
+    options.toggleClass('hidden');
+    if (options.hasClass('hidden')) {
+        csInterface.updateContextMenuItem('add', true);
+    } else {
+        csInterface.updateContextMenuItem('add', false);
+    }
+    if (!tags.hasClass('hidden') || !options.hasClass('hidden')) {
+        $('#help').addClass('hidden');
+    } else {
+        $('#help').removeClass('hidden');
+    }
+}
 /**
  * Disables content menu items (called if context menu is opened on not inside of .itemSingle)
  */
@@ -219,10 +271,17 @@ function displayContent(response)
 
     let newContent = createItems(response);
 
+    if (!$('#options').hasClass('hidden')) {
+        toggleOptionVisibility();
+    }
+
     let body = $('body');
     body.children('#tags').remove();
     body.append(newContent);
 
+    if (body.children('#tags').html() === "") {
+        toggleOptionVisibility();
+    }
     setupEventListeners();
 }
 
@@ -232,17 +291,19 @@ function displayContent(response)
  */
 function toggleHelpText(show)
 {
-    let text = $('#help');
-    let tags = $('#tags');
-    if (show)
-    {
-        text.removeClass('hidden');
-        tags.addClass('hidden');
-    }
-    else
-    {
-        text.addClass('hidden');
-        tags.removeClass('hidden');
+    if ($("#options").hasClass('hidden')) {
+        let text = $('#help');
+        let tags = $('#tags');
+        if (show)
+        {
+            text.removeClass('hidden');
+            tags.addClass('hidden');
+        }
+        else
+        {
+            text.addClass('hidden');
+            tags.removeClass('hidden');
+        }
     }
 }
 
@@ -1021,5 +1082,6 @@ window.onload = function(event) {
 $(document).ready(function (e) {
     rebuildHtml();
     guiUpdateListener();
+    setupOptions();
     loadXMPContent(); // first call after refresh / crash
 });
