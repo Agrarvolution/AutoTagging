@@ -14,7 +14,6 @@ setupContextMenu();
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
 csInterface.addEventListener("updateAutoTagInspector", loadContentListener);
 csInterface.addEventListener("autoTaggingResponseReady", function (event) {
-    alert(JSON.stringify(event));
     if (event.data && event.data.serverResponse)
     {
         writeXMPContent(event.data.serverResponse);

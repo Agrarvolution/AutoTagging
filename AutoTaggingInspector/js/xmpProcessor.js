@@ -2,43 +2,51 @@
 
 
 function writeXMPContent(response) {
-    let subjects = [],  hierarchy = [];
-    let limConfidence = 0.4;
-    let checkParents = false;
-
-    if (!response)
-    {
-        response = [];
-    }
-
-    for (let i = 0; i < response.length; i++)
-    {
-        if (response.confidence >= limConfidence)
-        {
-            subjects.push(response[i].name);
-            if (response[i].parents.length > 0)
+        csInterface.evalScript('loadDate()', function (listDate) {
+            let appDate = new Date();
+            appDate.setHours(0, 0, 0, 0);
+            if (listDate !== undefined && listDate != null && listDate !== "") {
+                listDate.setHours(0, 0, 0, 0);
+            }
+            if (appDate !== listDate)
             {
-                for (let pIndex = 0; pIndex < response[i].parents.length; pIndex++)
+                let subjects = [],  hierarchy = [];
+                let limConfidence = 0.7;
+                let checkParents = false;
+
+                if (!response.labels)
                 {
-                    hierarchy.push(response[i].parents[pIndex].name + "|" + response[i].name);
-                    if (checkParents)
+                    response.labels = [];
+                }
+
+                for (let i = 0; i < response.labels.length; i++)
+                {
+                    if (response.labels[i].confidence >= limConfidence)
                     {
-                        subjects.push(response[i].parents[pIndex].name);
+                        subjects.push(response.labels[i].name);
+                        if (response.labels[i].parents.length > 0)
+                        {
+                            for (let pIndex = 0; pIndex < response.labels[i].parents.length; pIndex++)
+                            {
+                                hierarchy.push(response.labels[i].parents[pIndex].name + "|" + response.labels[i].name);
+                                if (checkParents)
+                                {
+                                    subjects.push(response.labels[i].parents[pIndex].name);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            hierarchy.push(response.labels[i].name);
+                        }
                     }
                 }
-            }
-            else
-            {
-                hierarchy.push(response[i].name);
-            }
+                csInterface.evalScript('saveMetaData(' + JSON.stringify(subjects) + ',' + JSON.stringify(hierarchy) + ',' + JSON.stringify(response.labels) + ')', function (event) {
+                    if (event !== 'success') {
+                        alert (event);
+                    }
+                });
         }
-    }
-    csInterface.evalScript('saveMetaData(' + JSON.stringify(subjects) + ',' + JSON.stringify(hierarchy) + ',' + JSON.stringify(response) + ')', function (e) {
-        alert(e);
-    });
-
-    csInterface.evalScript('loadDate()', function (event) {
-        alert(event);
     });
 
 
@@ -80,12 +88,7 @@ function processXMPContent(xmpContent) {
 
         //insert parents
         for (let parentIndex = 0; parentIndex < xmpContent.response[childIndex].parents.length; parentIndex++) {
-            let name = xmpContent.response[childIndex].parents[parentIndex].description;
-
-            if (name === undefined) {
-                name = xmpContent.response[childIndex].parents[parentIndex].name;
-            }
-
+            let name = xmpContent.response[childIndex].parents[parentIndex].name;
             let index = findInHierarchy(responseHierarchy, name);
             let histIndex = findInHistory(xmpContent.history, name);
             //check if parent terminated
@@ -107,7 +110,7 @@ function processXMPContent(xmpContent) {
         if (histIndex < 0 || (histIndex >= 0 && xmpContent.history[histIndex].property !== "terminate")) {
             //setup child
             let child = {
-                name: xmpContent.response[childIndex].description,
+                name: xmpContent.response[childIndex].name,
                 confidence: xmpContent.response[childIndex].confidence,
                 children: [],
                 ticked: false

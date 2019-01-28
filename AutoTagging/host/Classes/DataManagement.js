@@ -48,7 +48,7 @@ DataManagement.prototype.handleRecognitionResponse = function(responseJSON)
             var parents = [];
             for (var pIndex = 0; pIndex < recognitionObject.Labels[i].Parents.length; pIndex++)
             {
-                parents.push(recognitionObject.Labels[i].Parents[pIndex]);
+                parents.push(new Label(recognitionObject.Labels[i].Parents[pIndex].Name, 0, []));
             }
 
             if (typeof(responsePart.Name) === 'string')
