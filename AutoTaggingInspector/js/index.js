@@ -171,20 +171,17 @@ function themeChangedEventListener(event)
 }
 
 /**
- * Rebuilds html incase it was wiped.
+ * Rebuilds html in case it was wiped.
  */
 function rebuildHtml() {
     let contentDOMTarget = document.getElementById('tags');
     if (contentDOMTarget === undefined && contentDOMTarget == null)
     {
-        let disableMessage = document.createElement('p');
-        disableMessage.textContent = "No image selected / no tags are available for this image!";
-        disableMessage.id = 'help';
+        statusMessageHandler.set("No image selected / no tags are available for this image!");
 
         contentDOMTarget = document.createElement('main');
         contentDOMTarget.classList.add('tags');
         let body = document.createElement('body');
-        body.appendChild(disableMessage);
         body.appendChild(contentDOMTarget);
 
         (document.getElementsByName('html'))[0].appendChild(body);

@@ -85,7 +85,7 @@ function autoTaggingCustomEventHandler(event)
                 var eventObj = new CSXSEvent();
                 eventObj.type = "updateAutoTagInspector";
                 eventObj.data = JSON.stringify({
-                    type: 'selectionsChanged',
+                    type: 'selectionsChangedButNoSelection',
                     "selectedImage": "",
                 });
                 eventObj.dispatch();
@@ -109,6 +109,15 @@ function autoTaggingCustomEventHandler(event)
                     "selectedImage": app.document.selections[0].path,
                     "selectionType" : app.document.selections[0].type,
                     "fileType" : app.document.selections[0].mimeType
+                });
+                eventObj.dispatch();
+
+                var eventObjSelection = new CSXSEvent();
+                eventObjSelection.type = "AutoTaggingSelectionChanged";
+                eventObjSelection.data = JSON.stringify({
+                    "selectedImage": app.document.selections[0].path,
+                    "selectionType": app.document.selections[0].type,
+                    "fileType": app.document.selections[0].mimeType
                 });
                 eventObj.dispatch();
             }

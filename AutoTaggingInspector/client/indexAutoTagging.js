@@ -55,7 +55,7 @@ function init()
 
 function registerEventHandler()
 {
-    csInterface.addEventListener("updateAutoTagInspector", catchSelectionEvent);
+    csInterface.addEventListener("AutoTaggingSelectionChanged", catchSelectionEvent);
 
     csInterface.evalScript("registerEventHandler()", function (e) {
         statusMessageHandler.add(e);
