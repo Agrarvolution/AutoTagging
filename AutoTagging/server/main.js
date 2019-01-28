@@ -19,6 +19,10 @@ const googleStorage = require('@google-cloud/storage');
 var dataVision = {};
 
 
+const homedir = require('os').homedir();
+var pathVision = homedir + "\\.vision\\AutoTagging-4abe7e16e510.json";
+var pathAWS = homedir + "\\.aws\\credentials";
+
 var imagePath = "C:/AutoTagging/tempImage.jpg";
 
 function init()
@@ -131,14 +135,11 @@ function detectLabels()
 
 function getVisionLabels()
 {
-    const homedir = require('os').homedir();
-    var path = homedir + "\\.vision\\AutoTagging-4abe7e16e510.json";
-
     return new Promise(function (resolve)
     {
         // Creates a client
         const client = new vision.ImageAnnotatorClient({
-            keyFilename: path
+            keyFilename: pathVision
         });
 
         // Performs label detection on the image file
@@ -168,7 +169,7 @@ function testGoogleVision()
         // the client, the client library will look for credentials in the
         // environment.
         var storage = new googleStorage.Storage({
-            keyFilename: path
+            keyFilename: pathVision
         });
 
         // Makes an authenticated API request.
@@ -189,16 +190,8 @@ function testAWS()
 {
     return new Promise(function (resolve)
     {
-        // "The only way to check if credentials are valid is to attempt to send a request to one of our web services."
         var s3 = new AWS.S3();
-        s3.getBucketLocation(function (err, data)
-        {
-            if (err)
-            {
-                resolve(false);
-            }
-            resolve(true);
-        });
+        resolve(s3.config);
     });
 }
 
@@ -213,9 +206,7 @@ function testAWS()
 function checkAWSCredentials()
 {
     // check if the credentials file exists
-    const homedir = require('os').homedir();
-    var path = homedir + "\\.aws\\credentials";
-    var credentials = fs.readFile(path);
+    var credentials = fs.readFile(pathAWS);
 
     if (credentials.err === 0) {
         // credentials file exists
@@ -246,9 +237,6 @@ function checkAWSCredentials()
  */
 function writeCredentials (aws_access_key_id, aws_secret_access_key)
 {
-    const homedir = require('os').homedir();
-    //var path = "~/.aws/credentials";
-    var path = homedir + "\\.aws\\credentials";
     var content = "[default]\n" +
         "aws_access_key_id = " + aws_secret_access_key + "\n" +
         "aws_secret_access_key = " + aws_access_key_id + "\n";
@@ -257,7 +245,7 @@ function writeCredentials (aws_access_key_id, aws_secret_access_key)
     // if an old file exists, it will be overwritten
     fs.mkdirSync(homedir + "\\.aws");
 
-    return fs.writeFile(path, content, function(err) {
+    return fs.writeFile(pathAWS, content, function(err) {
         if(err) {
             return console.log(err);
         }

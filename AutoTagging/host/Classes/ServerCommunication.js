@@ -55,7 +55,9 @@ ServerCommunication.prototype.testServerConnection = function()
         url: ServerUrl,
         success: function (ServerResponse)
         {
-            statusMessageHandler.add(ServerResponse);
+            var output = "Amazon Rekognition: " + (ServerResponse.awsConnection ? "connected" : "connection failed") +
+                "<br>Google Vision: " + (ServerResponse.visionConnection ? "connected" : "connection failed");
+            statusMessageHandler.add(output);
 
             //responseEvent.data = ServerResponse;
             //responseEvent.dispatchEvent(responseEvent);
