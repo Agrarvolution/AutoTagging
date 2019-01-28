@@ -129,6 +129,7 @@ function setupOptions() {
         $(this).addClass('hidden');
     }).keydown(function (e) {
         if (e.which === 13) {
+            event.preventDefault();
             $(this).blur();
         }
     });
@@ -477,6 +478,7 @@ function setupEventListeners() {
         changeLabel(event);
     }).keydown(function (e) {
         if (e.which === 13) {
+            event.preventDefault();
             $(this).blur();
         }
     });
