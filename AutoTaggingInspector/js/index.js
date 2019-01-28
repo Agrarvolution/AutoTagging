@@ -486,11 +486,8 @@ function setupEventListeners() {
 
     //contextmenu event handling
     $('.itemSingle').click(function (event) {
-        if (event.target.classList.contains('itemSingle')) {
-            event.target = event.target.firstChild.nextSibling;
-        }
         if (allowDropDown) {
-            toggleChildrenProcessing(event);
+            toggleChildrenProcessing(this, event.target);
         }
     }).on('contextMenuOpen', function (e) {
         $('body').trigger('mousedown');
@@ -579,11 +576,11 @@ function setupEventListeners() {
  * @param event .itemSingle
  * @returns {boolean}
  */
-function toggleChildrenProcessing (event) {
+function toggleChildrenProcessing (parent, target) {
     //disable checkbox from hiding content
-    if (!event.target.classList.contains('itemCheckbox'))
+    if (!target.classList.contains('itemCheckbox'))
     {
-        $(event.target).parent().parent().children('.items').toggleClass('hidden');
+        $(parent).next('.items').toggleClass('hidden');
         return true;
     }
 }
