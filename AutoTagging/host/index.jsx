@@ -84,13 +84,27 @@ function writeTags(latestImagePath, response)
     }
     else
     {
-        var eventObj = new CSXSEvent();
-        eventObj.type = "updateAutoTagInspector";
-        eventObj.data = JSON.stringify({
-            type: 'labelsFound',
-            'serverResponse': response
-        });
-        eventObj.dispatch();
+        var xLib;
+        try
+        {
+            xLib = new ExternalObject("lib:\PlugPlugExternalObject");
+        }
+        catch (e)
+        {
+            alert("Missing ExternalObject: " + e);
+        }
+
+        if (xLib)
+        {
+            var eventObj = new CSXSEvent();
+            eventObj.type = "autoTaggingResponseReady";
+            eventObj.data = JSON.stringify({
+                type: 'labelsFound',
+                serverResponse: response
+            });
+            eventObj.dispatch();
+        }
+
 
 
         /**

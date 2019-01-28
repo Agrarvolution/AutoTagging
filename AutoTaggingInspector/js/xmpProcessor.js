@@ -1,6 +1,50 @@
 "use strict";
 
 
+function writeXMPContent(response) {
+    let subjects = [],  hierarchy = [];
+    let limConfidence = 0.4;
+    let checkParents = false;
+
+    if (!response)
+    {
+        response = [];
+    }
+
+    for (let i = 0; i < response.length; i++)
+    {
+        if (response.confidence >= limConfidence)
+        {
+            subjects.push(response[i].name);
+            if (response[i].parents.length > 0)
+            {
+                for (let pIndex = 0; pIndex < response[i].parents.length; pIndex++)
+                {
+                    hierarchy.push(response[i].parents[pIndex].name + "|" + response[i].name);
+                    if (checkParents)
+                    {
+                        subjects.push(response[i].parents[pIndex].name);
+                    }
+                }
+            }
+            else
+            {
+                hierarchy.push(response[i].name);
+            }
+        }
+    }
+    csInterface.evalScript('saveMetaData(' + JSON.stringify(subjects) + ',' + JSON.stringify(hierarchy) + ',' + JSON.stringify(response) + ')', function (e) {
+        alert(e);
+    });
+
+    csInterface.evalScript('loadDate()', function (event) {
+        alert(event);
+    });
+
+
+    //return {subjects: subjects, hierarchy: hierarchy};
+}
+
 /**
  * Loads metadata from XMP file. If there is metadata calls a process function, otherwise empties the tags.
  */
