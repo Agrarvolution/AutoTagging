@@ -6,6 +6,7 @@ function writeXMPContent(response, confidence) {
             let appDate = new Date();
             appDate.setHours(0, 0, 0, 0);
             if (listDate !== undefined && listDate != null && listDate !== "") {
+                listDate = new Date(listDate);
                 listDate.setHours(0, 0, 0, 0);
             }
             if (appDate !== listDate)

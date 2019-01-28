@@ -50,13 +50,13 @@ function saveMetaData(newSubjects, newHierarchy, response) {
 
 
         for (var i = 0; i < newSubjects.length; i++) {
-            if (searchInXMPArray(subjects, newSubjects[i])) {
+            if (searchInXMPArray(subjects, newSubjects[i]) < 0) {
                 xmp.appendArrayItem(XMPConst.NS_DC, "subject", newSubjects[i], 0, XMPConst.ARRAY_IS_ORDERED);
             }
         }
 
         for (i = 0; i < newHierarchy.length; i++) {
-            if (searchInXMPArray(hierarchy, newHierarchy[i])) {
+            if (searchInXMPArray(hierarchy, newHierarchy[i]) < 0) {
                 xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", newHierarchy[i], 0, XMPConst.ARRAY_IS_ORDERED);
             }
         }
