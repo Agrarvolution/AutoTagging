@@ -105,7 +105,7 @@ function processXMPContent(xmpContent) {
             }
         }
 
-        let histIndex = findInHistory(xmpContent.history, xmpContent.response[childIndex].description);
+        let histIndex = findInHistory(xmpContent.history, xmpContent.response[childIndex].name);
         //terminate child
         if (histIndex < 0 || (histIndex >= 0 && xmpContent.history[histIndex].property !== "terminate")) {
             //setup child
@@ -116,12 +116,12 @@ function processXMPContent(xmpContent) {
                 ticked: false
             };
             for (let parentIndex = 0; parentIndex < parentIndices.length; parentIndex++) {
-                if (parentIndices >= 0 && findInHierarchy(responseHierarchy[parentIndices[parentIndex]], xmpContent.response[childIndex].description) < 0) {
+                if (parentIndices >= 0 && findInHierarchy(responseHierarchy[parentIndices[parentIndex]].children, xmpContent.response[childIndex].name) < 0) {
                     //set parent reference
                     responseHierarchy[parentIndices[parentIndex]].children.push(child);
                 }
             }
-            if (parentIndices.length === 0) {
+            if (parentIndices.length === 0 && findInHierarchy(responseHierarchy, xmpContent.response[childIndex].name) < 0) {
                 responseHierarchy.push(child);
             }
         }
