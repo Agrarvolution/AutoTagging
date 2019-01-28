@@ -76,6 +76,10 @@ function registerEventHandler()
     csInterface.evalScript("registerEventHandler()", function (e) {
         statusMessageHandler.add(e);
     });
+
+    document.getElementById("testCommunicationButton").addEventListener("click", function () {
+        serverCommunication.testServerConnection();
+    })
 }
 
 function catchSelectionEvent(event)

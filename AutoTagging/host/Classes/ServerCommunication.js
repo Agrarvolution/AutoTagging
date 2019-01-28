@@ -38,25 +38,26 @@ ServerCommunication.prototype.startLabeling = function(imagePath)
 
 ServerCommunication.prototype.testServerConnection = function()
 {
-    var ServerUrl = "http://localhost:3200/test";
-    var responseEvent = new Event('AWSResponse');
-    statusMessageHandler.add("Sending a request to the server");
+    var ServerUrl = "http://localhost:3200/testConnections";
+
+    statusMessageHandler.add("Testing the connection to the web services");
     /* Use ajax to communicate with your server */
     $.ajax({
         type: "GET",
         url: ServerUrl,
         success: function (ServerResponse)
         {
-            responseEvent.data = ServerResponse;
-            responseEvent.dispatchEvent(responseEvent);
+            statusMessageHandler.add(ServerResponse);
+
+            //responseEvent.data = ServerResponse;
+            //responseEvent.dispatchEvent(responseEvent);
             //responseEvent.dispatch();
 
-            //statusMessageHandler.add(ServerResponse);
         },
         error: function(jqXHR, textStatus, errorThrown)
         {
-            responseEvent.data = { Response: "Something went wrong on the server side\r\n" + jqXHR + "\r\n" + errorThrown };
-            responseEvent.dispatch();
+            //responseEvent.data = { Response: "Something went wrong on the server side\r\n" + jqXHR + "\r\n" + errorThrown };
+            //responseEvent.dispatch();
         }
     })
 };
