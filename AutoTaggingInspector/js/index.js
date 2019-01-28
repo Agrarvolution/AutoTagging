@@ -486,6 +486,9 @@ function setupEventListeners() {
 
     //contextmenu event handling
     $('.itemSingle').click(function (event) {
+        if (event.target.classList.contains('itemSingle')) {
+            event.target = event.target.firstChild.nextSibling;
+        }
         if (allowDropDown) {
             toggleChildrenProcessing(event);
         }
@@ -538,9 +541,7 @@ function setupEventListeners() {
     });
 
     let dragStart;
-    $('.itemParent').click(function (event) {
-        this.firstChild.firstChild.nextSibling.click();
-    }).on('dragstart', function (event) {
+    $('.itemParent').on('dragstart', function (event) {
         dragStart = event.target;
     }).on('dragenter', function (event) {
         if (event.target !== document && event.target.parentNode.classList&& event.target.parentNode.classList.contains('itemSingle')) {
