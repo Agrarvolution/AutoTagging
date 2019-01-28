@@ -33,9 +33,6 @@ function init()
 {
     statusMessageHandler.set("loading plugin");
 
-    AWS_selected = false;
-    Vision_selected = false;
-
     registerEventHandler();
 
     setTimeout(function reloadJS()
@@ -56,10 +53,6 @@ function init()
 function registerEventHandler()
 {
     csInterface.addEventListener("AutoTaggingSelectionChanged", catchSelectionEvent);
-
-    csInterface.evalScript("registerEventHandler()", function (e) {
-        statusMessageHandler.add(e);
-    });
 }
 
 function catchSelectionEvent(event)
@@ -71,8 +64,11 @@ function catchSelectionEvent(event)
 
     if (type !== 'folder' && lastSelectedImage !== imagePath && imagePath !== "")
     {
-        lastSelectedImage = imagePath;
-        serverCommunication.startLabeling(imagePath);
+        if (fileType === "image/jpeg" || fileType === "image/png")
+        {
+            lastSelectedImage = imagePath;
+            serverCommunication.startLabeling(imagePath);
+        }
     }
     //serverCommunication.testServerConnection();
 }
