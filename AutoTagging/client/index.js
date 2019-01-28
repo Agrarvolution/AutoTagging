@@ -8,7 +8,7 @@ var serverCommunication = new ServerCommunication();
 var dataManagement = new DataManagement();
 
 
-loadJSX("host/js/libs/json2.js");
+loadJSX("js/libs/json2.js");
 
 
 var AWS_loggedIn; // global variable on whether AWS is logged in or not
@@ -177,6 +177,6 @@ function sanitizeString(text)
  * @param fileName {string}
  */
 function loadJSX(fileName) {
-    var extensionRoot = csInterface.getSystemPath(SystemPath.EXTENSION) + "/jsx/";
+    var extensionRoot = csInterface.getSystemPath(SystemPath.EXTENSION) + "/host/";
     csInterface.evalScript('$.evalFile("' + extensionRoot + fileName + '")');
 }

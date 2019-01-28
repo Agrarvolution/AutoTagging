@@ -114,9 +114,9 @@ function secureParseJSON (jsonString)
 }
 
 /**
- * reponseJSON gets parsed and the object is checked, whether the result is a valid Google Vision response.
+ * responseJSON gets parsed and the object is checked, whether the result is a valid Google Vision response.
  * @return empty array or array map with the description and confidence of the found tags
- * @param {string} reponseJSON 
+ * @param {string} responseJSON
  */
 function handleVisionResponse(responseJSON) 
 {
@@ -324,7 +324,7 @@ function storeResponse(xmp, responseObject)
  * @param {object} xmp 
  * @param {array} responseObject
  * @param {float} confidence 
- * @param {boolean} writeParents -> decides wether parents are ticked or not
+ * @param {boolean} writeParents -> decides whether parents are ticked or not
  */
 function writeTags(xmp, responseObject, confidence, writeParents)
 {
@@ -381,10 +381,10 @@ function stripArray(target, decider)
 }
 
 /**
- * Creates the same structure for the tag reponse as is written in XMP
+ * Creates the same structure for the tag response as is written in XMP
  * @return Object containing a subject and hierarchy array
  * @param {array} responseObject 
- * @param {boolean} writeParents -> decides wether parents are ticked or not
+ * @param {boolean} writeParents -> decides whether parents are ticked or not
  */
 function responseTags(responseObject, writeParents)
 {

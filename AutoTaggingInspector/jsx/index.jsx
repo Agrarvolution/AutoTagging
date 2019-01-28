@@ -8,6 +8,70 @@ function addDependencies()
     }
 }
 
+function loadDate() {
+    addDependencies();
+    var thumb = app.document.selections[0];
+    if(thumb !== undefined && thumb != null && thumb.hasMetadata) {
+        // Get the metadata object - wait for  valid values
+        var md = thumb.synchronousMetadata;
+
+        // Get the XMP packet as a string and create the XMPMeta object
+        var xmp = new XMPMeta(md.serialize());
+
+        return loadAutoTaggingProperties(xmp, "labelListDate");
+    }
+}
+
+function saveMetaData(newSubjects, newHierarchy, response) {
+    addDependencies();
+    var thumb = app.document.selections[0];
+    if(thumb !== undefined && thumb != null && thumb.hasMetadata) {
+        // Get the metadata object - wait for  valid values
+        var md = thumb.synchronousMetadata;
+
+        // Get the XMP packet as a string and create the XMPMeta object
+        var xmp = new XMPMeta(md.serialize());
+
+        // Change the date modified
+        var d = new XMPDateTime(new Date());
+        d.convertToLocalTime();
+        xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
+
+        // Change the creator tool
+        xmp.setProperty(XMPConst.NS_XMP, "CreatorTool", "Changed by AutoTaggingGUI - Save Metadata");
+
+        XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
+        xmp.setProperty("http://ns.adobe.autotaggingJSON/", "labelListJSON", JSON.stringify(response));
+
+        xmp.setProperty("http://ns.adobe.autotaggingJSON/", "labelListDate", d, XMPConst.XMPDATE);
+
+        var subjects = loadSubjects(xmp);
+        var hierarchy = loadHierarchy(xmp);
+
+
+        for (var i = 0; i < newSubjects.length; i++) {
+            if (searchInXMPArray(subjects, newSubjects[i])) {
+                xmp.appendArrayItem(XMPConst.NS_DC, "subject", newSubjects[i], 0, XMPConst.ARRAY_IS_ORDERED);
+            }
+        }
+
+        for (i = 0; i < newHierarchy.length; i++) {
+            if (searchInXMPArray(hierarchy, newHierarchy[i])) {
+                xmp.appendArrayItem("http://ns.adobe.com/lightroom/1.0/", "hierarchicalSubject", newHierarchy[i], 0, XMPConst.ARRAY_IS_ORDERED);
+            }
+        }
+        // Write the packet back to the selected file
+        var updatedPacket = xmp.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
+
+        // Uncomment to see the XMP packet in XML form
+        // $.writeln(updatedPacket);
+        thumb.metadata = new Metadata(updatedPacket);
+
+        return "success";
+    }
+    return "failure";
+}
+
 /**
  * Loads metadata for a given image. This includes all subject and hierarchy strings of the start of a selection and response and history arrays.
  * @returns {{response: Array, subjects: Array, hierarchy: Array, history: Array, metadata: Boolean}} <- if image has no thumb this is empty
@@ -25,11 +89,6 @@ function loadMetaData()
 
         // Get the XMP packet as a string and create the XMPMeta object
         var xmp = new XMPMeta(md.serialize());
-
-        // Change the date modified
-        var d = new XMPDateTime(new Date());
-        d.convertToLocalTime();
-        xmp.setProperty(XMPConst.NS_XMP, "ModifyDate", d, XMPConst.XMPDATE);
 
         XMPMeta.registerNamespace("http://ns.adobe.autotaggingJSON/", "atdata:");
 
@@ -360,7 +419,7 @@ function loadHierarchy(xmp) {
 }
 
 /**
- * Loads AutoTagging propoerties from XMP metadata.
+ * Loads AutoTagging properties from XMP metadata.
  * @param xmp initialized object
  * @param propertyName - name of AutoTagging property
  * @returns {Array|*} - parsed AuoTagging JSON string
@@ -402,6 +461,7 @@ function findInHierarchy (array, targetString)
     }
     return -1;
 }
+
 /**
  check if array contains value
  because indexOf doesn't work
