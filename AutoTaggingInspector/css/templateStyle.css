@@ -83,6 +83,9 @@ input.change {
     border-bottom: 1px solid #4a4a4a;
     background-color: #323232;
 }
+#tags {
+    padding-top: 10px;
+}
 /* ToDo Container Hiding for Dropdown */
 
 /* ToDo layout - Single or Multicolumn & Scolling if content doesn't fit */
