@@ -1008,22 +1008,19 @@ function searchInResponse(name, property) {
         default: return {};
     }
 
-    if (callResponse.response.length)
+    for (let i = 0; i < callResponse.response.length; i++)
     {
-        for (let i = 0; i < callResponse.response.length; i++)
+        if (callResponse.response[i].name === name)
         {
-            if (callResponse.response[i].description === name)
+            return {name: name, parent: false, property: property};
+        }
+        if (callResponse.response[i].parents.length)
+        {
+            for (let j = 0; j < callResponse.response[i].parents.length; j++)
             {
-                return {name: name, parent: false, property: property};
-            }
-            if (callResponse.response[i].parents.length)
-            {
-                for (let j = 0; j < callResponse.response[i].parents.length; j++)
+                if (callResponse.response[i].parents[j].name === name)
                 {
-                    if (callResponse.response[i].parents[j].name === name)
-                    {
-                        return {name: name, property: property};
-                    }
+                    return {name: name, property: property};
                 }
             }
         }
