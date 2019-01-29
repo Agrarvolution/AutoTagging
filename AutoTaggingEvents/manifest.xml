@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <bridge_extension>
+        <name>AutoTaggingEvents</name>
+        <version>1.0</version>
+        <description locale="en_US">This is a helper extension to catch selection and metadata events in Bridge for the AutoTagging CEP GUI.</description>
+    </bridge_extension>
