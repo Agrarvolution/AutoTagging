@@ -8,6 +8,10 @@ function addDependencies()
     }
 }
 
+/**
+ * Loads date when AutoTagging response was written and returns it as string.
+ * @returns {string|*} - either Date String or empty string.
+ */
 function loadDate() {
     addDependencies();
     var thumb = app.document.selections[0];
@@ -22,6 +26,13 @@ function loadDate() {
     }
 }
 
+/**
+ * Saves given subjects, hierarchy and response into metadata.
+ * @param newSubjects {array}
+ * @param newHierarchy {array}
+ * @param response {Object[]}
+ * @returns {string} - returns 'success' on successful file writing
+ */
 function saveMetaData(newSubjects, newHierarchy, response) {
     addDependencies();
     var thumb = app.document.selections[0];

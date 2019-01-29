@@ -1,6 +1,13 @@
 "use strict";
 
-
+/**
+ * Writes the server response into the XMP files.
+ * Only writes if the dates from the metadata do not match up.
+ * Creates subjects and hierarchies depending on the confidence.
+ * Writes subjects, hierarchies and response as JSON in XMP File.
+ * @param response {Object[]}
+ * @param confidence {number}
+ */
 function writeXMPContent(response, confidence) {
         csInterface.evalScript('loadDate()', function (listDate) {
             let appDate = new Date();

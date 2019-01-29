@@ -5,6 +5,7 @@ let csInterface = new CSInterface();
 loadJSX("js/libs/json2.js");
 let callResponse = {};
 let confidence = 65;
+
 /**
  * Setups context menu and its item listeners.
  */
@@ -12,17 +13,32 @@ setupContextMenu();
 
 // Add an event listener to update the background colour of Extension to match the Bridge Theme.
 csInterface.addEventListener("com.adobe.csxs.events.ThemeColorChanged", themeChangedEventListener);
+/**
+ * CSXS listener for interface update
+ */
 csInterface.addEventListener("updateAutoTagInspector", loadContentListener);
+/**
+ * CSXS listener if the response from the server is ready
+ */
 csInterface.addEventListener("autoTaggingResponseReady", function (event) {
     if (event.data && event.data.serverResponse)
     {
         writeXMPContent(event.data.serverResponse, confidence);
     }
 });
+/**
+ * CSXS listener fpr the status messages of the server
+ */
 csInterface.addEventListener("AutoTaggingStatusMessageChange", function (event) {
     var statusBar = document.getElementById("StatusBar");
     statusBar.innerHTML = event.data.message;
 });
+
+/**
+ * Setup function of context menu
+ * *sets all items
+ * *add a general listener of the openeing event that redirects on certain occasions
+ */
 function setupContextMenu() {
     let contextMenu = {};
     contextMenu.menu = [];
@@ -111,7 +127,8 @@ function setupContextMenu() {
 }
 
 /**
- * Setup options
+ * Setup options menu
+ * Adds event listener for condifendence change and saves confidence that is used to mark write selection the first time.
  */
 function setupOptions() {
     $('#confidence').html(confidence + " %").click(function (e) {
@@ -751,6 +768,12 @@ function dropItemHandler(event, dragStart, dragTarget) {
     }
 }
 
+/**
+ * Function that handles the drop of an item as a child of the given parent.
+ * Does not change anything is the parent element is a child of the starting element
+ * @param dragStart {HTMLElement}
+ * @param parent {HTMLElement}
+ */
 function moveItem (dragStart, parent) {
     if (!nodeIsChild(parent, dragStart) && dragStart.firstChild && dragStart.firstChild.firstChild && dragStart.firstChild.firstChild.classList.contains('itemCheckbox')) {
         let checkbox = dragStart.firstChild.firstChild;
@@ -786,6 +809,12 @@ function moveItem (dragStart, parent) {
     }
 }
 
+/**
+ * Checks if child is actually a child of parent.
+ * @param child {HTMLElement}
+ * @param parent {HTMLElement}
+ * @returns {boolean} - true = isChild
+ */
 function nodeIsChild(child, parent) {
     if (child === document) {
         return true;

@@ -1,7 +1,6 @@
 body {
     background-color: #323232;
-    font-family: Segoe UI, Tahoma, sans-serif;
-    font-family: Lucida Grande, Tahoma, sans-serif;
+    font-family: Segoe UI, Lucida Grande, Tahoma, sans-serif;
     text-rendering: optimizeLegibility !important;
     -webkit-font-smoothing: antialiased !important;
     font-size: 0.8em;
@@ -86,6 +85,3 @@ input.change {
 #tags {
     padding-top: 10px;
 }
-/* ToDo Container Hiding for Dropdown */
-
-/* ToDo layout - Single or Multicolumn & Scolling if content doesn't fit */
